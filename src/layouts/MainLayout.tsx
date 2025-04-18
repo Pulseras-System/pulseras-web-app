@@ -11,6 +11,7 @@ import {
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import Logo from "../assets/images/logo-white.png";
 
 const MainLayout = () => {
   return (
@@ -18,7 +19,9 @@ const MainLayout = () => {
       {/* Header */}
       <header className="border-b">
         <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-          <Link to="/" className="font-bold text-xl">Pulsera</Link>
+          <Link to="/" className="flex items-center gap-2">
+            <img src={Logo} alt="Pulsera logo" className="w-20 h-auto" />
+          </Link>
           
           <NavigationMenu>
             <NavigationMenuList>
