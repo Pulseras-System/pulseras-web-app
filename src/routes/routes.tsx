@@ -6,6 +6,7 @@ import MainLayout from '@/layouts/MainLayout';
 // Pages
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
+import RegisterPage from '@/pages/RegisterPage';
 
 
 // Define routes
@@ -20,6 +21,10 @@ const routes = [
       {
         path: '/login',
         element: <LoginPage />,
+      },
+      {
+        path: '/register',
+        element: <RegisterPage />,
       },
     ],
   },
