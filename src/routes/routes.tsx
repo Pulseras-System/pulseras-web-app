@@ -7,7 +7,12 @@ import MainLayout from '@/layouts/MainLayout';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
-
+import AboutPage from '@/pages/AboutPage';
+import ContactPage from '@/pages/ContactPage';
+import NotFoundPage from '@/pages/NotFoundPage';
+import NoPermission from '@/pages/NoPermissionPage';
+import ProductPage from '@/pages/ProductPage';
+import ProductDetailPage from '@/pages/ProductDetailPage';
 
 // Define routes
 const routes = [
@@ -25,6 +30,30 @@ const routes = [
       {
         path: '/register',
         element: <RegisterPage />,
+      },
+      {
+        path: '/shop',
+        element: <ProductPage />,
+      },
+      {
+        path: '/shop/:id',
+        element: <ProductDetailPage />,
+      },
+      {
+        path: '/about',
+        element: <AboutPage />,
+      },
+      {
+        path: '/contact',
+        element: <ContactPage />,
+      },
+      {
+        path: '/no-permission',
+        element: <NoPermission />,
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
       },
     ],
   },
