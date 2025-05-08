@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
+import StaffLayout from '@/layouts/StaffLayout';
 
 // Pages
 import HomePage from '@/pages/HomePage';
@@ -13,6 +14,13 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import NoPermission from '@/pages/NoPermissionPage';
 import ProductPage from '@/pages/ProductPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
+
+//Staff Pages
+import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
+import MaterialManagement from '@/pages/StaffPages/MaterialManagementPage';
+import OrderManagement from '@/pages/StaffPages/OrderManagementPage';
+import CustomerManagement from '@/pages/StaffPages/CustomerManagementPage';
+import VoucherManagement from '@/pages/StaffPages/VoucherManagementPage';
 
 // Define routes
 const routes = [
@@ -57,6 +65,37 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/staff',
+    element: <StaffLayout />,
+    children: [
+      {
+        path: '',
+        element: <BraceletManagement />,
+      },
+      {
+        path: 'bracelets',
+        element: <BraceletManagement />,
+      },
+      {
+        path: 'materials',
+        element: <MaterialManagement />,
+      },
+      {
+        path: 'orders',
+        element: <OrderManagement />,
+      },
+      {
+        path: 'customers',
+        element: <CustomerManagement />,
+      },
+      {
+        path: 'vouchers',
+        element: <VoucherManagement />,
+      },
+    ],
+  },  
+  
 ];
 
 // Create router
