@@ -9,8 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter } from "lucide-react";
 import { Package } from "lucide-react";
+import Pagination from "@/components/pagination";
+
 
 interface Bracelet {
   id: number;
@@ -179,8 +181,8 @@ const BraceletManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-amber-200 bg-white shadow-sm overflow-hidden">
-        <Table>
+      <div className="rounded-lg border border-amber-200 bg-white shadow-sm overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader className="bg-amber-50">
             <TableRow>
               <TableHead className="text-amber-900 w-20">Hình ảnh</TableHead>
@@ -203,12 +205,12 @@ const BraceletManagement = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-amber-900">
+                <TableCell className="font-medium text-amber-900 whitespace-nowrap">
                   <div className="font-semibold">{bracelet.name}</div>
                   <div className="text-xs text-amber-500">ID: {bracelet.id}</div>
                 </TableCell>
-                <TableCell>{bracelet.material}</TableCell>
-                <TableCell className="font-medium">{bracelet.price.toLocaleString()}₫</TableCell>
+                <TableCell className="whitespace-nowrap">{bracelet.material}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{bracelet.price.toLocaleString()}₫</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     bracelet.stock > 10 
@@ -249,31 +251,11 @@ const BraceletManagement = () => {
           <div className="text-sm text-amber-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của {filteredBracelets.length} sản phẩm
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Trước
-            </Button>
-            
-            {renderPageNumbers()}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              Sau
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

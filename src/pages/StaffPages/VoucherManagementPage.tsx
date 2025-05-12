@@ -14,16 +14,14 @@ import {
   Trash2, 
   Plus, 
   Search, 
-  ChevronLeft, 
-  ChevronRight, 
   Filter, 
-  Gift,
   Tag,
   Calendar,
   Percent,
-  AlertCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Pagination from "@/components/pagination";
+
 
 // Voucher Management Types
 interface Voucher {
@@ -459,31 +457,11 @@ const VoucherManagementPage = () => {
           <div className="text-sm text-amber-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredVouchers.length)} của {filteredVouchers.length} voucher
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Trước
-            </Button>
-            
-            {renderPageNumbers()}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              Sau
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>
