@@ -13,6 +13,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import NoPermission from '@/pages/NoPermissionPage';
 import ProductPage from '@/pages/ProductPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
+import DesignBraceletPage from '@/pages/DesignBraceletPage';
 
 // Define routes
 const routes = [
@@ -46,6 +47,10 @@ const routes = [
       {
         path: '/contact',
         element: <ContactPage />,
+      },
+      {
+        path: '/design',
+        element: <DesignBraceletPage />,
       },
       {
         path: '/no-permission',
