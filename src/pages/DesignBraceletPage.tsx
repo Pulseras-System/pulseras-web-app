@@ -9,7 +9,7 @@ const DesignBraceletPage: React.FC = () => {
     useEffect(() => {
         // Scene, Camera, Renderer setup    
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x999999); // Light gray background
+        scene.background = new THREE.Color(0xcccccc); // Light gray background
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
 
@@ -20,21 +20,46 @@ const DesignBraceletPage: React.FC = () => {
             mountRef.current.appendChild(renderer.domElement);
         }
 
-        // Add bracelet (torus)
-        const torusGeometry = new THREE.TorusGeometry(3, 0.2, 16, 100);
-        const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 }); // Gold color
-        const bracelet = new THREE.Mesh(torusGeometry, torusMaterial);
-        bracelet.castShadow = true;
-        scene.add(bracelet);
+        // Create bracelet as a chain of cylinders
+        const braceletSegments: THREE.Mesh[] = [];
+        const segmentGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 16); // Giảm chiều dài của hình trụ
+        const segmentMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 }); // Gold color
 
-        // Add small cubes and spheres to the side
+        const segmentCount = 96; // Tăng số lượng đoạn để làm dây vòng mịn hơn
+        const braceletRadius = 3; // Radius of the bracelet
+
+        for (let i = 0; i < segmentCount; i++) {
+            const angle = (i / segmentCount) * Math.PI * 2;
+            const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
+            segment.position.set(
+                Math.cos(angle) * braceletRadius,
+                Math.sin(angle) * braceletRadius,
+                0
+            );
+            segment.rotation.z = angle; // Rotate the segment to align with the circle
+            segment.castShadow = true;
+            scene.add(segment);
+            braceletSegments.push(segment);
+        }
+
+        // Define anchor points on the bracelet
+        const anchorPoints: THREE.Vector3[] = [];
+        for (let i = 0; i < segmentCount; i++) {
+            const angle = (i / segmentCount) * Math.PI * 2;
+            anchorPoints.push(new THREE.Vector3(
+                Math.cos(angle) * braceletRadius,
+                Math.sin(angle) * braceletRadius,
+                0
+            ));
+        }
+
+        // Add draggable objects (cubes and spheres)
         const draggableObjects: THREE.Object3D[] = [];
         const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
         const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
         for (let i = 0; i < 12; i++) {
             const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-            const angle = (i / 12) * Math.PI * 2;
-            cube.position.set(Math.cos(angle) * 3 + 5, Math.sin(angle) * 3, 0); // Shift cubes to the right
+            cube.position.set(5, 0, 0); // Start cubes off to the side
             cube.castShadow = true;
             scene.add(cube);
             draggableObjects.push(cube);
@@ -44,8 +69,7 @@ const DesignBraceletPage: React.FC = () => {
         const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
         for (let i = 0; i < 12; i++) {
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            const angle = (i / 12) * Math.PI * 2 + Math.PI / 24; // Offset spheres slightly
-            sphere.position.set(Math.cos(angle) * 3 + 5, Math.sin(angle) * 3, 0.5); // Shift spheres to the right
+            sphere.position.set(-5, 0, 0); // Start spheres off to the side
             sphere.castShadow = true;
             scene.add(sphere);
             draggableObjects.push(sphere);
@@ -75,8 +99,27 @@ const DesignBraceletPage: React.FC = () => {
             controls.enabled = false;
         });
 
-        dragControls.addEventListener('dragend', () => {
+        dragControls.addEventListener('dragend', (event) => {
             controls.enabled = true;
+
+            // Snap to nearest anchor point
+            const draggedObject = event.object;
+            let closestPoint = null;
+            let minDistance = Infinity;
+
+            anchorPoints.forEach((point) => {
+                const distance = draggedObject.position.distanceTo(point);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPoint = point;
+                }
+            });
+
+            // If within snapping range, snap to the closest point
+            const snappingRange = 0.5; // Adjust snapping range as needed
+            if (closestPoint && minDistance < snappingRange) {
+                draggedObject.position.copy(closestPoint);
+            }
         });
 
         // Animation loop
