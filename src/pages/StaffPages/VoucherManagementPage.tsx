@@ -191,33 +191,6 @@ const VoucherManagementPage = () => {
     }
   };
 
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <Button
-          key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          size="sm"
-          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-amber-600 text-white" : "text-amber-800"}`}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </Button>
-      );
-    }
-
-    return pages;
-  };
-
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -246,7 +219,7 @@ const VoucherManagementPage = () => {
         );
       case "used":
         return (
-          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-200">
+          <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-200 border border-sky-200">
             Đã dùng hết
           </Badge>
         );
@@ -269,7 +242,7 @@ const VoucherManagementPage = () => {
     const percentage = Math.min(Math.round((current / total) * 100), 100);
     const getColorClass = () => {
       if (percentage >= 90) return "bg-red-500";
-      if (percentage >= 70) return "bg-amber-500";
+      if (percentage >= 70) return "bg-sky-500";
       return "bg-green-500";
     };
 
@@ -293,16 +266,16 @@ const VoucherManagementPage = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-amber-900">Quản lý Voucher</h2>
-          <p className="text-sm text-amber-700">Danh sách voucher khuyến mãi</p>
+          <h2 className="text-2xl font-bold text-sky-900">Quản lý Voucher</h2>
+          <p className="text-sm text-sky-700">Danh sách voucher khuyến mãi</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
             <Input
               placeholder="Tìm kiếm mã voucher..."
-              className="pl-9 w-full sm:w-64 bg-amber-50 border-amber-200 focus-visible:ring-amber-300"
+              className="pl-9 w-full sm:w-64 bg-sky-50 border-sky-200 focus-visible:ring-sky-300"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -312,13 +285,13 @@ const VoucherManagementPage = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-amber-700 border-amber-300 hover:bg-amber-100"
+            className="text-sky-700 border-sky-300 hover:bg-sky-100"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-amber-600 hover:bg-amber-700 text-amber-50">
+          <Button className="bg-sky-600 hover:bg-sky-700 text-sky-50">
             <Plus className="mr-2 h-4 w-4" />
             Thêm voucher
           </Button>
@@ -326,12 +299,12 @@ const VoucherManagementPage = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 shadow-sm">
+        <div className="bg-sky-50 p-4 rounded-lg border border-sky-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-amber-800 mb-1">Trạng thái</label>
+              <label className="block text-sm font-medium text-sky-800 mb-1">Trạng thái</label>
               <select
-                className="w-full p-2 border border-amber-200 rounded-md bg-white text-amber-900 focus:ring-amber-300"
+                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -345,9 +318,9 @@ const VoucherManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-amber-800 mb-1">Loại giảm giá</label>
+              <label className="block text-sm font-medium text-sky-800 mb-1">Loại giảm giá</label>
               <select
-                className="w-full p-2 border border-amber-200 rounded-md bg-white text-amber-900 focus:ring-amber-300"
+                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
                 value={typeFilter}
                 onChange={(e) => {
                   setTypeFilter(e.target.value);
@@ -363,35 +336,35 @@ const VoucherManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-amber-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-sky-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-amber-50">
+          <TableHeader className="bg-sky-50">
             <TableRow>
-              <TableHead className="text-amber-900 w-32">Mã voucher</TableHead>
-              <TableHead className="text-amber-900">Mô tả</TableHead>
-              <TableHead className="text-amber-900 w-36">Giảm giá</TableHead>
-              <TableHead className="text-amber-900 w-48">Thời gian</TableHead>
-              <TableHead className="text-amber-900 w-32">Sử dụng</TableHead>
-              <TableHead className="text-amber-900 w-32">Trạng thái</TableHead>
-              <TableHead className="text-amber-900 text-right w-24">Thao tác</TableHead>
+              <TableHead className="text-sky-900 w-32">Mã voucher</TableHead>
+              <TableHead className="text-sky-900">Mô tả</TableHead>
+              <TableHead className="text-sky-900 w-36">Giảm giá</TableHead>
+              <TableHead className="text-sky-900 w-48">Thời gian</TableHead>
+              <TableHead className="text-sky-900 w-32">Sử dụng</TableHead>
+              <TableHead className="text-sky-900 w-32">Trạng thái</TableHead>
+              <TableHead className="text-sky-900 text-right w-24">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentVouchers.map((voucher) => (
-              <TableRow key={voucher.id} className="hover:bg-amber-50/50">
-                <TableCell className="font-bold text-amber-900">
+              <TableRow key={voucher.id} className="hover:bg-sky-50/50">
+                <TableCell className="font-bold text-sky-900">
                   {voucher.code}
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm text-amber-950">{voucher.description}</div>
-                  <div className="text-xs text-amber-600 mt-1">
+                  <div className="text-sm text-sky-950">{voucher.description}</div>
+                  <div className="text-xs text-sky-600 mt-1">
                     Đơn tối thiểu: {formatCurrency(voucher.minPurchase)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
                     {voucher.discountType === "percentage" ? (
-                      <div className="bg-amber-100 text-amber-800 rounded-full px-2 py-1 text-sm flex items-center">
+                      <div className="bg-sky-100 text-sky-800 rounded-full px-2 py-1 text-sm flex items-center">
                         <Percent className="h-3 w-3 mr-1" />
                         {voucher.discountValue}%
                       </div>
@@ -402,19 +375,19 @@ const VoucherManagementPage = () => {
                     )}
                   </div>
                   {voucher.maxDiscount && (
-                    <div className="text-xs text-amber-600 mt-1">
+                    <div className="text-xs text-sky-600 mt-1">
                       Tối đa: {formatCurrency(voucher.maxDiscount)}
                     </div>
                   )}
                 </TableCell>
                 <TableCell>
                   <div className="text-xs space-y-1">
-                    <div className="flex items-center text-amber-800">
-                      <Calendar className="h-3 w-3 mr-1 text-amber-500" />
+                    <div className="flex items-center text-sky-800">
+                      <Calendar className="h-3 w-3 mr-1 text-sky-500" />
                       Bắt đầu: {formatDate(voucher.startDate)}
                     </div>
-                    <div className="flex items-center text-amber-800">
-                      <Calendar className="h-3 w-3 mr-1 text-amber-500" />
+                    <div className="flex items-center text-sky-800">
+                      <Calendar className="h-3 w-3 mr-1 text-sky-500" />
                       Kết thúc: {formatDate(voucher.endDate)}
                     </div>
                   </div>
@@ -429,7 +402,7 @@ const VoucherManagementPage = () => {
                   {getStatusBadge(voucher.status)}
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-amber-700 border-amber-300 hover:bg-amber-100">
+                  <Button variant="outline" size="sm" className="text-sky-700 border-sky-300 hover:bg-sky-100">
                     <Pen className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
@@ -443,10 +416,10 @@ const VoucherManagementPage = () => {
       </div>
 
       {filteredVouchers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-amber-200 rounded-lg bg-amber-50">
-          <Tag className="h-12 w-12 text-amber-400 mb-4" />
-          <h3 className="text-lg font-medium text-amber-900">Không tìm thấy voucher</h3>
-          <p className="text-sm text-amber-700 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-sky-200 rounded-lg bg-sky-50">
+          <Tag className="h-12 w-12 text-sky-400 mb-4" />
+          <h3 className="text-lg font-medium text-sky-900">Không tìm thấy voucher</h3>
+          <p className="text-sm text-sky-700 mt-1">
             Không có voucher nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -454,7 +427,7 @@ const VoucherManagementPage = () => {
 
       {filteredVouchers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-amber-700">
+          <div className="text-sm text-sky-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredVouchers.length)} của {filteredVouchers.length} voucher
           </div>
           <Pagination
