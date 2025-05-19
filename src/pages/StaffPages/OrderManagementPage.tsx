@@ -10,8 +10,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Pen, Trash2, Plus, Search, Filter, Package } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
-
 
 interface Order {
   id: number;
@@ -45,6 +52,16 @@ const OrderManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priceFilter, setPriceFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [newOrder, setNewOrder] = useState<Order>({
+    id: 0,
+    customerName: "",
+    orderDate: new Date().toISOString().split('T')[0],
+    status: "Đang xử lý",
+    totalAmount: 0
+  });
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
@@ -75,7 +92,6 @@ const OrderManagement = () => {
     }
   };
 
-
   // Lấy danh sách trạng thái độc nhất
   const uniqueStatuses = Array.from(new Set(mockOrders.map(order => order.status)));
 
@@ -85,20 +101,48 @@ const OrderManagement = () => {
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
+  const handleEditClick = (order: Order) => {
+    setEditingOrder(order);
+    setIsEditOpen(true);
+  };
+
+  const handleEditSave = () => {
+    if (editingOrder) {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === editingOrder.id ? editingOrder : o))
+      );
+      setIsEditOpen(false);
+    }
+  };
+
+  const handleAddOrder = () => {
+    if (newOrder.customerName.trim()) {
+      setOrders((prev) => [...prev, { ...newOrder, id: Date.now() }]);
+      setNewOrder({
+        id: 0,
+        customerName: "",
+        orderDate: new Date().toISOString().split('T')[0],
+        status: "Đang xử lý",
+        totalAmount: 0
+      });
+      setIsAddOpen(false);
+    }
+  };
+
   return (
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-sky-900">Quản lý Đơn hàng</h2>
-          <p className="text-sm text-sky-700">Danh sách đơn hàng trong hệ thống</p>
+          <h2 className="text-2xl font-bold text-pink-800">Quản lý Đơn hàng</h2>
+          <p className="text-sm text-pink-600">Danh sách đơn hàng trong hệ thống</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-sky-50 border-sky-200 focus-visible:ring-sky-300"
+              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-200 focus-visible:ring-pink-300 text-pink-900 placeholder-pink-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -108,13 +152,16 @@ const OrderManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-sky-700 border-sky-300 hover:bg-sky-100"
+            className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-sky-600 hover:bg-sky-700 text-sky-50">
+          <Button 
+            className="bg-pink-500 hover:bg-pink-600 text-white shadow-sm hover:shadow-md transition-all"
+            onClick={() => setIsAddOpen(true)}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Thêm đơn hàng
           </Button>
@@ -122,12 +169,12 @@ const OrderManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-sky-50 p-4 rounded-lg border border-sky-200 shadow-sm">
+        <div className="bg-pink-100 p-4 rounded-lg border border-pink-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo trạng thái</label>
+              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo trạng thái</label>
               <select
-                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
+                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -141,9 +188,9 @@ const OrderManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo giá trị</label>
+              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo giá trị</label>
               <select
-                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
+                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -160,23 +207,23 @@ const OrderManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-sky-200 bg-white shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-sky-50">
+      <div className="rounded-lg border border-pink-200 bg-white shadow-sm overflow-hidden">
+        <Table className="min-w-[700px]">
+          <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-sky-900">ID</TableHead>
-              <TableHead className="text-sky-900">Tên khách hàng</TableHead>
-              <TableHead className="text-sky-900">Ngày đặt hàng</TableHead>
-              <TableHead className="text-sky-900">Trạng thái</TableHead>
-              <TableHead className="text-sky-900">Tổng tiền (VND)</TableHead>
-              <TableHead className="text-sky-900 text-right">Thao tác</TableHead>
+              <TableHead className="text-pink-800">ID</TableHead>
+              <TableHead className="text-pink-800">Tên khách hàng</TableHead>
+              <TableHead className="text-pink-800">Ngày đặt hàng</TableHead>
+              <TableHead className="text-pink-800">Trạng thái</TableHead>
+              <TableHead className="text-pink-800">Tổng tiền (VND)</TableHead>
+              <TableHead className="text-pink-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentOrders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-sky-50/50">
+              <TableRow key={order.id} className="hover:bg-pink-50/50 border-pink-100">
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell className="font-medium text-sky-900">
+                <TableCell className="font-medium text-pink-900">
                   <div className="font-semibold">{order.customerName}</div>
                 </TableCell>
                 <TableCell>{formatDate(order.orderDate)}</TableCell>
@@ -191,12 +238,21 @@ const OrderManagement = () => {
                     {order.status}
                   </span>
                 </TableCell>
-                <TableCell className="font-medium">{order.totalAmount.toLocaleString()}₫</TableCell>
+                <TableCell className="font-medium text-pink-700">{order.totalAmount.toLocaleString()}₫</TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-sky-700 border-sky-300 hover:bg-sky-100">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+                    onClick={() => handleEditClick(order)}
+                  >
                     <Pen className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -207,10 +263,10 @@ const OrderManagement = () => {
       </div>
 
       {filteredOrders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-sky-200 rounded-lg bg-sky-50">
-          <Package className="h-12 w-12 text-sky-400 mb-4" />
-          <h3 className="text-lg font-medium text-sky-900">Không tìm thấy đơn hàng</h3>
-          <p className="text-sm text-sky-700 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-200 rounded-lg bg-pink-50">
+          <Package className="h-12 w-12 text-pink-400 mb-4" />
+          <h3 className="text-lg font-medium text-pink-800">Không tìm thấy đơn hàng</h3>
+          <p className="text-sm text-pink-600 mt-1">
             Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -218,7 +274,7 @@ const OrderManagement = () => {
 
       {filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-sky-700">
+          <div className="text-sm text-pink-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} của {filteredOrders.length} đơn hàng
           </div>
           <Pagination
@@ -228,6 +284,152 @@ const OrderManagement = () => {
           />
         </div>
       )}
+
+      {/* EDIT MODAL */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+          <DialogHeader>
+            <DialogTitle className="text-pink-800">Chỉnh sửa đơn hàng</DialogTitle>
+          </DialogHeader>
+          {editingOrder && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-pink-700">Tên khách hàng</Label>
+                <Input
+                  className="border-pink-200 focus:ring-pink-300"
+                  value={editingOrder.customerName}
+                  onChange={(e) =>
+                    setEditingOrder({ ...editingOrder, customerName: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-pink-700">Ngày đặt hàng</Label>
+                <Input
+                  type="date"
+                  className="border-pink-200 focus:ring-pink-300"
+                  value={editingOrder.orderDate}
+                  onChange={(e) =>
+                    setEditingOrder({ ...editingOrder, orderDate: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-pink-700">Trạng thái</Label>
+                <select
+                  className="w-full p-2 border border-pink-200 rounded-md focus:ring-pink-300"
+                  value={editingOrder.status}
+                  onChange={(e) =>
+                    setEditingOrder({ ...editingOrder, status: e.target.value })
+                  }
+                >
+                  {uniqueStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-pink-700">Tổng tiền</Label>
+                <Input
+                  type="number"
+                  className="border-pink-200 focus:ring-pink-300"
+                  value={editingOrder.totalAmount}
+                  onChange={(e) =>
+                    setEditingOrder({ ...editingOrder, totalAmount: +e.target.value })
+                  }
+                />
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                  onClick={() => setIsEditOpen(false)}
+                >
+                  Hủy
+                </Button>
+                <Button 
+                  className="bg-pink-500 hover:bg-pink-600 text-white"
+                  onClick={handleEditSave}
+                >
+                  Lưu
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ADD MODAL */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+          <DialogHeader>
+            <DialogTitle className="text-pink-800">Thêm đơn hàng mới</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-pink-700">Tên khách hàng</Label>
+              <Input
+                className="border-pink-200 focus:ring-pink-300"
+                value={newOrder.customerName}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, customerName: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="text-pink-700">Ngày đặt hàng</Label>
+              <Input
+                type="date"
+                className="border-pink-200 focus:ring-pink-300"
+                value={newOrder.orderDate}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, orderDate: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="text-pink-700">Trạng thái</Label>
+              <select
+                className="w-full p-2 border border-pink-200 rounded-md focus:ring-pink-300"
+                value={newOrder.status}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, status: e.target.value })
+                }
+              >
+                {uniqueStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-pink-700">Tổng tiền</Label>
+              <Input
+                type="number"
+                className="border-pink-200 focus:ring-pink-300"
+                value={newOrder.totalAmount}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, totalAmount: +e.target.value })
+                }
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                onClick={() => setIsAddOpen(false)}
+              >
+                Hủy
+              </Button>
+              <Button 
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={handleAddOrder}
+              >
+                Thêm
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

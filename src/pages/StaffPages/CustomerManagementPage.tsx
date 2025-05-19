@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Pagination from "@/components/pagination";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 
 interface Customer {
@@ -38,6 +41,19 @@ interface Customer {
   status: "active" | "inactive";
   avatar: string;
 }
+
+const emptyCustomer: Customer = {
+  id: -1,
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  totalOrders: 0,
+  totalSpent: 0,
+  joinDate: new Date().toISOString().split("T")[0],
+  status: "active",
+  avatar: "/api/placeholder/100/100?text=?"
+};
 
 const mockCustomers: Customer[] = [
   {
@@ -171,6 +187,8 @@ const CustomerManagementPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [spendingFilter, setSpendingFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
@@ -212,22 +230,46 @@ const CustomerManagementPage = () => {
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
+  const handleAddCustomer = () => {
+    setSelectedCustomer(emptyCustomer);
+    setModalOpen(true);
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setModalOpen(true);
+  };
+
+  const handleSaveCustomer = (customer: Customer) => {
+    if (customer.id === -1) {
+      const newCustomer = {
+        ...customer,
+        id: Math.max(...customers.map(c => c.id)) + 1,
+        avatar: `/api/placeholder/100/100?text=${customer.name.split(" ").map(s => s[0]).join("")}`
+      };
+      setCustomers([...customers, newCustomer]);
+    } else {
+      setCustomers(customers.map(c => (c.id === customer.id ? customer : c)));
+    }
+    setModalOpen(false);
+    setSelectedCustomer(null);
+  };
 
 
   return (
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-sky-900">Quản lý Khách hàng</h2>
-          <p className="text-sm text-sky-700">Danh sách khách hàng của cửa hàng</p>
+          <h2 className="text-2xl font-bold text-pink-800">Quản lý Khách hàng</h2>
+          <p className="text-sm text-pink-600">Danh sách khách hàng của cửa hàng</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
             <Input
               placeholder="Tìm kiếm khách hàng..."
-              className="pl-9 w-full sm:w-64 bg-sky-50 border-sky-200 focus-visible:ring-sky-300"
+              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-200 focus-visible:ring-pink-300 text-pink-900 placeholder-pink-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -237,13 +279,13 @@ const CustomerManagementPage = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-sky-700 border-sky-300 hover:bg-sky-100"
+            className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-sky-600 hover:bg-sky-700 text-sky-50">
+          <Button className="bg-pink-500 hover:bg-pink-600 text-white shadow-sm hover:shadow-md transition-all" onClick={handleAddCustomer}>
             <Plus className="mr-2 h-4 w-4" />
             Thêm khách hàng
           </Button>
@@ -251,12 +293,12 @@ const CustomerManagementPage = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-sky-50 p-4 rounded-lg border border-sky-200 shadow-sm">
+        <div className="bg-pink-100 p-4 rounded-lg border border-pink-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo trạng thái</label>
+              <label className="block text-sm font-medium text-pink-800 mb-1">Lọc theo trạng thái</label>
               <select
-                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
+                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -269,9 +311,9 @@ const CustomerManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo chi tiêu</label>
+              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo chi tiêu</label>
               <select
-                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
+                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
                 value={spendingFilter}
                 onChange={(e) => {
                   setSpendingFilter(e.target.value);
@@ -288,25 +330,25 @@ const CustomerManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-sky-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-pink-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-sky-50">
+          <TableHeader className="bg-pink-50">
             <TableRow>
-              <TableHead className="text-sky-900 w-16">Avatar</TableHead>
-              <TableHead className="text-sky-900">Thông tin khách hàng</TableHead>
-              <TableHead className="text-sky-900">Liên hệ</TableHead>
-              <TableHead className="text-sky-900">Tổng đơn hàng</TableHead>
-              <TableHead className="text-sky-900">Tổng chi tiêu</TableHead>
-              <TableHead className="text-sky-900">Ngày tham gia</TableHead>
-              <TableHead className="text-sky-900">Trạng thái</TableHead>
-              <TableHead className="text-sky-900 text-right">Thao tác</TableHead>
+              <TableHead className="text-pink-800 w-16">Avatar</TableHead>
+              <TableHead className="text-pink-800">Thông tin khách hàng</TableHead>
+              <TableHead className="text-pink-800">Liên hệ</TableHead>
+              <TableHead className="text-pink-800">Tổng đơn hàng</TableHead>
+              <TableHead className="text-pink-800">Tổng chi tiêu</TableHead>
+              <TableHead className="text-pink-800">Ngày tham gia</TableHead>
+              <TableHead className="text-pink-800">Trạng thái</TableHead>
+              <TableHead className="text-pink-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentCustomers.map((customer) => (
-              <TableRow key={customer.id} className="hover:bg-sky-50/50">
+              <TableRow key={customer.id} className="hover:bg-pink-50/50 border-pink-100">
                 <TableCell>
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-sky-200">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-pink-200 bg-pink-50">
                     <img 
                       src={customer.avatar}
                       alt={customer.name}
@@ -314,35 +356,35 @@ const CustomerManagementPage = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-sky-900">
+                <TableCell className="font-medium text-pink-900 whitespace-nowrap">
                   <div className="font-semibold">{customer.name}</div>
-                  <div className="text-xs text-sky-500">ID: {customer.id}</div>
+                  <div className="text-xs text-pink-500">ID: {customer.id}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center text-sm mb-1">
-                    <Mail className="h-3 w-3 mr-1 text-sky-500" />
+                    <Mail className="h-3 w-3 mr-1 text-pink-500" />
                     {customer.email}
                   </div>
                   <div className="flex items-center text-sm">
-                    <Phone className="h-3 w-3 mr-1 text-sky-500" />
+                    <Phone className="h-3 w-3 mr-1 text-pink-500" />
                     {customer.phone}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <ShoppingBag className="h-4 w-4 mr-1 text-sky-500" />
+                    <ShoppingBag className="h-4 w-4 mr-1 text-pink-500" />
                     {customer.totalOrders}
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
-                    <CreditCard className="h-4 w-4 mr-1 text-sky-500" />
+                    <CreditCard className="h-4 w-4 mr-1 text-pink-500" />
                     {formatCurrency(customer.totalSpent)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1 text-sky-500" />
+                    <Calendar className="h-4 w-4 mr-1 text-pink-500" />
                     {formatDate(customer.joinDate)}
                   </div>
                 </TableCell>
@@ -356,7 +398,7 @@ const CustomerManagementPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-sky-700 border-sky-300 hover:bg-sky-100">
+                  <Button variant="outline" size="sm" className="text-pink-700 border-pink-300 hover:bg-pink-100" onClick={() => handleEditCustomer(customer)}>
                     <Pen className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
@@ -370,10 +412,10 @@ const CustomerManagementPage = () => {
       </div>
 
       {filteredCustomers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-sky-200 rounded-lg bg-sky-50">
-          <User className="h-12 w-12 text-sky-400 mb-4" />
-          <h3 className="text-lg font-medium text-sky-900">Không tìm thấy khách hàng</h3>
-          <p className="text-sm text-sky-700 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-200 rounded-lg bg-pink-50">
+          <User className="h-12 w-12 text-pink-400 mb-4" />
+          <h3 className="text-lg font-medium text-pink-900">Không tìm thấy khách hàng</h3>
+          <p className="text-sm text-pink-700 mt-1">
             Không có khách hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -381,7 +423,7 @@ const CustomerManagementPage = () => {
 
       {filteredCustomers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-sky-700">
+          <div className="text-sm text-pink-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredCustomers.length)} của {filteredCustomers.length} khách hàng
           </div>
           <Pagination
@@ -391,6 +433,86 @@ const CustomerManagementPage = () => {
           />
         </div>
       )}
+
+      {modalOpen && selectedCustomer && (
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-pink-900">
+              {selectedCustomer.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            className="grid gap-4 py-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveCustomer(selectedCustomer);
+            }}
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-pink-800">Tên</Label>
+                <Input
+                  value={selectedCustomer.name}
+                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label className="text-pink-800">Email</Label>
+                <Input
+                  type="email"
+                  value={selectedCustomer.email}
+                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, email: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-pink-800">Số điện thoại</Label>
+                <Input
+                  value={selectedCustomer.phone}
+                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, phone: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label className="text-pink-800">Trạng thái</Label>
+                <select
+                  className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900"
+                  value={selectedCustomer.status}
+                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, status: e.target.value as "active" | "inactive" })}
+                >
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Không hoạt động</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-pink-800">Địa chỉ</Label>
+              <Textarea
+                value={selectedCustomer.address}
+                onChange={(e) => setSelectedCustomer({ ...selectedCustomer, address: e.target.value })}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 mt-2">
+              <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+                Hủy
+              </Button>
+              <Button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white">
+                Lưu
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    )}
+
     </div>
   );
 };

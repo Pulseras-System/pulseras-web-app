@@ -96,7 +96,7 @@ const Contact: React.FC = () => {
                 <FaInstagram className="text-2xl text-pink-600" />
               </a>
               <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
-                <FaTwitter className="text-2xl text-sky-500" />
+                <FaTwitter className="text-2xl text-pink-500" />
               </a>
             </div>
           </Card>
