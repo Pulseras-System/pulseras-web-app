@@ -1,81 +1,51 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { DragControls } from 'three/examples/jsm/controls/DragControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const DesignBraceletPage: React.FC = () => {
     const mountRef = useRef<HTMLDivElement>(null);
+    const [objects, setObjects] = useState<THREE.Object3D[]>([]); // State để lưu danh sách khối
 
     useEffect(() => {
-        // Scene, Camera, Renderer setup    
+        // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xcccccc); // Light gray background
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        scene.background = new THREE.Color(0xcccccc);
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            (window.innerWidth - 300) / (window.innerHeight - 150), // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
+            0.1,
+            1000
+        );
+        camera.position.z = 8;
+
+        // Renderer setup
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
+
+        const updateDimensions = () => {
+            if (mountRef.current) {
+                const containerHeight = window.innerHeight - 150; // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
+                const containerWidth = window.innerWidth - 300; // Trừ đi chiều rộng của sidebar
+                
+                renderer.setSize(containerWidth, containerHeight);
+                camera.aspect = containerWidth / containerHeight;
+                camera.updateProjectionMatrix();
+            }
+        };
+
+        // Gọi ngay khi khởi tạo
+        updateDimensions();
+
         if (mountRef.current) {
+            mountRef.current.innerHTML = '';
             mountRef.current.appendChild(renderer.domElement);
         }
 
-        // Create bracelet as a chain of cylinders
-        const braceletSegments: THREE.Mesh[] = [];
-        const segmentGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 16); // Giảm chiều dài của hình trụ
-        const segmentMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 }); // Gold color
-
-        const segmentCount = 96; // Tăng số lượng đoạn để làm dây vòng mịn hơn
-        const braceletRadius = 3; // Radius of the bracelet
-
-        for (let i = 0; i < segmentCount; i++) {
-            const angle = (i / segmentCount) * Math.PI * 2;
-            const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
-            segment.position.set(
-                Math.cos(angle) * braceletRadius,
-                Math.sin(angle) * braceletRadius,
-                0
-            );
-            segment.rotation.z = angle; // Rotate the segment to align with the circle
-            segment.castShadow = true;
-            scene.add(segment);
-            braceletSegments.push(segment);
-        }
-
-        // Define anchor points on the bracelet
-        const anchorPoints: THREE.Vector3[] = [];
-        for (let i = 0; i < segmentCount; i++) {
-            const angle = (i / segmentCount) * Math.PI * 2;
-            anchorPoints.push(new THREE.Vector3(
-                Math.cos(angle) * braceletRadius,
-                Math.sin(angle) * braceletRadius,
-                0
-            ));
-        }
-
-        // Add draggable objects (cubes and spheres)
-        const draggableObjects: THREE.Object3D[] = [];
-        const cubeGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        for (let i = 0; i < 12; i++) {
-            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-            cube.position.set(5, 0, 0); // Start cubes off to the side
-            cube.castShadow = true;
-            scene.add(cube);
-            draggableObjects.push(cube);
-        }
-
-        const sphereGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-        const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        for (let i = 0; i < 12; i++) {
-            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            sphere.position.set(-5, 0, 0); // Start spheres off to the side
-            sphere.castShadow = true;
-            scene.add(sphere);
-            draggableObjects.push(sphere);
-        }
-
-        // Add lighting
+        // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
@@ -84,43 +54,37 @@ const DesignBraceletPage: React.FC = () => {
         pointLight.castShadow = true;
         scene.add(pointLight);
 
-        camera.position.z = 8;
-
         // Controls
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // Smooth controls
+        controls.enableDamping = true;
         controls.dampingFactor = 0.05;
 
-        // Drag Controls
-        const dragControls = new DragControls(draggableObjects, camera, renderer.domElement);
+        // Load GLB model
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.load(
+            '/scene.glb', // Replace with the path to your GLB file
+            (gltf) => {
+                const model = gltf.scene;
+                model.traverse((child) => {
+                    if ((child as THREE.Mesh).isMesh) {
+                        const mesh = child as THREE.Mesh;
+                        mesh.castShadow = true;
+                        mesh.receiveShadow = true;
+                    }
+                });
+                model.position.set(0, 0, 0); // Set the position of the loaded model
+                scene.add(model);
 
-        // Disable OrbitControls while dragging
-        dragControls.addEventListener('dragstart', () => {
-            controls.enabled = false;
-        });
-
-        dragControls.addEventListener('dragend', (event) => {
-            controls.enabled = true;
-
-            // Snap to nearest anchor point
-            const draggedObject = event.object;
-            let closestPoint = null;
-            let minDistance = Infinity;
-
-            anchorPoints.forEach((point) => {
-                const distance = draggedObject.position.distanceTo(point);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestPoint = point;
-                }
-            });
-
-            // If within snapping range, snap to the closest point
-            const snappingRange = 0.5; // Adjust snapping range as needed
-            if (closestPoint && minDistance < snappingRange) {
-                draggedObject.position.copy(closestPoint);
+                // Cập nhật danh sách khối
+                setObjects((prevObjects) => [...prevObjects, model]);
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+            },
+            (error) => {
+                console.error('An error occurred while loading the GLB file:', error);
             }
-        });
+        );
 
         // Animation loop
         const animate = () => {
@@ -128,15 +92,17 @@ const DesignBraceletPage: React.FC = () => {
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         };
-
         animate();
 
         // Handle window resize
         const handleResize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateDimensions();
         };
+
+        // Initial resize
+        handleResize();
+
+        // Add resize event listener
         window.addEventListener('resize', handleResize);
 
         // Cleanup on component unmount
@@ -150,17 +116,45 @@ const DesignBraceletPage: React.FC = () => {
     }, []);
 
     return (
-        <div
-            ref={mountRef}
-            style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-            }}
-        />
+        <div style={{ 
+            display: 'flex', 
+            height: 'calc(100vh - 150px)', // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
+            overflow: 'hidden',
+            margin: 0, // Thêm margin 0
+            padding: 0, // Thêm padding 0
+        }}>
+            {/* Sidebar */}
+            <div
+                style={{
+                    width: '300px',
+                    background: '#f5f5f5',
+                    borderRight: '1px solid #ddd',
+                    padding: '10px',
+                    overflowY: 'auto',
+                    margin: 0, // Thêm margin 0
+                }}
+            >
+                <h3>Objects in Scene</h3>
+                <ul>
+                    {objects.map((obj, index) => (
+                        <li key={index}>
+                            {obj.name || `Object ${index + 1}`}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* Three.js Canvas */}
+            <div
+                ref={mountRef}
+                style={{
+                    flex: 1,
+                    position: 'relative',
+                    margin: 0, // Thêm margin 0
+                    padding: 0, // Thêm padding 0
+                }}
+            />
+        </div>
     );
 };
 

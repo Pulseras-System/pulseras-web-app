@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
 import StaffLayout from '@/layouts/StaffLayout';
+import BlankLayout from '@/layouts/BlankLayout';
 
 // Pages
 import HomePage from '@/pages/HomePage';
@@ -99,8 +100,17 @@ const routes = [
         element: <VoucherManagement />,
       },
     ],
-  },  
-  
+  },
+  {
+    path: '/design',
+    element: <BlankLayout />, // Sử dụng layout không có header/footer
+    children: [
+      {
+        path: '',
+        element: <DesignBraceletPage />,
+      },
+    ],
+  },
 ];
 
 // Create router
