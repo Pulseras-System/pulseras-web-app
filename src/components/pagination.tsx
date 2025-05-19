@@ -24,7 +24,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
           key={i}
           variant={i === currentPage ? "default" : "outline"}
           size="sm"
-          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-amber-600 text-white" : "text-amber-800"}`}
+          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-pink-600 text-white" : "text-pink-800"}`}
           onClick={() => onPageChange(i)}
         >
           {i}
@@ -42,7 +42,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
         size="sm"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
-        className="text-amber-800 border-amber-300 hover:bg-amber-100"
+        className="text-pink-800 border-pink-300 hover:bg-pink-100"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
         Trước
@@ -55,7 +55,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
         size="sm"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
-        className="text-amber-800 border-amber-300 hover:bg-amber-100"
+        className="text-pink-800 border-pink-300 hover:bg-pink-100"
       >
         Sau
         <ChevronRight className="h-4 w-4 ml-1" />
