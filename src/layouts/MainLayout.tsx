@@ -1,4 +1,3 @@
-// import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import {
@@ -11,28 +10,30 @@ import Logo from "../assets/images/logo-nobg.png";
 
 const MainLayout = () => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-sky-50 to-blue-50">
       {/* Header */}
-      <header className="bg-black text-white border-b">
+      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-sky-200 shadow-sm bg-sky-600/90 text-white">
         <div className="container flex items-center justify-between h-20 px-4 mx-auto">
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src={Logo} alt="Pulsera logo" className="w-25 h-auto" />
+            <img src={Logo} alt="Pulsera logo" className="h-16 w-auto" />
           </Link>
-          
+
+          {/* Navigation Menu */}
           <NavigationMenu>
             <NavigationMenuList className="gap-6 text-base">
               {[
-                { label: "Home", to: "/" },
-                { label: "Shop", to: "/shop" },
-                { label: "Categories", to: "/categories" },
-                { label: "Design", to: "/design" },
-                { label: "About", to: "/about" },
-                { label: "Contact", to: "/contact" },
+                { label: "Trang chủ", to: "/" },
+                { label: "Cửa hàng", to: "/shop" },
+                { label: "Danh mục", to: "/categories" },
+                { label: "Thiết kế", to: "/design" },
+                { label: "Về chúng tôi", to: "/about" },
+                { label: "Liên hệ", to: "/contact" },
               ].map((item) => (
                 <NavigationMenuItem key={item.to}>
                   <Link
                     to={item.to}
-                    className="px-3 py-2 text-white rounded-md hover:font-semibold hover:bg-gray-700 hover:text-white hover:scale-105 transition-transform duration-300"
+                    className="px-4 py-2 rounded-lg transition duration-300 hover:bg-sky-500/50 hover:scale-105 font-medium"
                   >
                     {item.label}
                   </Link>
@@ -40,30 +41,36 @@ const MainLayout = () => {
               ))}
             </NavigationMenuList>
           </NavigationMenu>
-          
-          <div className="flex items-center gap-4">
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button variant="outline" asChild>
-              <Link to="/login" className="text-white">Login</Link>
+            <Button variant="outline" asChild className="border-white text-white hover:bg-sky-500 hover:text-white hover:border-sky-500">
+              <Link to="/login">Đăng nhập</Link>
             </Button>
-            <Button asChild>
-              <Link to="/register" className="text-white">Register</Link>
+            <Button asChild className="bg-white text-sky-600 hover:bg-sky-100 hover:text-sky-700">
+              <Link to="/register">Đăng ký</Link>
             </Button>
           </div>
         </div>
       </header>
-      
+
       {/* Main content */}
-      <main className="flex-1 container mx-auto py-8 px-4">
+      <main className="flex-1 container mx-auto py-10 px-4">
         <Outlet />
       </main>
-      
+
       {/* Footer */}
-      <footer className="border-t py-6">
+      <footer className="border-t border-sky-200 py-6 backdrop-blur-sm bg-sky-600/80 text-white">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm">
             © {new Date().getFullYear()} Pulsera. All rights reserved.
           </p>
+          <div className="flex justify-center gap-4 mt-2">
+            <Link to="/privacy" className="text-sm hover:underline">Privacy Policy</Link>
+            <Link to="/terms" className="text-sm hover:underline">Terms of Service</Link>
+            <Link to="/faq" className="text-sm hover:underline">FAQ</Link>
+          </div>
         </div>
       </footer>
     </div>

@@ -9,8 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter } from "lucide-react";
 import { Package } from "lucide-react";
+import Pagination from "@/components/pagination";
+
 
 interface Bracelet {
   id: number;
@@ -75,32 +77,6 @@ const BraceletManagement = () => {
     }
   };
 
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <Button
-          key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          size="sm"
-          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-amber-600 text-white" : "text-amber-800"}`}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </Button>
-      );
-    }
-
-    return pages;
-  };
 
   const uniqueMaterials = Array.from(new Set(mockBracelets.map(b => b.material)));
 
@@ -108,16 +84,16 @@ const BraceletManagement = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-amber-900">Quản lý Vòng tay</h2>
-          <p className="text-sm text-amber-700">Danh sách sản phẩm trong workshop</p>
+          <h2 className="text-2xl font-bold text-sky-900">Quản lý Vòng tay</h2>
+          <p className="text-sm text-sky-700">Danh sách sản phẩm trong workshop</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-500" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-amber-50 border-amber-200 focus-visible:ring-amber-300"
+              className="pl-9 w-full sm:w-64 bg-sky-50 border-sky-200 focus-visible:ring-sky-300"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -127,13 +103,13 @@ const BraceletManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-amber-700 border-amber-300 hover:bg-amber-100"
+            className="text-sky-700 border-sky-300 hover:bg-sky-100"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-amber-600 hover:bg-amber-700 text-amber-50">
+          <Button className="bg-sky-600 hover:bg-sky-700 text-sky-50">
             <Plus className="mr-2 h-4 w-4" />
             Thêm vòng tay
           </Button>
@@ -141,12 +117,12 @@ const BraceletManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 shadow-sm">
+        <div className="bg-sky-50 p-4 rounded-lg border border-sky-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-amber-800 mb-1">Lọc theo giá</label>
+              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo giá</label>
               <select
-                className="w-full p-2 border border-amber-200 rounded-md bg-white text-amber-900 focus:ring-amber-300"
+                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -160,9 +136,9 @@ const BraceletManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-amber-800 mb-1">Lọc theo chất liệu</label>
+              <label className="block text-sm font-medium text-sky-800 mb-1">Lọc theo chất liệu</label>
               <select
-                className="w-full p-2 border border-amber-200 rounded-md bg-white text-amber-900 focus:ring-amber-300"
+                className="w-full p-2 border border-sky-200 rounded-md bg-white text-sky-900 focus:ring-sky-300"
                 value={materialFilter}
                 onChange={(e) => {
                   setMaterialFilter(e.target.value);
@@ -179,23 +155,23 @@ const BraceletManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-amber-200 bg-white shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-amber-50">
+      <div className="rounded-lg border border-sky-200 bg-white shadow-sm overflow-x-auto">
+        <Table className="min-w-[700px]">
+          <TableHeader className="bg-sky-50">
             <TableRow>
-              <TableHead className="text-amber-900 w-20">Hình ảnh</TableHead>
-              <TableHead className="text-amber-900">Tên sản phẩm</TableHead>
-              <TableHead className="text-amber-900">Chất liệu</TableHead>
-              <TableHead className="text-amber-900">Giá (VND)</TableHead>
-              <TableHead className="text-amber-900">Tồn kho</TableHead>
-              <TableHead className="text-amber-900 text-right">Thao tác</TableHead>
+              <TableHead className="text-sky-900 w-20">Hình ảnh</TableHead>
+              <TableHead className="text-sky-900">Tên sản phẩm</TableHead>
+              <TableHead className="text-sky-900">Chất liệu</TableHead>
+              <TableHead className="text-sky-900">Giá (VND)</TableHead>
+              <TableHead className="text-sky-900">Tồn kho</TableHead>
+              <TableHead className="text-sky-900 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentBracelets.map((bracelet) => (
-              <TableRow key={bracelet.id} className="hover:bg-amber-50/50">
+              <TableRow key={bracelet.id} className="hover:bg-sky-50/50">
                 <TableCell>
-                  <div className="w-16 h-16 rounded-md overflow-hidden border border-amber-200">
+                  <div className="w-16 h-16 rounded-md overflow-hidden border border-sky-200">
                     <img 
                       src={bracelet.image} 
                       alt={bracelet.name}
@@ -203,25 +179,25 @@ const BraceletManagement = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-amber-900">
+                <TableCell className="font-medium text-sky-900 whitespace-nowrap">
                   <div className="font-semibold">{bracelet.name}</div>
-                  <div className="text-xs text-amber-500">ID: {bracelet.id}</div>
+                  <div className="text-xs text-sky-500">ID: {bracelet.id}</div>
                 </TableCell>
-                <TableCell>{bracelet.material}</TableCell>
-                <TableCell className="font-medium">{bracelet.price.toLocaleString()}₫</TableCell>
+                <TableCell className="whitespace-nowrap">{bracelet.material}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap">{bracelet.price.toLocaleString()}₫</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     bracelet.stock > 10 
                       ? "bg-green-100 text-green-800" 
                       : bracelet.stock > 5 
-                        ? "bg-amber-100 text-amber-800" 
+                        ? "bg-sky-100 text-sky-800" 
                         : "bg-red-100 text-red-800"
                   }`}>
                     {bracelet.stock} {bracelet.stock > 5 ? "cái" : "sắp hết"}
                   </span>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-amber-700 border-amber-300 hover:bg-amber-100">
+                  <Button variant="outline" size="sm" className="text-sky-700 border-sky-300 hover:bg-sky-100">
                     <Pen className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
@@ -235,10 +211,10 @@ const BraceletManagement = () => {
       </div>
 
       {filteredBracelets.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-amber-200 rounded-lg bg-amber-50">
-          <Package className="h-12 w-12 text-amber-400 mb-4" />
-          <h3 className="text-lg font-medium text-amber-900">Không tìm thấy vòng tay</h3>
-          <p className="text-sm text-amber-700 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-sky-200 rounded-lg bg-sky-50">
+          <Package className="h-12 w-12 text-sky-400 mb-4" />
+          <h3 className="text-lg font-medium text-sky-900">Không tìm thấy vòng tay</h3>
+          <p className="text-sm text-sky-700 mt-1">
             Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -246,34 +222,14 @@ const BraceletManagement = () => {
 
       {filteredBracelets.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-amber-700">
+          <div className="text-sm text-sky-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của {filteredBracelets.length} sản phẩm
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Trước
-            </Button>
-            
-            {renderPageNumbers()}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              className="text-amber-800 border-amber-300 hover:bg-amber-100"
-            >
-              Sau
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>
