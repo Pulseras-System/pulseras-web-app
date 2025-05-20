@@ -148,7 +148,7 @@ const HomePage = () => {
       </section>
 
       {/* About Section */}
-      <section className="px-6 py-16 bg-pink-900 text-white">
+      <section className="px-6 py-16 bg-pink-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6 text-pink-100">Tinh Hoa Nghệ Thuật</h2>
           <p className="text-pink-200 text-lg leading-relaxed">

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
 import StaffLayout from '@/layouts/StaffLayout';
+import AdminLayout from '@/layouts/AdminLayout';
 
 // Pages
 import HomePage from '@/pages/HomePage';
@@ -21,6 +22,14 @@ import MaterialManagement from '@/pages/StaffPages/MaterialManagementPage';
 import OrderManagement from '@/pages/StaffPages/OrderManagementPage';
 import CustomerManagement from '@/pages/StaffPages/CustomerManagementPage';
 import VoucherManagement from '@/pages/StaffPages/VoucherManagementPage';
+
+//Admin Pages
+import Dashboard from '@/pages/AdminPages/DashboardPage';
+import BraceletManagementAdmin from '@/pages/AdminPages/BraceletManagementPage';
+import MaterialManagementAdmin from '@/pages/AdminPages/MaterialManagementPage';
+import OrderManagementAdmin from '@/pages/AdminPages/OrderManagementPage';
+import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
+import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
 
 // Define routes
 const routes = [
@@ -92,6 +101,40 @@ const routes = [
       {
         path: 'vouchers',
         element: <VoucherManagement />,
+      },
+    ],
+  },  
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      {
+        path: '',
+        element: <Dashboard />,
+      },
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: 'bracelets',
+        element: <BraceletManagementAdmin />,
+      },
+      {
+        path: 'materials',
+        element: <MaterialManagementAdmin />,
+      },
+      {
+        path: 'orders',
+        element: <OrderManagementAdmin />,
+      },
+      {
+        path: 'users',
+        element: <UserManagementAdmin />,
+      },
+      {
+        path: 'vouchers',
+        element: <VoucherManagementAdmin />,
       },
     ],
   },  

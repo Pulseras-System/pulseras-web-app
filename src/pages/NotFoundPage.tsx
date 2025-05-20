@@ -16,10 +16,10 @@ const NotFound404: React.FC = () => {
           Trang bạn đang tìm kiếm không tồn tại. Có thể đường dẫn đã sai hoặc trang đã bị xóa.
         </p>
         <Button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md"
         >
-          Quay về Trang chủ
+          Quay về trang trước
         </Button>
       </Card>
     </div>

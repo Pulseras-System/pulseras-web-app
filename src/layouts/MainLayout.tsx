@@ -12,7 +12,7 @@ const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-pink-50 to-blue-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-pink-200 shadow-sm bg-pink-600/90 text-white">
+      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-pink-200 shadow-sm bg-pink-500/90 text-white">
         <div className="container flex items-center justify-between h-20 px-4 mx-auto">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">

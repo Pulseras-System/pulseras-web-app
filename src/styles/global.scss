@@ -1,0 +1,34 @@
+@use "./variables.scss";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.main-admin{
+    font-family: "Inter", sans-serif;
+    color: variables.$main-color;
+    background-color: variables.$main-bg;
+}
+
+.container-admin{
+    display: flex;
+}
+
+.menuContainer-admin{
+    width: 250px;
+    padding: 5px 20px;
+    border-right: 2px solid variables.$soft-bg;
+    height: 84.4vh;
+}
+
+.contentContainer-admin{
+    padding: 5px 20px;
+    width: 100%;
+}

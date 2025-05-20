@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, ChartArea} from "lucide-react";
 import Logo from "../assets/images/logo-nobg.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -24,14 +24,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Vòng tay", path: "/staff/bracelets", icon: Gem },
-  { label: "Nguyên liệu", path: "/staff/materials", icon: Package },
-  { label: "Đơn hàng", path: "/staff/orders", icon: Box },
-  { label: "Khách hàng", path: "/staff/customers", icon: Users },
-  { label: "Ưu đãi", path: "/staff/vouchers", icon: Ticket },
+  { label: "Dashboard", path: "/admin/dashboard", icon: ChartArea },
+  { label: "Vòng tay", path: "/admin/bracelets", icon: Gem },
+  { label: "Nguyên liệu", path: "/admin/materials", icon: Package },
+  { label: "Đơn hàng", path: "/admin/orders", icon: Box },
+  { label: "Người dùng", path: "/admin/users", icon: Users },
+  { label: "Ưu đãi", path: "/admin/vouchers", icon: Ticket },
 ];
 
-const StaffLayout = () => {
+const AdminLayout = () => {
   const location = useLocation();
 
   return (
@@ -154,8 +155,8 @@ const StaffLayout = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
-                  <AvatarFallback>NV</AvatarFallback>
+                  <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Admin avatar" />
+                  <AvatarFallback>Admin</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -175,7 +176,7 @@ const StaffLayout = () => {
       <div className="flex-1 flex flex-col lg:ml-64 mt-16 lg:mt-0">
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/80 backdrop-blur-md border-b border-pink-200 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-pink-900 tracking-tight">Bảng Quản lý</h1>
+          <h1 className="text-xl font-bold text-pink-900 tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -184,7 +185,7 @@ const StaffLayout = () => {
                     <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
                     <AvatarFallback>NV</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-pink-900 font-medium">Nhân viên</span>
+                  <span className="text-sm text-pink-900 font-medium">Admin</span>
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
                     className="h-4 w-4 text-pink-600" 
@@ -219,4 +220,4 @@ const StaffLayout = () => {
   );
 };
 
-export default StaffLayout;
+export default AdminLayout;
