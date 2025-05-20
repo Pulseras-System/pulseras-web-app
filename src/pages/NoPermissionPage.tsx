@@ -16,10 +16,10 @@ const NoPermission: React.FC = () => {
           Bạn không có quyền truy cập vào trang này. Vui lòng liên hệ với quản trị viên nếu bạn nghĩ đây là lỗi.
         </p>
         <Button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md"
         >
-          Quay về Trang chủ
+          Quay về trước
         </Button>
       </Card>
     </div>
