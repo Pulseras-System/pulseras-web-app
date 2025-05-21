@@ -61,7 +61,7 @@ const AboutUs: React.FC = () => {
       </div>
 
       {/* Core Values Card */}
-      <Card className="p-8 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="p-8 rounded-xl bg-gradient-to-r from-purple-50 to-violet-50">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-2 border-purple-200">Giá Trị Cốt Lõi Của Pulseras</h2>
         <ul className="grid sm:grid-cols-2 gap-6">
           <li className="flex items-start space-x-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">

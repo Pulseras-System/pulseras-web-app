@@ -83,7 +83,7 @@ const Contact: React.FC = () => {
           </Card>
 
           {/* Social Media */}
-          <Card className="p-8 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="p-8 rounded-xl bg-gradient-to-br from-purple-50 to-violet-50 shadow-sm hover:shadow-md transition-shadow">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-purple-200">Theo Dõi Chúng Tôi</h2>
             <p className="text-gray-700 mb-6">
               Kết nối với chúng tôi trên mạng xã hội để cập nhật những sản phẩm mới nhất và ưu đãi đặc biệt:
@@ -93,10 +93,10 @@ const Contact: React.FC = () => {
                 <FaFacebook className="text-2xl text-blue-600" />
               </a>
               <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
-                <FaInstagram className="text-2xl text-pink-600" />
+                <FaInstagram className="text-2xl text-violet-600" />
               </a>
               <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
-                <FaTwitter className="text-2xl text-sky-500" />
+                <FaTwitter className="text-2xl text-violet-500" />
               </a>
             </div>
           </Card>

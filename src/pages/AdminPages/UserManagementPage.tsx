@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 
-interface Customer {
+interface User {
   id: number;
   name: string;
   email: string;
@@ -42,7 +42,7 @@ interface Customer {
   avatar: string;
 }
 
-const emptyCustomer: Customer = {
+const emptyUser: User = {
   id: -1,
   name: "",
   email: "",
@@ -55,7 +55,7 @@ const emptyCustomer: Customer = {
   avatar: "/api/placeholder/100/100?text=?"
 };
 
-const mockCustomers: Customer[] = [
+const mockUsers: User[] = [
   {
     id: 1,
     name: "Nguyễn Văn A",
@@ -180,40 +180,40 @@ const mockCustomers: Customer[] = [
 
 const itemsPerPage = 5;
 
-const CustomerManagementPage = () => {
-  const [customers, setCustomers] = useState(mockCustomers);
+const UserManagementPage = () => {
+  const [Users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [spendingFilter, setSpendingFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const filteredCustomers = customers.filter(customer => {
+  const filteredUsers = Users.filter(User => {
     const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+      User.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      User.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      User.phone.includes(searchTerm) ||
+      User.address.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = 
       statusFilter === "all" || 
-      customer.status === statusFilter;
+      User.status === statusFilter;
     
     const matchesSpending =
       spendingFilter === "all" ||
-      (spendingFilter === "under1m" && customer.totalSpent < 1000000) ||
-      (spendingFilter === "1mto5m" && customer.totalSpent >= 1000000 && customer.totalSpent <= 5000000) ||
-      (spendingFilter === "over5m" && customer.totalSpent > 5000000);
+      (spendingFilter === "under1m" && User.totalSpent < 1000000) ||
+      (spendingFilter === "1mto5m" && User.totalSpent >= 1000000 && User.totalSpent <= 5000000) ||
+      (spendingFilter === "over5m" && User.totalSpent > 5000000);
     
     return matchesSearch && matchesStatus && matchesSpending;
   });
 
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -230,29 +230,29 @@ const CustomerManagementPage = () => {
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
-  const handleAddCustomer = () => {
-    setSelectedCustomer(emptyCustomer);
+  const handleAddUser = () => {
+    setSelectedUser(emptyUser);
     setModalOpen(true);
   };
 
-  const handleEditCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const handleEditUser = (User: User) => {
+    setSelectedUser(User);
     setModalOpen(true);
   };
 
-  const handleSaveCustomer = (customer: Customer) => {
-    if (customer.id === -1) {
-      const newCustomer = {
-        ...customer,
-        id: Math.max(...customers.map(c => c.id)) + 1,
-        avatar: `/api/placeholder/100/100?text=${customer.name.split(" ").map(s => s[0]).join("")}`
+  const handleSaveUser = (User: User) => {
+    if (User.id === -1) {
+      const newUser = {
+        ...User,
+        id: Math.max(...Users.map(c => c.id)) + 1,
+        avatar: `/api/placeholder/100/100?text=${User.name.split(" ").map(s => s[0]).join("")}`
       };
-      setCustomers([...customers, newCustomer]);
+      setUsers([...Users, newUser]);
     } else {
-      setCustomers(customers.map(c => (c.id === customer.id ? customer : c)));
+      setUsers(Users.map(c => (c.id === User.id ? User : c)));
     }
     setModalOpen(false);
-    setSelectedCustomer(null);
+    setSelectedUser(null);
   };
 
 
@@ -260,16 +260,16 @@ const CustomerManagementPage = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Quản lý Khách hàng</h2>
-          <p className="text-sm text-slate-600">Danh sách khách hàng của cửa hàng</p>
+          <h2 className="text-2xl font-bold text-indigo-800">Quản lý Khách hàng</h2>
+          <p className="text-sm text-indigo-600">Danh sách khách hàng của cửa hàng</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
             <Input
               placeholder="Tìm kiếm khách hàng..."
-              className="pl-9 w-full sm:w-64 bg-slate-100 border-slate-200 focus-visible:ring-slate-300 text-slate-900 placeholder-slate-400"
+              className="pl-9 w-full sm:w-64 bg-indigo-100 border-indigo-200 focus-visible:ring-indigo-300 text-indigo-900 placeholder-indigo-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -279,13 +279,13 @@ const CustomerManagementPage = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+            className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-slate-500 hover:bg-slate-600 text-white shadow-sm hover:shadow-md transition-all" onClick={handleAddCustomer}>
+          <Button className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all" onClick={handleAddUser}>
             <Plus className="mr-2 h-4 w-4" />
             Thêm khách hàng
           </Button>
@@ -293,12 +293,12 @@ const CustomerManagementPage = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-slate-100 p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-800 mb-1">Lọc theo trạng thái</label>
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Lọc theo trạng thái</label>
               <select
-                className="w-full p-2 border border-slate-200 rounded-md bg-white text-slate-900 focus:ring-slate-300 focus:border-slate-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -311,9 +311,9 @@ const CustomerManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Lọc theo chi tiêu</label>
+              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo chi tiêu</label>
               <select
-                className="w-full p-2 border border-slate-200 rounded-md bg-white text-slate-900 focus:ring-slate-300 focus:border-slate-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={spendingFilter}
                 onChange={(e) => {
                   setSpendingFilter(e.target.value);
@@ -330,75 +330,75 @@ const CustomerManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-indigo-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50">
+          <TableHeader className="bg-indigo-50">
             <TableRow>
-              <TableHead className="text-slate-800 w-16">Avatar</TableHead>
-              <TableHead className="text-slate-800">Thông tin khách hàng</TableHead>
-              <TableHead className="text-slate-800">Liên hệ</TableHead>
-              <TableHead className="text-slate-800">Tổng đơn hàng</TableHead>
-              <TableHead className="text-slate-800">Tổng chi tiêu</TableHead>
-              <TableHead className="text-slate-800">Ngày tham gia</TableHead>
-              <TableHead className="text-slate-800">Trạng thái</TableHead>
-              <TableHead className="text-slate-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-indigo-800 w-16">Avatar</TableHead>
+              <TableHead className="text-indigo-800">Thông tin khách hàng</TableHead>
+              <TableHead className="text-indigo-800">Liên hệ</TableHead>
+              <TableHead className="text-indigo-800">Tổng đơn hàng</TableHead>
+              <TableHead className="text-indigo-800">Tổng chi tiêu</TableHead>
+              <TableHead className="text-indigo-800">Ngày tham gia</TableHead>
+              <TableHead className="text-indigo-800">Trạng thái</TableHead>
+              <TableHead className="text-indigo-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentCustomers.map((customer) => (
-              <TableRow key={customer.id} className="hover:bg-slate-50/50 border-slate-100">
+            {currentUsers.map((User) => (
+              <TableRow key={User.id} className="hover:bg-indigo-50/50 border-indigo-100">
                 <TableCell>
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 bg-slate-50">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-indigo-200 bg-indigo-50">
                     <img 
-                      src={customer.avatar}
-                      alt={customer.name}
+                      src={User.avatar}
+                      alt={User.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-slate-900 whitespace-nowrap">
-                  <div className="font-semibold">{customer.name}</div>
-                  <div className="text-xs text-slate-500">ID: {customer.id}</div>
+                <TableCell className="font-medium text-indigo-900 whitespace-nowrap">
+                  <div className="font-semibold">{User.name}</div>
+                  <div className="text-xs text-indigo-500">ID: {User.id}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center text-sm mb-1">
-                    <Mail className="h-3 w-3 mr-1 text-slate-500" />
-                    {customer.email}
+                    <Mail className="h-3 w-3 mr-1 text-indigo-500" />
+                    {User.email}
                   </div>
                   <div className="flex items-center text-sm">
-                    <Phone className="h-3 w-3 mr-1 text-slate-500" />
-                    {customer.phone}
+                    <Phone className="h-3 w-3 mr-1 text-indigo-500" />
+                    {User.phone}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <ShoppingBag className="h-4 w-4 mr-1 text-slate-500" />
-                    {customer.totalOrders}
+                    <ShoppingBag className="h-4 w-4 mr-1 text-indigo-500" />
+                    {User.totalOrders}
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
-                    <CreditCard className="h-4 w-4 mr-1 text-slate-500" />
-                    {formatCurrency(customer.totalSpent)}
+                    <CreditCard className="h-4 w-4 mr-1 text-indigo-500" />
+                    {formatCurrency(User.totalSpent)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1 text-slate-500" />
-                    {formatDate(customer.joinDate)}
+                    <Calendar className="h-4 w-4 mr-1 text-indigo-500" />
+                    {formatDate(User.joinDate)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Badge className={`${
-                    customer.status === "active" 
+                    User.status === "active" 
                       ? "bg-green-100 text-green-800 hover:bg-green-100" 
                       : "bg-red-100 text-red-800 hover:bg-red-100"
                   }`}>
-                    {customer.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
+                    {User.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-slate-700 border-slate-300 hover:bg-slate-100" onClick={() => handleEditCustomer(customer)}>
+                  <Button variant="outline" size="sm" className="text-indigo-700 border-indigo-300 hover:bg-indigo-100" onClick={() => handleEditUser(User)}>
                     <Pen className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
@@ -411,20 +411,20 @@ const CustomerManagementPage = () => {
         </Table>
       </div>
 
-      {filteredCustomers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-slate-200 rounded-lg bg-slate-50">
-          <User className="h-12 w-12 text-slate-400 mb-4" />
-          <h3 className="text-lg font-medium text-slate-900">Không tìm thấy khách hàng</h3>
-          <p className="text-sm text-slate-700 mt-1">
+      {filteredUsers.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-indigo-200 rounded-lg bg-indigo-50">
+          <User className="h-12 w-12 text-indigo-400 mb-4" />
+          <h3 className="text-lg font-medium text-indigo-900">Không tìm thấy khách hàng</h3>
+          <p className="text-sm text-indigo-700 mt-1">
             Không có khách hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
       )}
 
-      {filteredCustomers.length > 0 && (
+      {filteredUsers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-slate-700">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredCustomers.length)} của {filteredCustomers.length} khách hàng
+          <div className="text-sm text-indigo-700">
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} của {filteredUsers.length} khách hàng
           </div>
           <Pagination
             currentPage={currentPage}
@@ -434,12 +434,12 @@ const CustomerManagementPage = () => {
         </div>
       )}
 
-      {modalOpen && selectedCustomer && (
+      {modalOpen && selectedUser && (
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[600px] bg-white">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">
-              {selectedCustomer.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
+            <DialogTitle className="text-indigo-900">
+              {selectedUser.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
             </DialogTitle>
           </DialogHeader>
 
@@ -447,24 +447,24 @@ const CustomerManagementPage = () => {
             className="grid gap-4 py-4"
             onSubmit={(e) => {
               e.preventDefault();
-              handleSaveCustomer(selectedCustomer);
+              handleSaveUser(selectedUser);
             }}
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-800">Tên</Label>
+                <Label className="text-indigo-800">Tên</Label>
                 <Input
-                  value={selectedCustomer.name}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, name: e.target.value })}
+                  value={selectedUser.name}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label className="text-slate-800">Email</Label>
+                <Label className="text-indigo-800">Email</Label>
                 <Input
                   type="email"
-                  value={selectedCustomer.email}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, email: e.target.value })}
+                  value={selectedUser.email}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                   required
                 />
               </div>
@@ -472,19 +472,19 @@ const CustomerManagementPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-800">Số điện thoại</Label>
+                <Label className="text-indigo-800">Số điện thoại</Label>
                 <Input
-                  value={selectedCustomer.phone}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, phone: e.target.value })}
+                  value={selectedUser.phone}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <Label className="text-slate-800">Trạng thái</Label>
+                <Label className="text-indigo-800">Trạng thái</Label>
                 <select
-                  className="w-full p-2 border border-slate-200 rounded-md bg-white text-slate-900"
-                  value={selectedCustomer.status}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, status: e.target.value as "active" | "inactive" })}
+                  className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900"
+                  value={selectedUser.status}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, status: e.target.value as "active" | "inactive" })}
                 >
                   <option value="active">Đang hoạt động</option>
                   <option value="inactive">Không hoạt động</option>
@@ -493,10 +493,10 @@ const CustomerManagementPage = () => {
             </div>
 
             <div>
-              <Label className="text-slate-800">Địa chỉ</Label>
+              <Label className="text-indigo-800">Địa chỉ</Label>
               <Textarea
-                value={selectedCustomer.address}
-                onChange={(e) => setSelectedCustomer({ ...selectedCustomer, address: e.target.value })}
+                value={selectedUser.address}
+                onChange={(e) => setSelectedUser({ ...selectedUser, address: e.target.value })}
               />
             </div>
 
@@ -504,7 +504,7 @@ const CustomerManagementPage = () => {
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                 Hủy
               </Button>
-              <Button type="submit" className="bg-slate-600 hover:bg-slate-700 text-white">
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
                 Lưu
               </Button>
             </div>
@@ -517,4 +517,4 @@ const CustomerManagementPage = () => {
   );
 };
 
-export default CustomerManagementPage;
+export default UserManagementPage;

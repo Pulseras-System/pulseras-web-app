@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, ChartArea} from "lucide-react";
 import Logo from "../assets/images/logo-nobg.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -24,20 +24,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Vòng tay", path: "/staff/bracelets", icon: Gem },
-  { label: "Nguyên liệu", path: "/staff/materials", icon: Package },
-  { label: "Đơn hàng", path: "/staff/orders", icon: Box },
-  { label: "Khách hàng", path: "/staff/customers", icon: Users },
-  { label: "Ưu đãi", path: "/staff/vouchers", icon: Ticket },
+  { label: "Dashboard", path: "/admin/dashboard", icon: ChartArea },
+  { label: "Vòng tay", path: "/admin/bracelets", icon: Gem },
+  { label: "Nguyên liệu", path: "/admin/materials", icon: Package },
+  { label: "Đơn hàng", path: "/admin/orders", icon: Box },
+  { label: "Người dùng", path: "/admin/users", icon: Users },
+  { label: "Ưu đãi", path: "/admin/vouchers", icon: Ticket },
 ];
 
-const StaffLayout = () => {
+const AdminLayout = () => {
   const location = useLocation();
 
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 bg-gradient-to-b from-slate-600 to-slate-500 text-slate-50 flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
+      <aside className="hidden lg:block w-64 bg-gradient-to-b from-indigo-600 to-indigo-500 text-indigo-50 flex flex-col p-6 space-y-6 fixed h-full border-r border-indigo-900/10 shadow-xl">
         <Link to="/staff" className="flex items-center gap-3 mb-10 group">
           <img 
             src={Logo} 
@@ -54,21 +55,21 @@ const StaffLayout = () => {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                 location.pathname.startsWith(path)
-                  ? "bg-slate-600 shadow-inner font-semibold text-white"
-                  : "hover:bg-slate-600/40 text-slate-100"
+                  ? "bg-indigo-600 shadow-inner font-semibold text-white"
+                  : "hover:bg-indigo-600/40 text-indigo-100"
               )}
             >
               <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
               <span>{label}</span>
               {location.pathname.startsWith(path) && (
-                <div className="ml-auto w-2 h-2 rounded-full bg-slate-100 animate-ping" />
+                <div className="ml-auto w-2 h-2 rounded-full bg-indigo-100 animate-ping" />
               )}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-slate-700/50">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-600/40 cursor-pointer transition">
+        <div className="mt-auto pt-4 border-t border-indigo-700/50">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-indigo-600/40 cursor-pointer transition">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               className="h-5 w-5" 
@@ -85,14 +86,14 @@ const StaffLayout = () => {
 
       {/* Mobile Responsive Navbar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50">
-        <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm flex items-center justify-between p-4">
+        <div className="bg-white/80 backdrop-blur-md border-b border-indigo-200 shadow-sm flex items-center justify-between p-4">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-slate-800 to-slate-700 text-slate-50">
+            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-indigo-800 to-indigo-700 text-indigo-50">
               <div className="flex flex-col h-full">
                 <Link to="/staff" className="flex items-center gap-3 mb-6 group">
                   <img 
@@ -110,22 +111,22 @@ const StaffLayout = () => {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                           location.pathname.startsWith(path)
-                            ? "bg-slate-600 shadow-inner font-semibold text-white"
-                            : "hover:bg-slate-600/40 text-slate-100"
+                            ? "bg-indigo-600 shadow-inner font-semibold text-white"
+                            : "hover:bg-indigo-600/40 text-indigo-100"
                         )}
                       >
                         <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         <span>{label}</span>
                         {location.pathname.startsWith(path) && (
-                          <div className="ml-auto w-2 h-2 rounded-full bg-slate-100 animate-ping" />
+                          <div className="ml-auto w-2 h-2 rounded-full bg-indigo-100 animate-ping" />
                         )}
                       </Link>
                     </SheetClose>
                   ))}
                 </nav>
 
-                <div className="pt-4 border-t border-slate-700/50">
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-600/40 cursor-pointer transition">
+                <div className="pt-4 border-t border-indigo-700/50">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-indigo-600/40 cursor-pointer transition">
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
                       className="h-5 w-5" 
@@ -154,8 +155,8 @@ const StaffLayout = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
-                  <AvatarFallback>NV</AvatarFallback>
+                  <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Admin avatar" />
+                  <AvatarFallback>Admin</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -174,20 +175,20 @@ const StaffLayout = () => {
       {/* Content layout */}
       <div className="flex-1 flex flex-col lg:ml-64 mt-16 lg:mt-0">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Bảng Quản lý</h1>
+        <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/80 backdrop-blur-md border-b border-indigo-200 shadow-sm z-10">
+          <h1 className="text-xl font-bold text-indigo-900 tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1 border border-slate-200 shadow-inner cursor-pointer">
+                <div className="flex items-center gap-2 bg-indigo-100 rounded-full px-3 py-1 border border-indigo-200 shadow-inner cursor-pointer">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
                     <AvatarFallback>NV</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm text-slate-900 font-medium">Nhân viên</span>
+                  <span className="text-sm text-indigo-900 font-medium">Admin</span>
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    className="h-4 w-4 text-slate-600" 
+                    className="h-4 w-4 text-indigo-600" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
@@ -210,7 +211,7 @@ const StaffLayout = () => {
 
         {/* Main Page Content */}
         <main className="flex-1 bg-[#fffaf3] p-8 overflow-y-auto">
-          <div className="max-w mx-auto bg-white rounded-xl shadow-md p-6 border border-slate-100">
+          <div className="max-w mx-auto bg-white rounded-xl shadow-md p-6 border border-indigo-100">
             <Outlet />
           </div>
         </main>
@@ -219,4 +220,4 @@ const StaffLayout = () => {
   );
 };
 
-export default StaffLayout;
+export default AdminLayout;
