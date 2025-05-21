@@ -260,16 +260,16 @@ const UserManagementPage = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-pink-800">Quản lý Khách hàng</h2>
-          <p className="text-sm text-pink-600">Danh sách khách hàng của cửa hàng</p>
+          <h2 className="text-2xl font-bold text-indigo-800">Quản lý Khách hàng</h2>
+          <p className="text-sm text-indigo-600">Danh sách khách hàng của cửa hàng</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
             <Input
               placeholder="Tìm kiếm khách hàng..."
-              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-200 focus-visible:ring-pink-300 text-pink-900 placeholder-pink-400"
+              className="pl-9 w-full sm:w-64 bg-indigo-100 border-indigo-200 focus-visible:ring-indigo-300 text-indigo-900 placeholder-indigo-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -279,13 +279,13 @@ const UserManagementPage = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+            className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button className="bg-pink-500 hover:bg-pink-600 text-white shadow-sm hover:shadow-md transition-all" onClick={handleAddUser}>
+          <Button className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all" onClick={handleAddUser}>
             <Plus className="mr-2 h-4 w-4" />
             Thêm khách hàng
           </Button>
@@ -293,12 +293,12 @@ const UserManagementPage = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-pink-100 p-4 rounded-lg border border-pink-200 shadow-sm">
+        <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-pink-800 mb-1">Lọc theo trạng thái</label>
+              <label className="block text-sm font-medium text-indigo-800 mb-1">Lọc theo trạng thái</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -311,9 +311,9 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo chi tiêu</label>
+              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo chi tiêu</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={spendingFilter}
                 onChange={(e) => {
                   setSpendingFilter(e.target.value);
@@ -330,25 +330,25 @@ const UserManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-pink-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-indigo-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-pink-50">
+          <TableHeader className="bg-indigo-50">
             <TableRow>
-              <TableHead className="text-pink-800 w-16">Avatar</TableHead>
-              <TableHead className="text-pink-800">Thông tin khách hàng</TableHead>
-              <TableHead className="text-pink-800">Liên hệ</TableHead>
-              <TableHead className="text-pink-800">Tổng đơn hàng</TableHead>
-              <TableHead className="text-pink-800">Tổng chi tiêu</TableHead>
-              <TableHead className="text-pink-800">Ngày tham gia</TableHead>
-              <TableHead className="text-pink-800">Trạng thái</TableHead>
-              <TableHead className="text-pink-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-indigo-800 w-16">Avatar</TableHead>
+              <TableHead className="text-indigo-800">Thông tin khách hàng</TableHead>
+              <TableHead className="text-indigo-800">Liên hệ</TableHead>
+              <TableHead className="text-indigo-800">Tổng đơn hàng</TableHead>
+              <TableHead className="text-indigo-800">Tổng chi tiêu</TableHead>
+              <TableHead className="text-indigo-800">Ngày tham gia</TableHead>
+              <TableHead className="text-indigo-800">Trạng thái</TableHead>
+              <TableHead className="text-indigo-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentUsers.map((User) => (
-              <TableRow key={User.id} className="hover:bg-pink-50/50 border-pink-100">
+              <TableRow key={User.id} className="hover:bg-indigo-50/50 border-indigo-100">
                 <TableCell>
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-pink-200 bg-pink-50">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-indigo-200 bg-indigo-50">
                     <img 
                       src={User.avatar}
                       alt={User.name}
@@ -356,35 +356,35 @@ const UserManagementPage = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-pink-900 whitespace-nowrap">
+                <TableCell className="font-medium text-indigo-900 whitespace-nowrap">
                   <div className="font-semibold">{User.name}</div>
-                  <div className="text-xs text-pink-500">ID: {User.id}</div>
+                  <div className="text-xs text-indigo-500">ID: {User.id}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center text-sm mb-1">
-                    <Mail className="h-3 w-3 mr-1 text-pink-500" />
+                    <Mail className="h-3 w-3 mr-1 text-indigo-500" />
                     {User.email}
                   </div>
                   <div className="flex items-center text-sm">
-                    <Phone className="h-3 w-3 mr-1 text-pink-500" />
+                    <Phone className="h-3 w-3 mr-1 text-indigo-500" />
                     {User.phone}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <ShoppingBag className="h-4 w-4 mr-1 text-pink-500" />
+                    <ShoppingBag className="h-4 w-4 mr-1 text-indigo-500" />
                     {User.totalOrders}
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
-                    <CreditCard className="h-4 w-4 mr-1 text-pink-500" />
+                    <CreditCard className="h-4 w-4 mr-1 text-indigo-500" />
                     {formatCurrency(User.totalSpent)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1 text-pink-500" />
+                    <Calendar className="h-4 w-4 mr-1 text-indigo-500" />
                     {formatDate(User.joinDate)}
                   </div>
                 </TableCell>
@@ -398,7 +398,7 @@ const UserManagementPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-pink-700 border-pink-300 hover:bg-pink-100" onClick={() => handleEditUser(User)}>
+                  <Button variant="outline" size="sm" className="text-indigo-700 border-indigo-300 hover:bg-indigo-100" onClick={() => handleEditUser(User)}>
                     <Pen className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-700 border-red-200 hover:bg-red-50">
@@ -412,10 +412,10 @@ const UserManagementPage = () => {
       </div>
 
       {filteredUsers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-200 rounded-lg bg-pink-50">
-          <User className="h-12 w-12 text-pink-400 mb-4" />
-          <h3 className="text-lg font-medium text-pink-900">Không tìm thấy khách hàng</h3>
-          <p className="text-sm text-pink-700 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-indigo-200 rounded-lg bg-indigo-50">
+          <User className="h-12 w-12 text-indigo-400 mb-4" />
+          <h3 className="text-lg font-medium text-indigo-900">Không tìm thấy khách hàng</h3>
+          <p className="text-sm text-indigo-700 mt-1">
             Không có khách hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -423,7 +423,7 @@ const UserManagementPage = () => {
 
       {filteredUsers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-pink-700">
+          <div className="text-sm text-indigo-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} của {filteredUsers.length} khách hàng
           </div>
           <Pagination
@@ -438,7 +438,7 @@ const UserManagementPage = () => {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[600px] bg-white">
           <DialogHeader>
-            <DialogTitle className="text-pink-900">
+            <DialogTitle className="text-indigo-900">
               {selectedUser.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
             </DialogTitle>
           </DialogHeader>
@@ -452,7 +452,7 @@ const UserManagementPage = () => {
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-pink-800">Tên</Label>
+                <Label className="text-indigo-800">Tên</Label>
                 <Input
                   value={selectedUser.name}
                   onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
@@ -460,7 +460,7 @@ const UserManagementPage = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-800">Email</Label>
+                <Label className="text-indigo-800">Email</Label>
                 <Input
                   type="email"
                   value={selectedUser.email}
@@ -472,7 +472,7 @@ const UserManagementPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-pink-800">Số điện thoại</Label>
+                <Label className="text-indigo-800">Số điện thoại</Label>
                 <Input
                   value={selectedUser.phone}
                   onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
@@ -480,9 +480,9 @@ const UserManagementPage = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-800">Trạng thái</Label>
+                <Label className="text-indigo-800">Trạng thái</Label>
                 <select
-                  className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900"
+                  className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900"
                   value={selectedUser.status}
                   onChange={(e) => setSelectedUser({ ...selectedUser, status: e.target.value as "active" | "inactive" })}
                 >
@@ -493,7 +493,7 @@ const UserManagementPage = () => {
             </div>
 
             <div>
-              <Label className="text-pink-800">Địa chỉ</Label>
+              <Label className="text-indigo-800">Địa chỉ</Label>
               <Textarea
                 value={selectedUser.address}
                 onChange={(e) => setSelectedUser({ ...selectedUser, address: e.target.value })}
@@ -504,7 +504,7 @@ const UserManagementPage = () => {
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                 Hủy
               </Button>
-              <Button type="submit" className="bg-pink-600 hover:bg-pink-700 text-white">
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
                 Lưu
               </Button>
             </div>

@@ -38,6 +38,7 @@ export default {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",
         },
+        electricIndigo: '#6C01F4',
       },
       borderRadius: {
         lg: "var(--radius)",

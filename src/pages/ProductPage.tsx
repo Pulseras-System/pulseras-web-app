@@ -20,7 +20,7 @@ const mockBracelets: Bracelet[] = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 const categories = [
-  { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-pink-400 to-pink-600", icon: "✨" },
+  { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-violet-400 to-violet-600", icon: "✨" },
   { name: "Bohemian", value: "Bohemian", bg: "bg-gradient-to-br from-teal-400 to-teal-600", icon: "🌿" },
   { name: "Tinh Thể", value: "Tinh Thể", bg: "bg-gradient-to-br from-blue-400 to-indigo-600", icon: "🔮" },
   { name: "Vàng", value: "Vàng", bg: "bg-gradient-to-br from-amber-300 to-amber-500", icon: "🌟" },
@@ -36,7 +36,7 @@ const BraceletCard = ({
   id,
 }: Bracelet & { id: number }) => (
   <Link to={`/shop/${id}`} className="group block transition-transform hover:-translate-y-1">
-    <div className="relative flex flex-col w-full overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-pink-100 bg-white">
+    <div className="relative flex flex-col w-full overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-violet-100 bg-white">
       <div className="relative overflow-hidden aspect-square">
         <img
           loading="lazy"
@@ -44,16 +44,16 @@ const BraceletCard = ({
           alt={`Vòng tay ${name}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-pink-900/70 via-pink-800/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+        <div className="absolute inset-0 bg-gradient-to-t from-violet-900/70 via-violet-800/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
           <div className="transform translate-y-6 group-hover:translate-y-0 transition-transform duration-300">
             <h3 className="text-xl font-bold text-white drop-shadow-md">{name}</h3>
-            <p className="text-pink-100 mt-1 text-sm">{description}</p>
+            <p className="text-violet-100 mt-1 text-sm">{description}</p>
             <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-semibold text-pink-200">{price}</span>
+              <span className="text-lg font-semibold text-violet-200">{price}</span>
               <Button
                 variant="default"
                 size="sm"
-                className="bg-pink-500 hover:bg-pink-600 text-white shadow-md hover:shadow-lg transition-all"
+                className="bg-violet-500 hover:bg-violet-600 text-white shadow-md hover:shadow-lg transition-all"
               >
                 Xem chi tiết
               </Button>
@@ -62,9 +62,9 @@ const BraceletCard = ({
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-medium text-pink-900 truncate">{name}</h3>
-        <p className="text-pink-600 text-sm mt-1">{description}</p>
-        <p className="text-pink-500 font-medium mt-2">{price}</p>
+        <h3 className="font-medium text-violet-900 truncate">{name}</h3>
+        <p className="text-violet-600 text-sm mt-1">{description}</p>
+        <p className="text-violet-500 font-medium mt-2">{price}</p>
       </div>
     </div>
   </Link>
@@ -97,7 +97,7 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 py-8 bg-gradient-to-b from-pink-50 to-white min-h-screen">
+    <div className="px-4 sm:px-6 py-8 bg-gradient-to-b from-violet-50 to-white min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex mb-6" aria-label="Breadcrumb">
@@ -105,15 +105,15 @@ const ProductPage = () => {
             <li>
               <button 
                 onClick={() => navigate('/')}
-                className="inline-flex items-center text-sm font-medium text-pink-700 hover:text-pink-600 hover:underline transition-colors"
+                className="inline-flex items-center text-sm font-medium text-violet-700 hover:text-violet-600 hover:underline transition-colors"
               >
                 Trang chủ
               </button>
             </li>
             <li aria-current="page">
               <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 text-pink-400" />
-                <span className="ml-1 text-sm font-medium text-pink-600 md:ml-2 hover:underline">
+                <ChevronRight className="w-4 h-4 text-violet-400" />
+                <span className="ml-1 text-sm font-medium text-violet-600 md:ml-2 hover:underline">
                   Vòng tay
                 </span>
               </div>
@@ -123,19 +123,19 @@ const ProductPage = () => {
 
         {/* Hero Section */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-pink-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-violet-900 mb-4">
             Bộ Sưu Tập Vòng Tay
           </h1>
-          <p className="text-lg text-pink-700 max-w-2xl mx-auto">
+          <p className="text-lg text-violet-700 max-w-2xl mx-auto">
             Khám phá bộ sưu tập vòng tay độc đáo, kết hợp tinh tế giữa truyền thống và hiện đại
           </p>
         </div>
 
         {/* Search and Filter */}
-        <div className="mb-12 bg-white p-6 rounded-xl shadow-sm border border-pink-100">
+        <div className="mb-12 bg-white p-6 rounded-xl shadow-sm border border-violet-100">
           <div className="max-w-md mx-auto mb-6 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-pink-400" />
+              <Search className="h-5 w-5 text-violet-400" />
             </div>
             <input
               type="text"
@@ -145,15 +145,15 @@ const ProductPage = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="block w-full pl-10 pr-3 py-3 border border-pink-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400"
+              className="block w-full pl-10 pr-3 py-3 border border-violet-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400"
             />
           </div>
 
           {/* Categories */}
           <div>
-            <h2 className="text-2xl font-bold text-center text-pink-900 mb-6 relative inline-block">
+            <h2 className="text-2xl font-bold text-center text-violet-900 mb-6 relative inline-block">
               <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
-              <span className="absolute bottom-3 left-0 right-0 h-1 bg-pink-100 z-0"></span>
+              <span className="absolute bottom-3 left-0 right-0 h-1 bg-violet-100 z-0"></span>
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               {categories.map((cat, index) => (
@@ -181,11 +181,11 @@ const ProductPage = () => {
 
         {/* Products */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-pink-900 mb-12 relative inline-block">
-            <span className="relative z-10 px-4 bg-gradient-to-b from-pink-50 to-white">
+          <h2 className="text-3xl font-bold text-center text-violet-900 mb-12 relative inline-block">
+            <span className="relative z-10 px-4 bg-gradient-to-b from-violet-50 to-white">
               {selectedCategory === "Tất cả" ? "Tất cả sản phẩm" : `Vòng tay ${selectedCategory}`}
             </span>
-            <span className="absolute bottom-4 left-0 right-0 h-1 bg-pink-100 z-0"></span>
+            <span className="absolute bottom-4 left-0 right-0 h-1 bg-violet-100 z-0"></span>
           </h2>
           
           {paginated.length > 0 ? (
@@ -195,15 +195,15 @@ const ProductPage = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-pink-100">
-              <div className="mx-auto w-24 h-24 bg-pink-100 rounded-full flex items-center justify-center mb-6">
-                <Search className="h-12 w-12 text-pink-600" />
+            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-violet-100">
+              <div className="mx-auto w-24 h-24 bg-violet-100 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-12 w-12 text-violet-600" />
               </div>
-              <h3 className="text-xl font-medium text-pink-900 mb-2">Không tìm thấy sản phẩm</h3>
-              <p className="text-pink-600 mb-6">Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn</p>
+              <h3 className="text-xl font-medium text-violet-900 mb-2">Không tìm thấy sản phẩm</h3>
+              <p className="text-violet-600 mb-6">Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn</p>
               <Button
                 variant="outline"
-                className="border-pink-500 text-pink-600 hover:bg-pink-50 hover:text-pink-700"
+                className="border-violet-500 text-violet-600 hover:bg-violet-50 hover:text-violet-700"
                 onClick={() => {
                   setSelectedCategory("Tất cả");
                   setSearchTerm("");
@@ -224,18 +224,18 @@ const ProductPage = () => {
                   size="icon"
                   onClick={() => changePage(1)}
                   disabled={currentPage === 1}
-                  className="border-pink-300 hover:bg-pink-50"
+                  className="border-violet-300 hover:bg-violet-50"
                 >
-                  <ChevronFirst className="h-4 w-4 text-pink-600" />
+                  <ChevronFirst className="h-4 w-4 text-violet-600" />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => changePage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="border-pink-300 hover:bg-pink-50"
+                  className="border-violet-300 hover:bg-violet-50"
                 >
-                  <ChevronLeft className="h-4 w-4 text-pink-600" />
+                  <ChevronLeft className="h-4 w-4 text-violet-600" />
                 </Button>
                 
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -257,8 +257,8 @@ const ProductPage = () => {
                       onClick={() => changePage(pageNum)}
                       className={`min-w-[40px] ${
                         pageNum === currentPage
-                          ? "bg-pink-500 hover:bg-pink-600"
-                          : "border-pink-300 hover:bg-pink-50 text-pink-600"
+                          ? "bg-violet-500 hover:bg-violet-600"
+                          : "border-violet-300 hover:bg-violet-50 text-violet-600"
                       }`}
                     >
                       {pageNum}
@@ -271,21 +271,21 @@ const ProductPage = () => {
                   size="icon"
                   onClick={() => changePage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="border-pink-300 hover:bg-pink-50"
+                  className="border-violet-300 hover:bg-violet-50"
                 >
-                  <ChevronRight className="h-4 w-4 text-pink-600" />
+                  <ChevronRight className="h-4 w-4 text-violet-600" />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => changePage(totalPages)}
                   disabled={currentPage === totalPages}
-                  className="border-pink-300 hover:bg-pink-50"
+                  className="border-violet-300 hover:bg-violet-50"
                 >
-                  <ChevronLast className="h-4 w-4 text-pink-600" />
+                  <ChevronLast className="h-4 w-4 text-violet-600" />
                 </Button>
               </div>
-              <p className="text-sm text-pink-600">
+              <p className="text-sm text-violet-600">
                 Hiển thị {(currentPage - 1) * BraceletsPerPage + 1} -{" "}
                 {Math.min(currentPage * BraceletsPerPage, filteredBracelets.length)} trong số{" "}
                 {filteredBracelets.length} sản phẩm

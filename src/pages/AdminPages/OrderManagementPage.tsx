@@ -133,16 +133,16 @@ const OrderManagement = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-pink-800">Quản lý Đơn hàng</h2>
-          <p className="text-sm text-pink-600">Danh sách đơn hàng trong hệ thống</p>
+          <h2 className="text-2xl font-bold text-indigo-800">Quản lý Đơn hàng</h2>
+          <p className="text-sm text-indigo-600">Danh sách đơn hàng trong hệ thống</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-200 focus-visible:ring-pink-300 text-pink-900 placeholder-pink-400"
+              className="pl-9 w-full sm:w-64 bg-indigo-100 border-indigo-200 focus-visible:ring-indigo-300 text-indigo-900 placeholder-indigo-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -152,14 +152,14 @@ const OrderManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+            className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
           <Button 
-            className="bg-pink-500 hover:bg-pink-600 text-white shadow-sm hover:shadow-md transition-all"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -169,12 +169,12 @@ const OrderManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-pink-100 p-4 rounded-lg border border-pink-200 shadow-sm">
+        <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo trạng thái</label>
+              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo trạng thái</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -188,9 +188,9 @@ const OrderManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo giá trị</label>
+              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo giá trị</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -207,23 +207,23 @@ const OrderManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-pink-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-indigo-200 bg-white shadow-sm overflow-hidden">
         <Table className="min-w-[700px]">
-          <TableHeader className="bg-pink-100">
+          <TableHeader className="bg-indigo-100">
             <TableRow>
-              <TableHead className="text-pink-800">ID</TableHead>
-              <TableHead className="text-pink-800">Tên khách hàng</TableHead>
-              <TableHead className="text-pink-800">Ngày đặt hàng</TableHead>
-              <TableHead className="text-pink-800">Trạng thái</TableHead>
-              <TableHead className="text-pink-800">Tổng tiền (VND)</TableHead>
-              <TableHead className="text-pink-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-indigo-800">ID</TableHead>
+              <TableHead className="text-indigo-800">Tên khách hàng</TableHead>
+              <TableHead className="text-indigo-800">Ngày đặt hàng</TableHead>
+              <TableHead className="text-indigo-800">Trạng thái</TableHead>
+              <TableHead className="text-indigo-800">Tổng tiền (VND)</TableHead>
+              <TableHead className="text-indigo-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentOrders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-pink-50/50 border-pink-100">
+              <TableRow key={order.id} className="hover:bg-indigo-50/50 border-indigo-100">
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell className="font-medium text-pink-900">
+                <TableCell className="font-medium text-indigo-900">
                   <div className="font-semibold">{order.customerName}</div>
                 </TableCell>
                 <TableCell>{formatDate(order.orderDate)}</TableCell>
@@ -238,12 +238,12 @@ const OrderManagement = () => {
                     {order.status}
                   </span>
                 </TableCell>
-                <TableCell className="font-medium text-pink-700">{order.totalAmount.toLocaleString()}₫</TableCell>
+                <TableCell className="font-medium text-indigo-700">{order.totalAmount.toLocaleString()}₫</TableCell>
                 <TableCell className="flex justify-end gap-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+                    className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
                     onClick={() => handleEditClick(order)}
                   >
                     <Pen className="h-4 w-4" />
@@ -263,10 +263,10 @@ const OrderManagement = () => {
       </div>
 
       {filteredOrders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-200 rounded-lg bg-pink-50">
-          <Package className="h-12 w-12 text-pink-400 mb-4" />
-          <h3 className="text-lg font-medium text-pink-800">Không tìm thấy đơn hàng</h3>
-          <p className="text-sm text-pink-600 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-indigo-200 rounded-lg bg-indigo-50">
+          <Package className="h-12 w-12 text-indigo-400 mb-4" />
+          <h3 className="text-lg font-medium text-indigo-800">Không tìm thấy đơn hàng</h3>
+          <p className="text-sm text-indigo-600 mt-1">
             Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -274,7 +274,7 @@ const OrderManagement = () => {
 
       {filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-pink-700">
+          <div className="text-sm text-indigo-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} của {filteredOrders.length} đơn hàng
           </div>
           <Pagination
@@ -287,16 +287,16 @@ const OrderManagement = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-indigo-200">
           <DialogHeader>
-            <DialogTitle className="text-pink-800">Chỉnh sửa đơn hàng</DialogTitle>
+            <DialogTitle className="text-indigo-800">Chỉnh sửa đơn hàng</DialogTitle>
           </DialogHeader>
           {editingOrder && (
             <div className="space-y-4">
               <div>
-                <Label className="text-pink-700">Tên khách hàng</Label>
+                <Label className="text-indigo-700">Tên khách hàng</Label>
                 <Input
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingOrder.customerName}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, customerName: e.target.value })
@@ -304,10 +304,10 @@ const OrderManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Ngày đặt hàng</Label>
+                <Label className="text-indigo-700">Ngày đặt hàng</Label>
                 <Input
                   type="date"
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingOrder.orderDate}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, orderDate: e.target.value })
@@ -315,9 +315,9 @@ const OrderManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Trạng thái</Label>
+                <Label className="text-indigo-700">Trạng thái</Label>
                 <select
-                  className="w-full p-2 border border-pink-200 rounded-md focus:ring-pink-300"
+                  className="w-full p-2 border border-indigo-200 rounded-md focus:ring-indigo-300"
                   value={editingOrder.status}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, status: e.target.value })
@@ -329,10 +329,10 @@ const OrderManagement = () => {
                 </select>
               </div>
               <div>
-                <Label className="text-pink-700">Tổng tiền</Label>
+                <Label className="text-indigo-700">Tổng tiền</Label>
                 <Input
                   type="number"
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingOrder.totalAmount}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, totalAmount: +e.target.value })
@@ -342,13 +342,13 @@ const OrderManagement = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                  className="text-indigo-700 border-indigo-300 hover:bg-indigo-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-pink-500 hover:bg-pink-600 text-white"
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -361,15 +361,15 @@ const OrderManagement = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-indigo-200">
           <DialogHeader>
-            <DialogTitle className="text-pink-800">Thêm đơn hàng mới</DialogTitle>
+            <DialogTitle className="text-indigo-800">Thêm đơn hàng mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-pink-700">Tên khách hàng</Label>
+              <Label className="text-indigo-700">Tên khách hàng</Label>
               <Input
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newOrder.customerName}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, customerName: e.target.value })
@@ -377,10 +377,10 @@ const OrderManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Ngày đặt hàng</Label>
+              <Label className="text-indigo-700">Ngày đặt hàng</Label>
               <Input
                 type="date"
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newOrder.orderDate}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, orderDate: e.target.value })
@@ -388,9 +388,9 @@ const OrderManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Trạng thái</Label>
+              <Label className="text-indigo-700">Trạng thái</Label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md focus:ring-pink-300"
+                className="w-full p-2 border border-indigo-200 rounded-md focus:ring-indigo-300"
                 value={newOrder.status}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, status: e.target.value })
@@ -402,10 +402,10 @@ const OrderManagement = () => {
               </select>
             </div>
             <div>
-              <Label className="text-pink-700">Tổng tiền</Label>
+              <Label className="text-indigo-700">Tổng tiền</Label>
               <Input
                 type="number"
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newOrder.totalAmount}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, totalAmount: +e.target.value })
@@ -415,13 +415,13 @@ const OrderManagement = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                className="text-indigo-700 border-indigo-300 hover:bg-indigo-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-pink-500 hover:bg-pink-600 text-white"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white"
                 onClick={handleAddOrder}
               >
                 Thêm

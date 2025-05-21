@@ -42,13 +42,13 @@ const BraceletDetailPage = () => {
 
   if (!bracelet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-pink-50">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md border border-pink-100">
-          <h2 className="text-3xl font-semibold text-pink-800 mb-4">Không tìm thấy sản phẩm</h2>
-          <p className="text-pink-600 mb-6">Vòng tay bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+      <div className="min-h-screen flex items-center justify-center bg-violet-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md border border-violet-100">
+          <h2 className="text-3xl font-semibold text-violet-800 mb-4">Không tìm thấy sản phẩm</h2>
+          <p className="text-violet-600 mb-6">Vòng tay bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
           <Button 
             onClick={() => navigate(-1)}
-            className="gap-2 bg-pink-500 hover:bg-pink-600 text-white"
+            className="gap-2 bg-violet-500 hover:bg-violet-600 text-white"
           >
             <ChevronLeft size={18} />
             Quay lại danh sách
@@ -59,9 +59,9 @@ const BraceletDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* pink Theme Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-pink-100/50 -z-10" />
+    <div className="min-h-screen bg-gradient-to-b from-violet-50 to-white py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* violet Theme Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-32 bg-violet-100/50 -z-10" />
       <div className="absolute top-10 left-10 w-16 h-16 rounded-full bg-white/30 blur-md" />
       <div className="absolute top-20 right-20 w-24 h-24 rounded-full bg-white/30 blur-md" />
       <div className="absolute top-40 left-1/3 w-12 h-12 rounded-full bg-white/30 blur-md" />
@@ -73,17 +73,17 @@ const BraceletDetailPage = () => {
             <li>
               <button 
                 onClick={() => navigate('/')}
-                className="inline-flex items-center text-sm font-medium text-pink-700 hover:text-pink-800 hover:underline"
+                className="inline-flex items-center text-sm font-medium text-violet-700 hover:text-violet-800 hover:underline"
               >
                 Trang chủ
               </button>
             </li>
             <li>
               <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 text-pink-400" />
+                <ChevronRight className="w-4 h-4 text-violet-400" />
                 <button 
                   onClick={() => navigate('/shop')}
-                  className="ml-1 text-sm font-medium text-pink-700 hover:text-pink-800 hover:underline md:ml-2"
+                  className="ml-1 text-sm font-medium text-violet-700 hover:text-violet-800 hover:underline md:ml-2"
                 >
                   Vòng tay
                 </button>
@@ -91,8 +91,8 @@ const BraceletDetailPage = () => {
             </li>
             <li aria-current="page">
               <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 text-pink-400" />
-                <span className="ml-1 text-sm font-medium text-pink-600 md:ml-2 hover:underline">
+                <ChevronRight className="w-4 h-4 text-violet-400" />
+                <span className="ml-1 text-sm font-medium text-violet-600 md:ml-2 hover:underline">
                   {bracelet.name}
                 </span>
               </div>
@@ -101,10 +101,10 @@ const BraceletDetailPage = () => {
         </nav>
 
         {/* Product Container */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden grid grid-cols-1 lg:grid-cols-2 border border-pink-100">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden grid grid-cols-1 lg:grid-cols-2 border border-violet-100">
           {/* Image Gallery */}
           <div className="relative">
-            <div className="aspect-square overflow-hidden bg-pink-50">
+            <div className="aspect-square overflow-hidden bg-violet-50">
               <img
                 src={bracelet.imageSrc}
                 alt={bracelet.name}
@@ -112,13 +112,13 @@ const BraceletDetailPage = () => {
               />
             </div>
             <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md">
-              <button className="p-2 text-pink-700 hover:text-pink-500 transition-colors">
+              <button className="p-2 text-violet-700 hover:text-violet-500 transition-colors">
                 <Heart className="w-5 h-5" />
               </button>
             </div>
             
-            {/* pink-themed decorative element */}
-            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-pink-100/50 to-transparent"></div>
+            {/* violet-themed decorative element */}
+            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-violet-100/50 to-transparent"></div>
           </div>
 
           {/* Product Info */}
@@ -126,19 +126,19 @@ const BraceletDetailPage = () => {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-3xl font-bold text-pink-900 mb-2">{bracelet.name}</h1>
-                  <p className="text-pink-500 mb-1">Danh mục: {bracelet.category}</p>
+                  <h1 className="text-3xl font-bold text-violet-900 mb-2">{bracelet.name}</h1>
+                  <p className="text-violet-500 mb-1">Danh mục: {bracelet.category}</p>
                 </div>
-                <div className="flex items-center bg-pink-50 px-3 py-1 rounded-full border border-pink-100">
-                  <Star className="w-4 h-4 text-pink-400 fill-pink-400" />
-                  <span className="ml-1 text-sm font-medium text-pink-700">
+                <div className="flex items-center bg-violet-50 px-3 py-1 rounded-full border border-violet-100">
+                  <Star className="w-4 h-4 text-violet-400 fill-violet-400" />
+                  <span className="ml-1 text-sm font-medium text-violet-700">
                     {bracelet.rating.toFixed(1)} ({bracelet.reviews} đánh giá)
                   </span>
                 </div>
               </div>
 
               <div className="my-6">
-                <p className="text-3xl font-semibold text-pink-600">{bracelet.price}</p>
+                <p className="text-3xl font-semibold text-violet-600">{bracelet.price}</p>
                 {bracelet.stock > 0 ? (
                   <p className="text-sm text-green-600 mt-1">Còn {bracelet.stock} sản phẩm</p>
                 ) : (
@@ -148,28 +148,28 @@ const BraceletDetailPage = () => {
 
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-medium text-pink-900 mb-2">Mô tả sản phẩm</h3>
-                  <p className="text-pink-700">{bracelet.description}</p>
+                  <h3 className="text-lg font-medium text-violet-900 mb-2">Mô tả sản phẩm</h3>
+                  <p className="text-violet-700">{bracelet.description}</p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-pink-900 mb-2">Thông tin chi tiết</h3>
-                  <div className="grid grid-cols-2 gap-4 bg-pink-50/50 p-4 rounded-lg">
+                  <h3 className="text-lg font-medium text-violet-900 mb-2">Thông tin chi tiết</h3>
+                  <div className="grid grid-cols-2 gap-4 bg-violet-50/50 p-4 rounded-lg">
                     <div>
-                      <p className="text-sm text-pink-500">Chất liệu</p>
-                      <p className="font-medium text-pink-800">{bracelet.material}</p>
+                      <p className="text-sm text-violet-500">Chất liệu</p>
+                      <p className="font-medium text-violet-800">{bracelet.material}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-pink-500">Kích thước</p>
-                      <p className="font-medium text-pink-800">{bracelet.size}</p>
+                      <p className="text-sm text-violet-500">Kích thước</p>
+                      <p className="font-medium text-violet-800">{bracelet.size}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-pink-500">Màu sắc</p>
+                      <p className="text-sm text-violet-500">Màu sắc</p>
                       <div className="flex gap-2 mt-1">
                         {bracelet.colors.map((color, i) => (
                           <button 
                             key={i}
-                            className="w-6 h-6 rounded-full border border-pink-200 shadow-sm"
+                            className="w-6 h-6 rounded-full border border-violet-200 shadow-sm"
                             style={{ backgroundColor: color }}
                             aria-label={`Màu ${i+1}`}
                           />
@@ -177,18 +177,18 @@ const BraceletDetailPage = () => {
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm text-pink-500">Bảo hành</p>
-                      <p className="font-medium text-pink-800">6 tháng</p>
+                      <p className="text-sm text-violet-500">Bảo hành</p>
+                      <p className="font-medium text-violet-800">6 tháng</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-pink-100">
+            <div className="mt-8 pt-6 border-t border-violet-100">
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
-                  className="flex-1 h-12 bg-pink-500 hover:bg-pink-600 text-white shadow-md gap-2 transition-all duration-300"
+                  className="flex-1 h-12 bg-violet-500 hover:bg-violet-600 text-white shadow-md gap-2 transition-all duration-300"
                   disabled={bracelet.stock <= 0}
                 >
                   <ShoppingCart className="w-5 h-5" />
@@ -196,7 +196,7 @@ const BraceletDetailPage = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 h-12 border-pink-300 text-pink-700 hover:bg-pink-50 gap-2"
+                  className="flex-1 h-12 border-violet-300 text-violet-700 hover:bg-violet-50 gap-2"
                   onClick={() => navigate(-1)}
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -214,7 +214,7 @@ const BraceletDetailPage = () => {
 
         {/* Related Products Section */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-pink-900 mb-8 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:h-1 after:bg-pink-400">
+          <h2 className="text-2xl font-bold text-violet-900 mb-8 relative pb-2 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:h-1 after:bg-violet-400">
             Sản phẩm tương tự
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -224,10 +224,10 @@ const BraceletDetailPage = () => {
               .map((item, i) => (
                 <div 
                   key={i} 
-                  className="group relative bg-white rounded-lg shadow-sm overflow-hidden border border-pink-100 cursor-pointer hover:shadow-lg transition-all hover:border-pink-200"
+                  className="group relative bg-white rounded-lg shadow-sm overflow-hidden border border-violet-100 cursor-pointer hover:shadow-lg transition-all hover:border-violet-200"
                   onClick={() => navigate(`/shop/${mockBracelets.indexOf(item) + 1}`)}
                 >
-                  <div className="aspect-square overflow-hidden bg-pink-50">
+                  <div className="aspect-square overflow-hidden bg-violet-50">
                     <img
                       src={item.imageSrc}
                       alt={item.name}
@@ -235,9 +235,9 @@ const BraceletDetailPage = () => {
                     />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-medium text-pink-800 truncate">{item.name}</h3>
-                    <p className="text-pink-600 font-medium mt-1">{item.price}</p>
-                    <div className="w-0 group-hover:w-full h-1 bg-pink-300 mt-2 transition-all duration-300"></div>
+                    <h3 className="font-medium text-violet-800 truncate">{item.name}</h3>
+                    <p className="text-violet-600 font-medium mt-1">{item.price}</p>
+                    <div className="w-0 group-hover:w-full h-1 bg-violet-300 mt-2 transition-all duration-300"></div>
                   </div>
                 </div>
               ))}

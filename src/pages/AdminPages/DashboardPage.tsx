@@ -79,8 +79,8 @@ const AdminDashboard = () => {
           </Card>
           
           <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 p-4 pb-12 relative">
-              <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-pink-400/20"></div>
+            <CardHeader className="bg-gradient-to-r from-indigo-500 to-rose-500 p-4 pb-12 relative">
+              <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-indigo-400/20"></div>
               <CardTitle className="text-white flex items-center">
                 <Package className="h-5 w-5 mr-2" />
                 Tổng đơn hàng
@@ -220,7 +220,7 @@ const AdminDashboard = () => {
                   <span className="text-sm font-medium text-gray-600">Doanh số</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-pink-500 mr-2"></div>
+                  <div className="w-3 h-3 rounded-full bg-indigo-500 mr-2"></div>
                   <span className="text-sm font-medium text-gray-600">Đơn hàng</span>
                 </div>
               </div>
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
                     <div className="flex items-center">
                       <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
                         ${index === 0 ? 'bg-purple-100 text-purple-600' : 
-                          index === 1 ? 'bg-pink-100 text-pink-600' :
+                          index === 1 ? 'bg-indigo-100 text-indigo-600' :
                           index === 2 ? 'bg-emerald-100 text-emerald-600' :
                           'bg-amber-100 text-amber-600'}`}>
                         {index + 1}
