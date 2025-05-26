@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 // Layouts
 import MainLayout from '@/layouts/MainLayout';
 import StaffLayout from '@/layouts/StaffLayout';
+import BlankLayout from '@/layouts/BlankLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 
 // Pages
@@ -15,6 +16,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import NoPermission from '@/pages/NoPermissionPage';
 import ProductPage from '@/pages/ProductPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
+import DesignBraceletPage from '@/pages/DesignBraceletPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
@@ -65,6 +67,10 @@ const routes = [
         element: <ContactPage />,
       },
       {
+        path: '/design',
+        element: <DesignBraceletPage />,
+      },
+      {
         path: '/no-permission',
         element: <NoPermission />,
       },
@@ -101,6 +107,16 @@ const routes = [
       {
         path: 'vouchers',
         element: <VoucherManagement />,
+      },
+    ],
+  },
+  {
+    path: '/design',
+    element: <BlankLayout />, // Sử dụng layout không có header/footer
+    children: [
+      {
+        path: '',
+        element: <DesignBraceletPage />,
       },
     ],
   },  
