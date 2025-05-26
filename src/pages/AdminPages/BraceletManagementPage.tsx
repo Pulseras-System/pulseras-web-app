@@ -128,16 +128,16 @@ const BraceletManagement = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-pink-800">Quản lý Vòng tay</h2>
-          <p className="text-sm text-pink-600">Danh sách sản phẩm trong workshop</p>
+          <h2 className="text-2xl font-bold text-blue-900">Quản lý Vòng tay</h2>
+          <p className="text-sm text-blue-600">Danh sách sản phẩm trong workshop</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-200 focus-visible:ring-pink-300 text-pink-900 placeholder-pink-400"
+              className="pl-9 w-full sm:w-64 bg-blue-50 border-blue-200 focus-visible:ring-blue-300 text-blue-900 placeholder-blue-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -147,14 +147,14 @@ const BraceletManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+            className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
           <Button 
-            className="bg-pink-500 hover:bg-pink-600 text-white shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -164,12 +164,12 @@ const BraceletManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-pink-100 p-4 rounded-lg border border-pink-200 shadow-sm">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo giá</label>
+              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo giá</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -183,9 +183,9 @@ const BraceletManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-pink-700 mb-1">Lọc theo chất liệu</label>
+              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo chất liệu</label>
               <select
-                className="w-full p-2 border border-pink-200 rounded-md bg-white text-pink-900 focus:ring-pink-300 focus:border-pink-300"
+                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
                 value={materialFilter}
                 onChange={(e) => {
                   setMaterialFilter(e.target.value);
@@ -202,23 +202,23 @@ const BraceletManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-pink-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-blue-200 bg-white shadow-sm overflow-hidden">
         <Table className="min-w-[700px]">
-          <TableHeader className="bg-pink-100">
+          <TableHeader className="bg-blue-50">
             <TableRow>
-              <TableHead className="text-pink-800 w-20">Hình ảnh</TableHead>
-              <TableHead className="text-pink-800">Tên sản phẩm</TableHead>
-              <TableHead className="text-pink-800">Chất liệu</TableHead>
-              <TableHead className="text-pink-800">Giá (VND)</TableHead>
-              <TableHead className="text-pink-800">Tồn kho</TableHead>
-              <TableHead className="text-pink-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-blue-800 w-20">Hình ảnh</TableHead>
+              <TableHead className="text-blue-800">Tên sản phẩm</TableHead>
+              <TableHead className="text-blue-800">Chất liệu</TableHead>
+              <TableHead className="text-blue-800">Giá (VND)</TableHead>
+              <TableHead className="text-blue-800">Tồn kho</TableHead>
+              <TableHead className="text-blue-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentBracelets.map((bracelet) => (
-              <TableRow key={bracelet.id} className="hover:bg-pink-50/50 border-pink-100">
+              <TableRow key={bracelet.id} className="hover:bg-blue-50/50 border-blue-100">
                 <TableCell>
-                  <div className="w-16 h-16 rounded-md overflow-hidden border border-pink-200 bg-pink-50">
+                  <div className="w-16 h-16 rounded-md overflow-hidden border border-indigo-200 bg-indigo-50">
                     <img 
                       src={bracelet.image} 
                       alt={bracelet.name}
@@ -226,18 +226,18 @@ const BraceletManagement = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-pink-900 whitespace-nowrap">
+                <TableCell className="font-medium text-indigo-900 whitespace-nowrap">
                   <div className="font-semibold">{bracelet.name}</div>
-                  <div className="text-xs text-pink-500">ID: {bracelet.id}</div>
+                  <div className="text-xs text-indigo-500">ID: {bracelet.id}</div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-pink-800">{bracelet.material}</TableCell>
-                <TableCell className="font-medium whitespace-nowrap text-pink-700">{bracelet.price.toLocaleString()}₫</TableCell>
+                <TableCell className="whitespace-nowrap text-indigo-800">{bracelet.material}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap text-indigo-700">{bracelet.price.toLocaleString()}₫</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     bracelet.stock > 10 
                       ? "bg-green-100 text-green-800" 
                       : bracelet.stock > 5 
-                        ? "bg-pink-100 text-pink-800" 
+                        ? "bg-indigo-100 text-indigo-800" 
                         : "bg-red-100 text-red-800"
                   }`}>
                     {bracelet.stock} {bracelet.stock > 5 ? "cái" : "sắp hết"}
@@ -247,7 +247,7 @@ const BraceletManagement = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-pink-700 border-pink-300 hover:bg-pink-100 hover:text-pink-800"
+                    className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                     onClick={() => handleEditClick(bracelet)}
                   >
                     <Pen className="h-4 w-4" />
@@ -267,10 +267,10 @@ const BraceletManagement = () => {
       </div>
 
       {filteredBracelets.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-200 rounded-lg bg-pink-50">
-          <Package className="h-12 w-12 text-pink-400 mb-4" />
-          <h3 className="text-lg font-medium text-pink-800">Không tìm thấy vòng tay</h3>
-          <p className="text-sm text-pink-600 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-indigo-200 rounded-lg bg-indigo-50">
+          <Package className="h-12 w-12 text-indigo-400 mb-4" />
+          <h3 className="text-lg font-medium text-indigo-800">Không tìm thấy vòng tay</h3>
+          <p className="text-sm text-indigo-600 mt-1">
             Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -278,7 +278,7 @@ const BraceletManagement = () => {
 
       {filteredBracelets.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-pink-700">
+          <div className="text-sm text-indigo-700">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của {filteredBracelets.length} sản phẩm
           </div>
           <Pagination
@@ -291,16 +291,16 @@ const BraceletManagement = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
           <DialogHeader>
-            <DialogTitle className="text-pink-800">Chỉnh sửa vòng tay</DialogTitle>
+            <DialogTitle className="text-indigo-800">Chỉnh sửa vòng tay</DialogTitle>
           </DialogHeader>
           {editingBracelet && (
             <div className="space-y-4">
               <div>
-                <Label className="text-pink-700">Tên</Label>
+                <Label className="text-indigo-700">Tên</Label>
                 <Input
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingBracelet.name}
                   onChange={(e) =>
                     setEditingBracelet({ ...editingBracelet, name: e.target.value })
@@ -308,9 +308,9 @@ const BraceletManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Chất liệu</Label>
+                <Label className="text-indigo-700">Chất liệu</Label>
                 <Input
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingBracelet.material}
                   onChange={(e) =>
                     setEditingBracelet({ ...editingBracelet, material: e.target.value })
@@ -318,10 +318,10 @@ const BraceletManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Giá</Label>
+                <Label className="text-indigo-700">Giá</Label>
                 <Input
                   type="number"
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingBracelet.price}
                   onChange={(e) =>
                     setEditingBracelet({ ...editingBracelet, price: +e.target.value })
@@ -329,10 +329,10 @@ const BraceletManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Tồn kho</Label>
+                <Label className="text-indigo-700">Tồn kho</Label>
                 <Input
                   type="number"
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingBracelet.stock}
                   onChange={(e) =>
                     setEditingBracelet({ ...editingBracelet, stock: +e.target.value })
@@ -340,9 +340,9 @@ const BraceletManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-pink-700">Hình ảnh</Label>
+                <Label className="text-indigo-700">Hình ảnh</Label>
                 <Input
-                  className="border-pink-200 focus:ring-pink-300"
+                  className="border-indigo-200 focus:ring-indigo-300"
                   value={editingBracelet.image}
                   onChange={(e) =>
                     setEditingBracelet({ ...editingBracelet, image: e.target.value })
@@ -352,13 +352,13 @@ const BraceletManagement = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                  className="text-blue-700 border-blue-300 hover:bg-blue-50"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-pink-500 hover:bg-pink-600 text-white"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -371,15 +371,15 @@ const BraceletManagement = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-pink-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
           <DialogHeader>
-            <DialogTitle className="text-pink-800">Thêm vòng tay mới</DialogTitle>
+            <DialogTitle className="text-indigo-800">Thêm vòng tay mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-pink-700">Tên</Label>
+              <Label className="text-indigo-700">Tên</Label>
               <Input
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newBracelet.name}
                 onChange={(e) =>
                   setNewBracelet({ ...newBracelet, name: e.target.value })
@@ -387,9 +387,9 @@ const BraceletManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Chất liệu</Label>
+              <Label className="text-indigo-700">Chất liệu</Label>
               <Input
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newBracelet.material}
                 onChange={(e) =>
                   setNewBracelet({ ...newBracelet, material: e.target.value })
@@ -397,10 +397,10 @@ const BraceletManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Giá</Label>
+              <Label className="text-indigo-700">Giá</Label>
               <Input
                 type="number"
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newBracelet.price}
                 onChange={(e) =>
                   setNewBracelet({ ...newBracelet, price: +e.target.value })
@@ -408,10 +408,10 @@ const BraceletManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Tồn kho</Label>
+              <Label className="text-indigo-700">Tồn kho</Label>
               <Input
                 type="number"
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newBracelet.stock}
                 onChange={(e) =>
                   setNewBracelet({ ...newBracelet, stock: +e.target.value })
@@ -419,9 +419,9 @@ const BraceletManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-pink-700">Hình ảnh</Label>
+              <Label className="text-indigo-700">Hình ảnh</Label>
               <Input
-                className="border-pink-200 focus:ring-pink-300"
+                className="border-indigo-200 focus:ring-indigo-300"
                 value={newBracelet.image}
                 onChange={(e) =>
                   setNewBracelet({ ...newBracelet, image: e.target.value })
@@ -431,13 +431,13 @@ const BraceletManagement = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-pink-700 border-pink-300 hover:bg-pink-100"
+                className="text-blue-700 border-blue-300 hover:bg-blue-50"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-pink-500 hover:bg-pink-600 text-white"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
                 onClick={handleAddBracelet}
               >
                 Thêm
