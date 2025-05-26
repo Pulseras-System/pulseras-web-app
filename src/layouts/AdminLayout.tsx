@@ -36,9 +36,9 @@ const AdminLayout = () => {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-[#fff8f0]">
+    <div className="flex min-h-screen bg-[#f8fafc]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 bg-gradient-to-b from-indigo-600 to-indigo-500 text-indigo-50 flex flex-col p-6 space-y-6 fixed h-full border-r border-indigo-900/10 shadow-xl">
+      <aside className="hidden lg:block w-64 bg-gradient-to-b from-blue-500 to-blue-400 text-white flex flex-col p-6 space-y-6 fixed h-full border-r border-blue-200 shadow-lg">
         <Link to="/staff" className="flex items-center gap-3 mb-10 group">
           <img 
             src={Logo} 
@@ -55,21 +55,21 @@ const AdminLayout = () => {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                 location.pathname.startsWith(path)
-                  ? "bg-indigo-600 shadow-inner font-semibold text-white"
-                  : "hover:bg-indigo-600/40 text-indigo-100"
+                  ? "bg-blue-500/50 shadow-inner font-semibold text-white"
+                  : "hover:bg-blue-500/30 text-white/90"
               )}
             >
               <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
               <span>{label}</span>
               {location.pathname.startsWith(path) && (
-                <div className="ml-auto w-2 h-2 rounded-full bg-indigo-100 animate-ping" />
+                <div className="ml-auto w-2 h-2 rounded-full bg-white animate-ping" />
               )}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-indigo-700/50">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-indigo-600/40 cursor-pointer transition">
+        <div className="mt-auto pt-4 border-t border-blue-300/50">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-500/30 cursor-pointer transition">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               className="h-5 w-5" 
@@ -93,7 +93,7 @@ const AdminLayout = () => {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-indigo-800 to-indigo-700 text-indigo-50">
+            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-blue-400 to-blue-300 text-white">
               <div className="flex flex-col h-full">
                 <Link to="/staff" className="flex items-center gap-3 mb-6 group">
                   <img 
@@ -175,8 +175,8 @@ const AdminLayout = () => {
       {/* Content layout */}
       <div className="flex-1 flex flex-col lg:ml-64 mt-16 lg:mt-0">
         {/* Desktop Header */}
-        <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/80 backdrop-blur-md border-b border-indigo-200 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-indigo-900 tracking-tight">Dashboard</h1>
+        <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-sm z-10">
+          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Dashboard</h1>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -210,8 +210,8 @@ const AdminLayout = () => {
         </header>
 
         {/* Main Page Content */}
-        <main className="flex-1 bg-[#fffaf3] p-8 overflow-y-auto">
-          <div className="max-w mx-auto bg-white rounded-xl shadow-md p-6 border border-indigo-100">
+        <main className="flex-1 bg-[#f8fafc] p-8 overflow-y-auto">
+          <div className="max-w mx-auto bg-white rounded-xl shadow-md p-6 border border-blue-100">
             <Outlet />
           </div>
         </main>

@@ -128,16 +128,16 @@ const BraceletManagement = () => {
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-indigo-800">Quản lý Vòng tay</h2>
-          <p className="text-sm text-indigo-600">Danh sách sản phẩm trong workshop</p>
+          <h2 className="text-2xl font-bold text-blue-900">Quản lý Vòng tay</h2>
+          <p className="text-sm text-blue-600">Danh sách sản phẩm trong workshop</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-indigo-100 border-indigo-200 focus-visible:ring-indigo-300 text-indigo-900 placeholder-indigo-400"
+              className="pl-9 w-full sm:w-64 bg-blue-50 border-blue-200 focus-visible:ring-blue-300 text-blue-900 placeholder-blue-400"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -147,14 +147,14 @@ const BraceletManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
+            className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
           <Button 
-            className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -164,12 +164,12 @@ const BraceletManagement = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-indigo-100 p-4 rounded-lg border border-indigo-200 shadow-sm">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo giá</label>
+              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo giá</label>
               <select
-                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
+                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -183,9 +183,9 @@ const BraceletManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-indigo-700 mb-1">Lọc theo chất liệu</label>
+              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo chất liệu</label>
               <select
-                className="w-full p-2 border border-indigo-200 rounded-md bg-white text-indigo-900 focus:ring-indigo-300 focus:border-indigo-300"
+                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
                 value={materialFilter}
                 onChange={(e) => {
                   setMaterialFilter(e.target.value);
@@ -202,21 +202,21 @@ const BraceletManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-indigo-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-blue-200 bg-white shadow-sm overflow-hidden">
         <Table className="min-w-[700px]">
-          <TableHeader className="bg-indigo-100">
+          <TableHeader className="bg-blue-50">
             <TableRow>
-              <TableHead className="text-indigo-800 w-20">Hình ảnh</TableHead>
-              <TableHead className="text-indigo-800">Tên sản phẩm</TableHead>
-              <TableHead className="text-indigo-800">Chất liệu</TableHead>
-              <TableHead className="text-indigo-800">Giá (VND)</TableHead>
-              <TableHead className="text-indigo-800">Tồn kho</TableHead>
-              <TableHead className="text-indigo-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-blue-800 w-20">Hình ảnh</TableHead>
+              <TableHead className="text-blue-800">Tên sản phẩm</TableHead>
+              <TableHead className="text-blue-800">Chất liệu</TableHead>
+              <TableHead className="text-blue-800">Giá (VND)</TableHead>
+              <TableHead className="text-blue-800">Tồn kho</TableHead>
+              <TableHead className="text-blue-800 text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentBracelets.map((bracelet) => (
-              <TableRow key={bracelet.id} className="hover:bg-indigo-50/50 border-indigo-100">
+              <TableRow key={bracelet.id} className="hover:bg-blue-50/50 border-blue-100">
                 <TableCell>
                   <div className="w-16 h-16 rounded-md overflow-hidden border border-indigo-200 bg-indigo-50">
                     <img 
@@ -247,7 +247,7 @@ const BraceletManagement = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-indigo-700 border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
+                    className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                     onClick={() => handleEditClick(bracelet)}
                   >
                     <Pen className="h-4 w-4" />
@@ -291,7 +291,7 @@ const BraceletManagement = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-indigo-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
           <DialogHeader>
             <DialogTitle className="text-indigo-800">Chỉnh sửa vòng tay</DialogTitle>
           </DialogHeader>
@@ -352,13 +352,13 @@ const BraceletManagement = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-indigo-700 border-indigo-300 hover:bg-indigo-100"
+                  className="text-blue-700 border-blue-300 hover:bg-blue-50"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -371,7 +371,7 @@ const BraceletManagement = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-indigo-200">
+        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
           <DialogHeader>
             <DialogTitle className="text-indigo-800">Thêm vòng tay mới</DialogTitle>
           </DialogHeader>
@@ -431,13 +431,13 @@ const BraceletManagement = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-indigo-700 border-indigo-300 hover:bg-indigo-100"
+                className="text-blue-700 border-blue-300 hover:bg-blue-50"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-indigo-500 hover:bg-indigo-600 text-white"
+                className="bg-blue-500 hover:bg-blue-600 text-white"
                 onClick={handleAddBracelet}
               >
                 Thêm
