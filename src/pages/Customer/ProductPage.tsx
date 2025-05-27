@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Search, ChevronLeft, ChevronFirst, ChevronLast } from "lucide-react";
+import { motion } from 'framer-motion';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 interface Bracelet {
   name: string;
@@ -70,6 +72,22 @@ const BraceletCard = ({
   </Link>
 );
 
+const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+  const { ref, isInView } = useScrollAnimation();
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const ProductPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,124 +118,151 @@ const ProductPage = () => {
     <div className="px-4 sm:px-6 py-8 bg-gradient-to-b from-blue-50 to-pink-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex mb-6" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-2">
-            <li>
-              <button 
-                onClick={() => navigate('/')}
-                className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-600 hover:underline transition-colors"
-              >
-                Trang chủ
-              </button>
-            </li>
-            <li aria-current="page">
-              <div className="flex items-center">
-                <ChevronRight className="w-4 h-4 text-blue-400" />
-                <span className="ml-1 text-sm font-medium text-blue-600 md:ml-2 hover:underline">
-                  Vòng tay
-                </span>
-              </div>
-            </li>
-          </ol>
-        </nav>
+        <AnimatedSection>
+          <nav className="flex mb-6" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center space-x-1 md:space-x-2">
+              <li>
+                <button 
+                  onClick={() => navigate('/')}
+                  className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-600 hover:underline transition-colors"
+                >
+                  Trang chủ
+                </button>
+              </li>
+              <li aria-current="page">
+                <div className="flex items-center">
+                  <ChevronRight className="w-4 h-4 text-blue-400" />
+                  <span className="ml-1 text-sm font-medium text-blue-600 md:ml-2 hover:underline">
+                    Vòng tay
+                  </span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+        </AnimatedSection>
 
         {/* Hero Section */}
-        <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-4">
+        <AnimatedSection className="mb-12 text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-5xl font-bold text-blue-900 mb-4"
+          >
             Bộ Sưu Tập Vòng Tay
-          </h1>
-          <p className="text-lg text-blue-700 max-w-2xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-lg text-blue-700 max-w-2xl mx-auto"
+          >
             Khám phá bộ sưu tập vòng tay độc đáo, kết hợp tinh tế giữa truyền thống và hiện đại
-          </p>
-        </div>
+          </motion.p>
+        </AnimatedSection>
 
         {/* Search and Filter */}
-        <div className="mb-12 bg-white p-6 rounded-xl shadow-sm border border-blue-100">
-          <div className="max-w-md mx-auto mb-6 relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-blue-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Tìm kiếm vòng tay..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="block w-full pl-10 pr-3 py-3 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            />
-          </div>
+        <AnimatedSection className="mb-12">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100">
+            {/* Search input */}
+            <AnimatedSection className="max-w-md mx-auto mb-6 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-blue-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Tìm kiếm vòng tay..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="block w-full pl-10 pr-3 py-3 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              />
+            </AnimatedSection>
 
-          {/* Categories */}
-          <div>
-            <h2 className="text-2xl font-bold text-center text-blue-900 mb-6 relative inline-block">
-              <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
-              <span className="absolute bottom-3 left-0 right-0 h-1 bg-blue-100 z-0"></span>
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              {categories.map((cat, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSelectedCategory(cat.value);
-                    setCurrentPage(1);
-                  }}
-                  className={`${cat.bg} rounded-xl p-4 text-center text-white font-medium hover:shadow-lg transition-all hover:scale-[1.03] relative overflow-hidden group ${
-                    selectedCategory === cat.value
-                      ? "ring-2 ring-white ring-opacity-70"
-                      : ""
-                  }`}
-                >
-                  <span className="absolute opacity-20 group-hover:opacity-30 transition-opacity text-5xl right-2 top-2">
-                    {cat.icon}
-                  </span>
-                  <span className="relative z-10 drop-shadow-md">{cat.name}</span>
-                </button>
-              ))}
-            </div>
+            {/* Categories */}
+            <AnimatedSection>
+              <h2 className="text-2xl font-bold text-center text-blue-900 mb-6 relative inline-block">
+                <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
+                <span className="absolute bottom-3 left-0 right-0 h-1 bg-blue-100 z-0"></span>
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                {categories.map((cat, index) => (
+                  <motion.button
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    onClick={() => {
+                      setSelectedCategory(cat.value);
+                      setCurrentPage(1);
+                    }}
+                    className={`${cat.bg} rounded-xl p-4 text-center text-white font-medium hover:shadow-lg transition-all hover:scale-[1.03] relative overflow-hidden group ${
+                      selectedCategory === cat.value ? "ring-2 ring-white ring-opacity-70" : ""
+                    }`}
+                  >
+                    <span className="absolute opacity-20 group-hover:opacity-30 transition-opacity text-5xl right-2 top-2">
+                      {cat.icon}
+                    </span>
+                    <span className="relative z-10 drop-shadow-md">{cat.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </AnimatedSection>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Products */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-blue-900 mb-12 relative inline-block">
-            <span className="relative z-10 px-4 bg-gradient-to-b from-blue-50 to-white">
-              {selectedCategory === "Tất cả" ? "Tất cả sản phẩm" : `Vòng tay ${selectedCategory}`}
-            </span>
-            <span className="absolute bottom-4 left-0 right-0 h-1 bg-blue-100 z-0"></span>
-          </h2>
+        <AnimatedSection className="mb-16">
+          <AnimatedSection className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-blue-900 relative inline-block">
+              <span className="relative z-10 px-4 bg-gradient-to-b from-blue-50 to-white">
+                {selectedCategory === "Tất cả" ? "Tất cả sản phẩm" : `Vòng tay ${selectedCategory}`}
+              </span>
+              <span className="absolute bottom-4 left-0 right-0 h-1 bg-blue-100 z-0"></span>
+            </h2>
+          </AnimatedSection>
           
           {paginated.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {paginated.map((bracelet, index) => (
-                <BraceletCard key={index} id={mockBracelets.indexOf(bracelet) + 1} {...bracelet} />
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <BraceletCard id={mockBracelets.indexOf(bracelet) + 1} {...bracelet} />
+                </motion.div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-blue-100">
-              <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                <Search className="h-12 w-12 text-blue-600" />
+            <AnimatedSection>
+              <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-blue-100">
+                <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                  <Search className="h-12 w-12 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">Không tìm thấy sản phẩm</h3>
+                <p className="text-blue-600 mb-6">Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn</p>
+                <Button
+                  variant="outline"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  onClick={() => {
+                    setSelectedCategory("Tất cả");
+                    setSearchTerm("");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Xem tất cả sản phẩm
+                </Button>
               </div>
-              <h3 className="text-xl font-medium text-blue-900 mb-2">Không tìm thấy sản phẩm</h3>
-              <p className="text-blue-600 mb-6">Không có sản phẩm nào phù hợp với tiêu chí tìm kiếm của bạn</p>
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                onClick={() => {
-                  setSelectedCategory("Tất cả");
-                  setSearchTerm("");
-                  setCurrentPage(1);
-                }}
-              >
-                Xem tất cả sản phẩm
-              </Button>
-            </div>
+            </AnimatedSection>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-16 flex flex-col items-center">
+            <AnimatedSection className="mt-16 flex flex-col items-center">
               <div className="flex items-center gap-2 mb-4">
                 <Button
                   variant="outline"
@@ -290,9 +335,9 @@ const ProductPage = () => {
                 {Math.min(currentPage * BraceletsPerPage, filteredBracelets.length)} trong số{" "}
                 {filteredBracelets.length} sản phẩm
               </p>
-            </div>
+            </AnimatedSection>
           )}
-        </div>
+        </AnimatedSection>
       </div>
     </div>
   );

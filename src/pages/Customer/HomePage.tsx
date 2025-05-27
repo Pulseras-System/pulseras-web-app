@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Banner from "../assets/images/banner1.png";
+import Banner from "../../assets/images/banner1.png";
+import { motion } from 'framer-motion';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 interface BraceletCardProps {
   name: string;
@@ -35,6 +37,22 @@ const BraceletCard = ({ name, description, price, imageSrc }: BraceletCardProps)
     </div>
   </div>
 );
+
+const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+  const { ref, isInView } = useScrollAnimation();
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const HomePage = () => {
   const bracelets = [
@@ -86,14 +104,24 @@ const HomePage = () => {
   return (
     <div className="flex flex-col w-full min-h-screen bg-blue-50">
       {/* Hero */}
-      <div className="relative flex items-center justify-center w-full min-h-[600px] overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative flex items-center justify-center w-full min-h-[600px] overflow-hidden"
+      >
         <img
           loading="lazy"
           src={Banner}
           alt="Ảnh nền vòng tay"
           className="absolute inset-0 object-cover w-full h-full"
         />
-        <div className="relative z-10 px-6 text-center max-w-4xl">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="relative z-10 px-6 text-center max-w-4xl"
+        >
           <h1 className="text-4xl font-bold leading-tight text-blue-900 md:text-5xl drop-shadow-lg">
             Vòng tay thủ công cho mọi câu chuyện
           </h1>
@@ -112,22 +140,30 @@ const HomePage = () => {
               Bộ sưu tập
             </Button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Danh mục */}
       <section className="px-6 py-12 bg-white">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-center text-blue-900 mb-8">Khám phá danh mục</h2>
+          <AnimatedSection>
+            <h2 className="text-2xl font-bold text-center text-blue-900 mb-8">
+              Khám phá danh mục
+            </h2>
+          </AnimatedSection>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.map((category, index) => (
-              <Link 
-                key={index} 
-                to={category.href}
-                className={`${category.bg} rounded-lg p-6 text-center text-white font-medium hover:shadow-lg transition-all hover:-translate-y-1`}
+              <AnimatedSection 
+                key={index}
+                className={category.bg}
               >
-                {category.name}
-              </Link>
+                <Link 
+                  to={category.href}
+                  className="block rounded-lg p-6 text-center text-white font-medium hover:shadow-lg transition-all hover:-translate-y-1"
+                >
+                  {category.name}
+                </Link>
+              </AnimatedSection>
             ))}
           </div>
         </div>
@@ -135,21 +171,23 @@ const HomePage = () => {
 
       {/* Sản phẩm nổi bật */}
       <section className="px-6 py-16 max-w-7xl mx-auto w-full bg-blue-50">
-        <div className="text-center mb-12">
+        <AnimatedSection className="text-center mb-12">
           <h2 className="text-3xl font-bold text-blue-900">Bộ sưu tập nổi bật</h2>
           <p className="mt-2 text-blue-700">Những thiết kế được yêu thích nhất mùa này</p>
-        </div>
+        </AnimatedSection>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {bracelets.map((bracelet, index) => (
-            <BraceletCard key={index} {...bracelet} />
+            <AnimatedSection key={index}>
+              <BraceletCard {...bracelet} />
+            </AnimatedSection>
           ))}
         </div>
       </section>
 
       {/* About Section */}
       <section className="px-6 py-16 bg-pink-100 text-blue-900">
-        <div className="max-w-4xl mx-auto text-center">
+        <AnimatedSection className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6">Tinh Hoa Nghệ Thuật</h2>
           <p className="text-blue-800 text-lg leading-relaxed">
             Mỗi chiếc vòng tay Pulsera là kết tinh của đam mê và sự sáng tạo. Chúng tôi sử dụng nguyên liệu 
@@ -162,12 +200,12 @@ const HomePage = () => {
           >
             Khám Phá Quy Trình
           </Button>
-        </div>
+        </AnimatedSection>
       </section>
 
       {/* Newsletter */}
       <section className="px-6 py-16 bg-white">
-        <div className="max-w-3xl mx-auto text-center">
+        <AnimatedSection className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-blue-900 mb-4">Tham Gia Cộng Đồng</h2>
           <p className="text-blue-700 mb-6">Nhận ưu đãi đặc biệt và cập nhật bộ sưu tập mới nhất</p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -180,7 +218,7 @@ const HomePage = () => {
               Đăng Ký
             </Button>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </div>
   );
