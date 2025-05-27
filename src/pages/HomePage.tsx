@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import Banner from "../assets/images/banner1.png";
 
 interface BraceletCardProps {
   name: string;
@@ -88,16 +89,15 @@ const HomePage = () => {
       <div className="relative flex items-center justify-center w-full min-h-[600px] overflow-hidden">
         <img
           loading="lazy"
-          src="https://placehold.co/1600x600/cccccc/000000?text=Hero+Banner"
+          src={Banner}
           alt="Ảnh nền vòng tay"
           className="absolute inset-0 object-cover w-full h-full"
         />
-        <div className="absolute inset-0 bg-violet-900/60" />
         <div className="relative z-10 px-6 text-center max-w-4xl">
-          <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl drop-shadow-lg">
+          <h1 className="text-4xl font-bold leading-tight text-violet-900 md:text-5xl drop-shadow-lg">
             Vòng tay thủ công cho mọi câu chuyện
           </h1>
-          <p className="mt-6 text-xl text-violet-100 drop-shadow-md">
+          <p className="mt-6 text-xl text-violet-400 drop-shadow-md">
             Khám phá những thiết kế độc đáo thể hiện cá tính của bạn
           </p>
           <div className="flex justify-center gap-4 mt-8">
@@ -107,7 +107,7 @@ const HomePage = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-white border-white hover:bg-white/10 hover:text-white shadow-lg"
+              className="text-violet-500 border-white hover:bg-white/10 hover:text-white shadow-lg"
             >
               Bộ sưu tập
             </Button>
