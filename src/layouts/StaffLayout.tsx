@@ -10,7 +10,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Package, Users, Ticket, Box, Gem, Menu} from "lucide-react";
-import Logo from "../assets/images/logo-nobg.png";
+import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,12 +37,12 @@ const StaffLayout = () => {
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 bg-gradient-to-b from-slate-600 to-slate-500 text-slate-50 flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
+      <aside className="hidden lg:block w-64 bg-gradient-to-b from-blue-100 to-pink-100 font-sans  antialiased  flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
         <Link to="/staff" className="flex items-center gap-3 mb-10 group">
           <img 
             src={Logo} 
             alt="Workshop logo" 
-            className="w-28 h-auto group-hover:rotate-6 transition-transform" 
+            className="h-12 w-auto group-hover:rotate-6 transition-transform" 
           />
         </Link>
 
@@ -54,8 +54,8 @@ const StaffLayout = () => {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                 location.pathname.startsWith(path)
-                  ? "bg-slate-600 shadow-inner font-semibold text-white"
-                  : "hover:bg-slate-600/40 text-slate-100"
+                  ? "bg-pink-200 shadow-inner font-semibold"
+                  : "hover:bg-pink-200"
               )}
             >
               <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -85,20 +85,20 @@ const StaffLayout = () => {
 
       {/* Mobile Responsive Navbar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50">
-        <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm flex items-center justify-between p-4">
+        <div className="bg-white/80 backdrop-blur-md  shadow-sm flex items-center justify-between p-4">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-slate-800 to-slate-700 text-slate-50">
+            <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-blue-100 to-pink-100">
               <div className="flex flex-col h-full">
                 <Link to="/staff" className="flex items-center gap-3 mb-6 group">
                   <img 
                     src={Logo} 
                     alt="Workshop logo" 
-                    className="w-28 h-auto group-hover:rotate-6 transition-transform" 
+                    className="h-10 w-auto group-hover:rotate-4 transition-transform" 
                   />
                 </Link>
 
@@ -110,8 +110,8 @@ const StaffLayout = () => {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
                           location.pathname.startsWith(path)
-                            ? "bg-slate-600 shadow-inner font-semibold text-white"
-                            : "hover:bg-slate-600/40 text-slate-100"
+                            ? "bg-pink-200 shadow-inner font-semibold "
+                            : "hover:bg-pink-200 "
                         )}
                       >
                         <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />

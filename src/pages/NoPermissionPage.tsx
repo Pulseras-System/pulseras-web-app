@@ -8,8 +8,8 @@ const NoPermission: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-      <Card className="max-w-lg w-full text-center p-8 shadow-lg">
+    <div className="flex items-center justify-center min-h-screen  px-4">
+      <Card className="max-w-lg w-full text-center bg-gray-50 p-8 shadow-lg">
         <FaLock className="text-5xl text-red-500 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Truy cập bị từ chối</h1>
         <p className="text-gray-600 mb-6">

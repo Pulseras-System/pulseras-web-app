@@ -59,7 +59,7 @@ const BraceletDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-32 bg-blue-100/50 -z-10" />
       <div className="absolute top-10 left-10 w-16 h-16 rounded-full bg-pink-100/30 blur-md" />

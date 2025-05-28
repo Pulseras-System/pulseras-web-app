@@ -29,18 +29,18 @@ interface Order {
 }
 
 const mockOrders: Order[] = [
-  { id: 1, customerName: "Nguyễn Văn A", orderDate: "2025-05-01", status: "Đang xử lý", totalAmount: 299000},
-  { id: 2, customerName: "Trần Thị B", orderDate: "2025-05-02", status: "Đã giao", totalAmount: 399000},
-  { id: 3, customerName: "Lê Văn C", orderDate: "2025-05-03", status: "Hủy", totalAmount: 499000},
-  { id: 4, customerName: "Phạm Thị D", orderDate: "2025-05-04", status: "Đang xử lý", totalAmount: 349000},
-  { id: 5, customerName: "Hoàng Minh E", orderDate: "2025-05-05", status: "Đã giao", totalAmount: 499000},
-  { id: 6, customerName: "Nguyễn Thị F", orderDate: "2025-05-06", status: "Đang xử lý", totalAmount: 199000},
-  { id: 7, customerName: "Trần Thanh G", orderDate: "2025-05-07", status: "Hủy", totalAmount: 249000},
-  { id: 8, customerName: "Lê Minh H", orderDate: "2025-05-08", status: "Đang xử lý", totalAmount: 349000},
-  { id: 9, customerName: "Võ Thị I", orderDate: "2025-05-09", status: "Đã giao", totalAmount: 459000},
-  { id: 10, customerName: "Đặng Văn J", orderDate: "2025-05-10", status: "Đang xử lý", totalAmount: 279000},
-  { id: 11, customerName: "Bùi Thị K", orderDate: "2025-05-11", status: "Đã giao", totalAmount: 389000},
-  { id: 12, customerName: "Phan Văn L", orderDate: "2025-05-12", status: "Hủy", totalAmount: 199000},
+  { id: 1, customerName: "Nguyễn Văn A", orderDate: "2025-05-01", status: "Đang xử lý", totalAmount: 299000 },
+  { id: 2, customerName: "Trần Thị B", orderDate: "2025-05-02", status: "Đã giao", totalAmount: 399000 },
+  { id: 3, customerName: "Lê Văn C", orderDate: "2025-05-03", status: "Hủy", totalAmount: 499000 },
+  { id: 4, customerName: "Phạm Thị D", orderDate: "2025-05-04", status: "Đang xử lý", totalAmount: 349000 },
+  { id: 5, customerName: "Hoàng Minh E", orderDate: "2025-05-05", status: "Đã giao", totalAmount: 499000 },
+  { id: 6, customerName: "Nguyễn Thị F", orderDate: "2025-05-06", status: "Đang xử lý", totalAmount: 199000 },
+  { id: 7, customerName: "Trần Thanh G", orderDate: "2025-05-07", status: "Hủy", totalAmount: 249000 },
+  { id: 8, customerName: "Lê Minh H", orderDate: "2025-05-08", status: "Đang xử lý", totalAmount: 349000 },
+  { id: 9, customerName: "Võ Thị I", orderDate: "2025-05-09", status: "Đã giao", totalAmount: 459000 },
+  { id: 10, customerName: "Đặng Văn J", orderDate: "2025-05-10", status: "Đang xử lý", totalAmount: 279000 },
+  { id: 11, customerName: "Bùi Thị K", orderDate: "2025-05-11", status: "Đã giao", totalAmount: 389000 },
+  { id: 12, customerName: "Phan Văn L", orderDate: "2025-05-12", status: "Hủy", totalAmount: 199000 },
 ];
 
 const itemsPerPage = 5;
@@ -59,25 +59,25 @@ const OrderManagement = () => {
     customerName: "",
     orderDate: new Date().toISOString().split('T')[0],
     status: "Đang xử lý",
-    totalAmount: 0
+    totalAmount: 0,
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.status.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      statusFilter === "all" || 
-      order.status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || order.status === statusFilter;
+
     const matchesPrice =
       priceFilter === "all" ||
       (priceFilter === "under300" && order.totalAmount < 300000) ||
-      (priceFilter === "300to400" && order.totalAmount >= 300000 && order.totalAmount <= 400000) ||
+      (priceFilter === "300to400" &&
+        order.totalAmount >= 300000 && order.totalAmount <= 400000) ||
       (priceFilter === "over400" && order.totalAmount > 400000);
-    
+
     return matchesSearch && matchesStatus && matchesPrice;
   });
 
@@ -123,7 +123,7 @@ const OrderManagement = () => {
         customerName: "",
         orderDate: new Date().toISOString().split('T')[0],
         status: "Đang xử lý",
-        totalAmount: 0
+        totalAmount: 0,
       });
       setIsAddOpen(false);
     }
@@ -131,18 +131,18 @@ const OrderManagement = () => {
 
   return (
     <div className="p-6 w-full space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-blue-900">Quản lý Đơn hàng</h2>
-          <p className="text-sm text-blue-600">Danh sách đơn hàng trong hệ thống</p>
+          <h2 className="text-2xl font-bold text-black">Quản lý Đơn hàng</h2>
+          <p className="text-sm text-black">Danh sách đơn hàng trong hệ thống</p>
         </div>
-
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-blue-50 border-blue-200 focus-visible:ring-blue-300 text-blue-900 placeholder-blue-400"
+              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -152,14 +152,14 @@ const OrderManagement = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+            className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
           <Button 
-            className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -168,13 +168,14 @@ const OrderManagement = () => {
         </div>
       </div>
 
+      {/* Filters */}
       {showFilters && (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
+        <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo trạng thái</label>
+              <Label className="block text-sm font-medium text-black mb-1">Lọc theo trạng thái</Label>
               <select
-                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -188,9 +189,9 @@ const OrderManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-700 mb-1">Lọc theo giá trị</label>
+              <Label className="block text-sm font-medium text-black mb-1">Lọc theo giá trị</Label>
               <select
-                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300 focus:border-blue-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={priceFilter}
                 onChange={(e) => {
                   setPriceFilter(e.target.value);
@@ -207,26 +208,27 @@ const OrderManagement = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-blue-200 bg-white shadow-sm overflow-hidden">
+      {/* Table */}
+      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
         <Table className="min-w-[700px]">
-          <TableHeader className="bg-blue-50">
+          <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-blue-800">ID</TableHead>
-              <TableHead className="text-blue-800">Tên khách hàng</TableHead>
-              <TableHead className="text-blue-800">Ngày đặt hàng</TableHead>
-              <TableHead className="text-blue-800">Trạng thái</TableHead>
-              <TableHead className="text-blue-800">Tổng tiền (VND)</TableHead>
-              <TableHead className="text-blue-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-black">ID</TableHead>
+              <TableHead className="text-black">Tên khách hàng</TableHead>
+              <TableHead className="text-black">Ngày đặt hàng</TableHead>
+              <TableHead className="text-black">Trạng thái</TableHead>
+              <TableHead className="text-black">Tổng tiền (VND)</TableHead>
+              <TableHead className="text-black text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentOrders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-blue-50/50 border-blue-100">
+              <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell className="font-medium text-blue-900">
+                <TableCell className="font-medium text-black">
                   <div className="font-semibold">{order.customerName}</div>
                 </TableCell>
-                <TableCell>{formatDate(order.orderDate)}</TableCell>
+                <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     order.status === "Đang xử lý" 
@@ -238,12 +240,14 @@ const OrderManagement = () => {
                     {order.status}
                   </span>
                 </TableCell>
-                <TableCell className="font-medium text-blue-700">{order.totalAmount.toLocaleString()}₫</TableCell>
+                <TableCell className="font-medium text-black">
+                  {order.totalAmount.toLocaleString()}₫
+                </TableCell>
                 <TableCell className="flex justify-end gap-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
                     onClick={() => handleEditClick(order)}
                   >
                     <Pen className="h-4 w-4" />
@@ -263,10 +267,14 @@ const OrderManagement = () => {
       </div>
 
       {filteredOrders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-blue-200 rounded-lg bg-blue-50">
-          <Package className="h-12 w-12 text-blue-400 mb-4" />
-          <h3 className="text-lg font-medium text-blue-800">Không tìm thấy đơn hàng</h3>
-          <p className="text-sm text-blue-600 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
+          <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
+            <Package className="h-12 w-12 text-blue-100" />
+          </div>
+          <h3 className="text-xl font-medium text-black mb-2">
+            Không tìm thấy đơn hàng
+          </h3>
+          <p className="text-sm text-black mt-1">
             Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -274,7 +282,7 @@ const OrderManagement = () => {
 
       {filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-blue-700">
+          <div className="text-sm text-black">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} của {filteredOrders.length} đơn hàng
           </div>
           <Pagination
@@ -287,16 +295,16 @@ const OrderManagement = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-blue-800">Chỉnh sửa đơn hàng</DialogTitle>
+            <DialogTitle className="text-black">Chỉnh sửa đơn hàng</DialogTitle>
           </DialogHeader>
           {editingOrder && (
             <div className="space-y-4">
               <div>
-                <Label className="text-blue-700">Tên khách hàng</Label>
+                <Label className="text-black">Tên khách hàng</Label>
                 <Input
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingOrder.customerName}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, customerName: e.target.value })
@@ -304,10 +312,10 @@ const OrderManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Ngày đặt hàng</Label>
+                <Label className="text-black">Ngày đặt hàng</Label>
                 <Input
                   type="date"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingOrder.orderDate}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, orderDate: e.target.value })
@@ -315,9 +323,9 @@ const OrderManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Trạng thái</Label>
+                <Label className="text-black">Trạng thái</Label>
                 <select
-                  className="w-full p-2 border border-blue-200 rounded-md focus:ring-blue-300"
+                  className="w-full p-2 border border-pink-100 rounded-md focus:ring-pink-100"
                   value={editingOrder.status}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, status: e.target.value })
@@ -329,10 +337,10 @@ const OrderManagement = () => {
                 </select>
               </div>
               <div>
-                <Label className="text-blue-700">Tổng tiền</Label>
+                <Label className="text-black">Tổng tiền</Label>
                 <Input
                   type="number"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingOrder.totalAmount}
                   onChange={(e) =>
                     setEditingOrder({ ...editingOrder, totalAmount: +e.target.value })
@@ -342,13 +350,13 @@ const OrderManagement = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                  className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -361,15 +369,15 @@ const OrderManagement = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-blue-800">Thêm đơn hàng mới</DialogTitle>
+            <DialogTitle className="text-black">Thêm đơn hàng mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-blue-700">Tên khách hàng</Label>
+              <Label className="text-black">Tên khách hàng</Label>
               <Input
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newOrder.customerName}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, customerName: e.target.value })
@@ -377,10 +385,10 @@ const OrderManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Ngày đặt hàng</Label>
+              <Label className="text-black">Ngày đặt hàng</Label>
               <Input
                 type="date"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newOrder.orderDate}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, orderDate: e.target.value })
@@ -388,9 +396,9 @@ const OrderManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Trạng thái</Label>
+              <Label className="text-black">Trạng thái</Label>
               <select
-                className="w-full p-2 border border-blue-200 rounded-md focus:ring-blue-300"
+                className="w-full p-2 border border-pink-100 rounded-md focus:ring-pink-100"
                 value={newOrder.status}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, status: e.target.value })
@@ -402,10 +410,10 @@ const OrderManagement = () => {
               </select>
             </div>
             <div>
-              <Label className="text-blue-700">Tổng tiền</Label>
+              <Label className="text-black">Tổng tiền</Label>
               <Input
                 type="number"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newOrder.totalAmount}
                 onChange={(e) =>
                   setNewOrder({ ...newOrder, totalAmount: +e.target.value })
@@ -415,13 +423,13 @@ const OrderManagement = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddOrder}
               >
                 Thêm

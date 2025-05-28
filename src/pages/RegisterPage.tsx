@@ -37,7 +37,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-violet-200 to-blue-100 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative cloud elements */}
       <div className="absolute top-20 left-20 w-36 h-36 rounded-full bg-white/40 blur-xl"></div>
       <div className="absolute bottom-20 right-20 w-48 h-48 rounded-full bg-white/40 blur-xl"></div>
