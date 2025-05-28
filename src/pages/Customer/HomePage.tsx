@@ -1,8 +1,23 @@
+// src/pages/HomePage.jsx
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Banner from "../../assets/images/banner1.png";
-import { motion } from 'framer-motion';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { motion, AnimatePresence } from "framer-motion";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+
+// Import ảnh banner từ thư mục assets
+import Banner1 from "../../assets/images/banner1.jpg";
+import Banner2 from "../../assets/images/banner2.jpg";
+import Banner3 from "../../assets/images/banner3.jpg";
+import Banner4 from "../../assets/images/banner4.jpg";
+
+// Danh sách banner cho ô vuông bên phải dùng ảnh từ assets
+const heroBanners = [
+  { src: Banner1, alt: "Banner 1" },
+  { src: Banner2, alt: "Banner 2" },
+  { src: Banner3, alt: "Banner 3" },
+  { src: Banner4, alt: "Banner 4" },
+];
 
 interface BraceletCardProps {
   name: string;
@@ -12,26 +27,38 @@ interface BraceletCardProps {
 }
 
 const BraceletCard = ({ name, description, price, imageSrc }: BraceletCardProps) => (
-  <div className="group relative flex flex-col w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border border-blue-100">
-    <img
-      loading="lazy"
-      src={imageSrc}
-      alt={`Vòng tay ${name}`}
-      className="object-cover w-full aspect-square transition-transform duration-500 group-hover:scale-105"
-    />
-    <div className="absolute inset-0 bg-gradient-to-t from-blue-400/70 via-blue-300/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-      <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-        <h3 className="text-xl font-bold text-white">{name}</h3>
-        <p className="text-blue-50 mt-1">{description}</p>
-        <div className="flex justify-between items-center mt-3">
-          <span className="text-lg font-semibold text-blue-50">{price}</span>
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="bg-pink-400 hover:bg-pink-500 text-white"
-          >
-            Thêm vào giỏ
-          </Button>
+  <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
+    <div className="relative aspect-square ">
+      <img
+        loading="lazy"
+        src={imageSrc}
+        alt={`Vòng tay ${name}`}
+        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+      />
+        {/* Subtle overlay/hover effect without a heavy gradient */}
+        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
+    </div>
+    
+    <div className="p-4 flex flex-col justify-between flex-grow">
+      <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+      <p className="text-sm text-gray-600 mt-1 flex-grow">{description}</p>
+      <div className="flex justify-between items-center mt-4">
+        <span className="text-md font-bold text-blue-600">{price}</span> {/* Accent color for price */}
+        <div className="flex space-x-2">
+            <Button
+                variant="outline"
+                size="sm"
+                className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
+            >
+                Thêm vào giỏ
+            </Button>
+            <Button
+                variant="default"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+                Mua ngay
+            </Button>
         </div>
       </div>
     </div>
@@ -55,99 +82,128 @@ const AnimatedSection = ({ children, className }: { children: React.ReactNode; c
 };
 
 const HomePage = () => {
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBannerIndex((prev) => (prev + 1) % heroBanners.length);
+    }, 5000); // đổi banner mỗi 5 giây
+    return () => clearInterval(timer);
+  }, []);
+
   const bracelets = [
     { 
       name: "Giấc Mơ Bohemian", 
-      description: "Đá tự nhiên", 
+      description: "Đá tự nhiên, phong cách phóng khoáng. Hoàn hảo cho những tâm hồn tự do.", 
       price: "750.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Bohemian" 
+      imageSrc: "https://placehold.co/600x600/e0e0e0/333333?text=Bohemian+Bracelet" // Adjusted placeholder for better fit
     },
     { 
       name: "Tinh Thể Chữa Lành", 
-      description: "Tinh thể nguyên chất", 
+      description: "Tinh thể nguyên chất, mang năng lượng tích cực và bình an. Chọn màu sắc theo ý bạn.", 
       price: "900.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Crystal" 
+      imageSrc: "https://placehold.co/600x600/d9d9d9/333333?text=Healing+Crystal" 
     },
     { 
       name: "Hoàng Hôn Vàng", 
-      description: "Mạ vàng", 
+      description: "Mạ vàng sang trọng, thiết kế thanh lịch. Nổi bật trong mọi sự kiện.", 
       price: "1.200.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Sunset" 
+      imageSrc: "https://placehold.co/600x600/c2c2c2/333333?text=Golden+Sunset" 
     },
     { 
       name: "Hơi Thở Đại Dương", 
-      description: "Lấy cảm hứng từ biển cả", 
+      description: "Lấy cảm hứng từ biển cả, đá xanh biếc và vỏ sò tự nhiên. Mang lại cảm giác tươi mát.", 
       price: "800.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Ocean" 
+      imageSrc: "https://placehold.co/600x600/b0b0b0/333333?text=Ocean+Breeze" 
     },
     { 
       name: "Pha Lê Núi", 
-      description: "Pha lê tự nhiên", 
+      description: "Pha lê tự nhiên, chế tác tỉ mỉ. Lấp lánh và thu hút mọi ánh nhìn.", 
       price: "1.000.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Crystal+Mountain" 
+      imageSrc: "https://placehold.co/600x600/a3a3a3/333333?text=Mountain+Crystal" 
     },
     { 
       name: "Hồng Sa Mạc", 
-      description: "Vàng hồng", 
+      description: "Vàng hồng quyến rũ, thiết kế độc đáo. Một lựa chọn hoàn hảo cho phong cách cá nhân.", 
       price: "1.300.000₫", 
-      imageSrc: "https://placehold.co/600x600/cccccc/000000?text=Desert+Rose" 
+      imageSrc: "https://placehold.co/600x600/969696/333333?text=Desert+Rose" 
     },
   ];
   
   const categories = [
-    { name: "Tất cả vòng tay", href: "#all", bg: "bg-gradient-to-br from-blue-300 to-blue-400" },
-    { name: "Bohemian", href: "#bohemian", bg: "bg-gradient-to-br from-green-200 to-green-300" },
-    { name: "Tinh Thể", href: "#crystal", bg: "bg-gradient-to-br from-pink-200 to-pink-300" },
-    { name: "Vàng", href: "#gold", bg: "bg-gradient-to-br from-yellow-200 to-yellow-300" },
+    { name: "Tất cả vòng tay", href: "/shop", bg: "bg-gradient-to-br from-blue-300 to-blue-400", icon: "✨" },
+    { name: "Bohemian", href: "/categories/bohemian", bg: "bg-gradient-to-br from-green-200 to-green-300", icon: "🌿" },
+    { name: "Tinh Thể", href: "/categories/crystal", bg: "bg-gradient-to-br from-pink-200 to-pink-300", icon: "🔮" },
+    { name: "Vàng", href: "/categories/gold", bg:"bg-gradient-to-br from-yellow-200 to-yellow-300", icon: "🌟" },
   ];
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-blue-50">
-      {/* Hero */}
-      <motion.div 
+    <div className="flex flex-col w-full min-h-screen bg-gradient-to-b from-blue-100 to-pink-100 text-gray-800">
+      {/* Hero Section */}
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative flex items-center justify-center w-full min-h-[600px] overflow-hidden"
+        className="flex flex-col md:flex-row items-center justify-between w-full min-h-[600px] p-6 md:p-16 "
       >
-        <img
-          loading="lazy"
-          src={Banner}
-          alt="Ảnh nền vòng tay"
-          className="absolute inset-0 object-cover w-full h-full"
-        />
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="relative z-10 px-6 text-center max-w-4xl"
-        >
-          <h1 className="text-4xl font-bold leading-tight text-blue-900 md:text-5xl drop-shadow-lg">
-            Vòng tay thủ công cho mọi câu chuyện
+        {/* Bên trái: Text của bạn */}
+        <div className="w-full md:w-3/5">
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight md:text-5xl text-gray-900">
+            Sáng tạo phong cách của bạn với vòng tay thủ công độc đáo.
           </h1>
-          <p className="mt-6 text-xl text-blue-600 drop-shadow-md">
-            Khám phá những thiết kế độc đáo thể hiện cá tính của bạn
+          <p className="mt-4 text-lg text-gray-700">
+            Khám phá những thiết kế độc đáo hoặc tùy chỉnh chiếc vòng tay của riêng bạn.
           </p>
-          <div className="flex justify-center gap-4 mt-8">
-            <Button asChild size="lg" className="bg-pink-400 hover:bg-pink-500 text-white shadow-lg">
+          <div className="flex gap-4 mt-8">
+            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg">
               <Link to="/shop">Mua ngay</Link>
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="text-blue-500 border-white hover:bg-white/10 hover:text-white shadow-lg"
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-blue-600 border-blue-600 hover:bg-blue-100 shadow-lg"
             >
-              Bộ sưu tập
+              Thiết kế của riêng bạn
             </Button>
           </div>
-        </motion.div>
+        </div>
+
+        {/* Bên phải: Banner */}
+        <div className="w-full md:w-2/5 flex flex-col items-center mt-8 md:mt-0">
+          {/* Container hình với aspect ratio vuông */}
+          <div className="w-full relative pb-[100%]">
+            <AnimatePresence>
+              <motion.img
+                key={bannerIndex}
+                src={heroBanners[bannerIndex].src}
+                alt={heroBanners[bannerIndex].alt}
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 object-cover rounded-lg shadow-lg"
+              />
+            </AnimatePresence>
+          </div>
+          {/* Dot Navigation */}
+          <div className="flex space-x-2 mt-4">
+            {heroBanners.map((_, idx) => (
+              <button
+                key={idx}
+                className={`w-3 h-3 rounded-full ${idx === bannerIndex ? "bg-blue-600" : "bg-gray-300"}`}
+                onClick={() => setBannerIndex(idx)}
+                aria-label={`Chuyển đến banner ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </motion.div>
 
       {/* Danh mục */}
-      <section className="px-6 py-12 bg-white">
+      <section className="px-6 py-12">
         <div className="max-w-7xl mx-auto">
           <AnimatedSection>
-            <h2 className="text-2xl font-bold text-center text-blue-900 mb-8">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
               Khám phá danh mục
             </h2>
           </AnimatedSection>
@@ -155,11 +211,11 @@ const HomePage = () => {
             {categories.map((category, index) => (
               <AnimatedSection 
                 key={index}
-                className={category.bg}
+                className={`rounded-lg p-6 text-center text-gray-800 font-semibold shadow-sm hover:shadow-md transition-all hover:-translate-y-1 ${category.bg}`}
               >
                 <Link 
                   to={category.href}
-                  className="block rounded-lg p-6 text-center text-white font-medium hover:shadow-lg transition-all hover:-translate-y-1"
+                  className="block"
                 >
                   {category.name}
                 </Link>
@@ -170,10 +226,10 @@ const HomePage = () => {
       </section>
 
       {/* Sản phẩm nổi bật */}
-      <section className="px-6 py-16 max-w-7xl mx-auto w-full bg-blue-50">
+      <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
         <AnimatedSection className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-blue-900">Bộ sưu tập nổi bật</h2>
-          <p className="mt-2 text-blue-700">Những thiết kế được yêu thích nhất mùa này</p>
+          <h2 className="text-3xl font-bold text-gray-900">Bộ sưu tập nổi bật</h2>
+          <p className="mt-2 text-gray-700">Những thiết kế được yêu thích nhất mùa này</p>
         </AnimatedSection>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -183,38 +239,66 @@ const HomePage = () => {
             </AnimatedSection>
           ))}
         </div>
+        <div className="text-center mt-12">
+            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link to="/shop">Xem thêm</Link>
+            </Button>
+        </div>
+      </section>
+
+      {/* Sản phẩm mới */}
+      <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
+        <AnimatedSection className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900">Sản phẩm mới</h2>
+          <p className="mt-2 text-gray-700">Khám phá sản phẩm mới nhất của chúng tôi</p>
+        </AnimatedSection>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {bracelets.map((bracelet, index) => (
+            <AnimatedSection key={index}>
+              <BraceletCard {...bracelet} />
+            </AnimatedSection>
+          ))}
+        </div>
+        <div className="text-center mt-12">
+            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link to="/shop">Xem thêm</Link>
+            </Button>
+        </div>
+        
       </section>
 
       {/* About Section */}
-      <section className="px-6 py-16 bg-pink-100 text-blue-900">
+      <section className="px-6 py-16 bg-pink-200 text-gray-800">
         <AnimatedSection className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Tinh Hoa Nghệ Thuật</h2>
-          <p className="text-blue-800 text-lg leading-relaxed">
-            Mỗi chiếc vòng tay Pulsera là kết tinh của đam mê và sự sáng tạo. Chúng tôi sử dụng nguyên liệu 
-            cao cấp cùng kỹ thuật thủ công truyền thống để tạo nên những tác phẩm độc nhất vô nhị, 
-            mang đậm dấu ấn cá nhân của người đeo.
+          <h2 className="text-3xl font-bold mb-6">Nghệ thuật tùy chỉnh vòng tay</h2>
+          <p className="text-gray-700 text-lg leading-relaxed">
+            Tại Pulsera, chúng tôi tin rằng mỗi chiếc vòng tay phải kể một câu chuyện. 
+            Bạn có thể chọn từ bộ sưu tập của chúng tôi hoặc thiết kế vòng tay của riêng mình 
+            với các loại đá quý, hạt và charm độc đáo. Mỗi sản phẩm được làm thủ công tỉ mỉ, 
+            đảm bảo chất lượng và sự độc đáo.
           </p>
           <Button 
             variant="outline" 
-            className="mt-8 border-pink-400 text-pink-500 hover:bg-pink-50 hover:text-pink-600"
+            className="mt-8 border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
           >
-            Khám Phá Quy Trình
+            <Link to="/design">Bắt đầu thiết kế</Link>
           </Button>
         </AnimatedSection>
       </section>
 
       {/* Newsletter */}
-      <section className="px-6 py-16 bg-white">
+      <section className="px-6 py-16 bg-gray-100">
         <AnimatedSection className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-blue-900 mb-4">Tham Gia Cộng Đồng</h2>
-          <p className="text-blue-700 mb-6">Nhận ưu đãi đặc biệt và cập nhật bộ sưu tập mới nhất</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Đăng ký nhận ưu đãi</h2>
+          <p className="text-gray-700 mb-6">Nhận thông tin về các bộ sưu tập mới, ưu đãi độc quyền và tin tức từ Pulsera.</p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <input 
               type="email" 
               placeholder="Địa chỉ email của bạn" 
-              className="px-4 py-3 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-grow max-w-md"
+              className="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 flex-grow max-w-md text-gray-800"
             />
-            <Button className="bg-pink-400 hover:bg-pink-500 text-white">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Đăng Ký
             </Button>
           </div>

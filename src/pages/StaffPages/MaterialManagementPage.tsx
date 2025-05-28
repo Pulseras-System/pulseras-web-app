@@ -127,18 +127,19 @@ const MaterialManagementPage = () => {
 
   return (
     <div className="p-6 w-full space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Quản lý Nguyên liệu</h2>
-          <p className="text-sm text-slate-600">Danh sách nguyên liệu trong workshop</p>
+          <h2 className="text-2xl font-bold text-black">Quản lý Nguyên liệu</h2>
+          <p className="text-sm text-black">Danh sách nguyên liệu trong workshop</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm..."
-              className="pl-9 w-full sm:w-64 bg-slate-100 border-slate-200 focus-visible:ring-slate-300 text-slate-900 placeholder-slate-400"
+              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -148,14 +149,14 @@ const MaterialManagementPage = () => {
           </div>
           <Button 
             variant="outline" 
-            className="text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+            className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
           <Button 
-            className="bg-slate-500 hover:bg-slate-600 text-white shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -164,13 +165,14 @@ const MaterialManagementPage = () => {
         </div>
       </div>
 
+      {/* Filters */}
       {showFilters && (
-        <div className="bg-slate-100 p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Lọc theo loại</label>
+              <Label className="block text-sm font-medium text-black mb-1">Lọc theo loại</Label>
               <select
-                className="w-full p-2 border border-slate-200 rounded-md bg-white text-slate-900 focus:ring-slate-300 focus:border-slate-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={typeFilter}
                 onChange={(e) => {
                   setTypeFilter(e.target.value);
@@ -184,9 +186,9 @@ const MaterialManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Lọc theo số lượng</label>
+              <Label className="block text-sm font-medium text-black mb-1">Lọc theo số lượng</Label>
               <select
-                className="w-full p-2 border border-slate-200 rounded-md bg-white text-slate-900 focus:ring-slate-300 focus:border-slate-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={quantityFilter}
                 onChange={(e) => {
                   setQuantityFilter(e.target.value);
@@ -203,23 +205,24 @@ const MaterialManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* Table */}
+      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-auto">
         <Table className="min-w-[700px]">
-          <TableHeader className="bg-slate-100">
+          <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-slate-800 w-20">Hình ảnh</TableHead>
-              <TableHead className="text-slate-800">Tên nguyên liệu</TableHead>
-              <TableHead className="text-slate-800">Loại</TableHead>
-              <TableHead className="text-slate-800">Số lượng</TableHead>
-              <TableHead className="text-slate-800">Đơn vị</TableHead>
-              <TableHead className="text-slate-800 text-right">Thao tác</TableHead>
+              <TableHead className="text-black w-20">Hình ảnh</TableHead>
+              <TableHead className="text-black">Tên nguyên liệu</TableHead>
+              <TableHead className="text-black">Loại</TableHead>
+              <TableHead className="text-black">Số lượng</TableHead>
+              <TableHead className="text-black">Đơn vị</TableHead>
+              <TableHead className="text-black text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentMaterials.map((material) => (
-              <TableRow key={material.id} className="hover:bg-slate-50/50 border-slate-100">
+              <TableRow key={material.id} className="hover:bg-pink-100 border-pink-100">
                 <TableCell>
-                  <div className="w-16 h-16 rounded-md overflow-hidden border border-slate-200 bg-slate-50">
+                  <div className="w-16 h-16 rounded-md overflow-hidden border border-pink-100 bg-pink-100">
                     <img 
                       src={material.image} 
                       alt={material.name}
@@ -227,28 +230,28 @@ const MaterialManagementPage = () => {
                     />
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-slate-900 whitespace-nowrap">
+                <TableCell className="font-medium text-black whitespace-nowrap">
                   <div className="font-semibold">{material.name}</div>
-                  <div className="text-xs text-slate-500">ID: {material.id}</div>
+                  <div className="text-xs text-black">ID: {material.id}</div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-slate-800">{material.type}</TableCell>
-                <TableCell className="font-medium whitespace-nowrap text-slate-700">
+                <TableCell className="whitespace-nowrap text-black">{material.type}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap text-black">
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     material.quantity > 300 
                       ? "bg-green-100 text-green-800" 
                       : material.quantity > 100 
-                        ? "bg-slate-100 text-slate-800" 
+                        ? "bg-pink-100 text-pink-800" 
                         : "bg-red-100 text-red-800"
                   }`}>
                     {material.quantity} {material.unit}
                   </span>
                 </TableCell>
-                <TableCell className="text-slate-700">{material.unit}</TableCell>
+                <TableCell className="text-black">{material.unit}</TableCell>
                 <TableCell className="flex justify-end gap-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-slate-800"
+                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
                     onClick={() => handleEditClick(material)}
                   >
                     <Pen className="h-4 w-4" />
@@ -268,10 +271,14 @@ const MaterialManagementPage = () => {
       </div>
 
       {filteredMaterials.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-slate-200 rounded-lg bg-slate-50">
-          <Package className="h-12 w-12 text-slate-400 mb-4" />
-          <h3 className="text-lg font-medium text-slate-800">Không tìm thấy nguyên liệu</h3>
-          <p className="text-sm text-slate-600 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
+          <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
+            <Package className="h-12 w-12 text-blue-100" />
+          </div>
+          <h3 className="text-xl font-medium text-black mb-2">
+            Không tìm thấy nguyên liệu
+          </h3>
+          <p className="text-sm text-black mt-1">
             Không có nguyên liệu nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -279,7 +286,7 @@ const MaterialManagementPage = () => {
 
       {filteredMaterials.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-slate-700">
+          <div className="text-sm text-black">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredMaterials.length)} của {filteredMaterials.length} nguyên liệu
           </div>
           <Pagination
@@ -292,16 +299,16 @@ const MaterialManagementPage = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-slate-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-slate-800">Chỉnh sửa nguyên liệu</DialogTitle>
+            <DialogTitle className="text-black">Chỉnh sửa nguyên liệu</DialogTitle>
           </DialogHeader>
           {editingMaterial && (
             <div className="space-y-4">
               <div>
-                <Label className="text-slate-700">Tên</Label>
+                <Label className="text-black">Tên</Label>
                 <Input
-                  className="border-slate-200 focus:ring-slate-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingMaterial.name}
                   onChange={(e) =>
                     setEditingMaterial({ ...editingMaterial, name: e.target.value })
@@ -309,9 +316,9 @@ const MaterialManagementPage = () => {
                 />
               </div>
               <div>
-                <Label className="text-slate-700">Loại</Label>
+                <Label className="text-black">Loại</Label>
                 <select
-                  className="w-full p-2 border border-slate-200 rounded-md bg-white text-gray-900 focus:ring-slate-300 focus:border-slate-300"
+                  className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                   value={editingMaterial.type}
                   onChange={(e) =>
                     setEditingMaterial({ ...editingMaterial, type: e.target.value })
@@ -324,10 +331,10 @@ const MaterialManagementPage = () => {
                 </select>
               </div>
               <div>
-                <Label className="text-slate-700">Số lượng</Label>
+                <Label className="text-black">Số lượng</Label>
                 <Input
                   type="number"
-                  className="border-slate-200 focus:ring-slate-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingMaterial.quantity}
                   onChange={(e) =>
                     setEditingMaterial({ ...editingMaterial, quantity: +e.target.value })
@@ -335,9 +342,9 @@ const MaterialManagementPage = () => {
                 />
               </div>
               <div>
-                <Label className="text-slate-700">Đơn vị</Label>
+                <Label className="text-black">Đơn vị</Label>
                 <Input
-                  className="border-slate-200 focus:ring-slate-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingMaterial.unit}
                   onChange={(e) =>
                     setEditingMaterial({ ...editingMaterial, unit: e.target.value })
@@ -345,9 +352,9 @@ const MaterialManagementPage = () => {
                 />
               </div>
               <div>
-                <Label className="text-slate-700">Hình ảnh</Label>
+                <Label className="text-black">Hình ảnh</Label>
                 <Input
-                  className="border-slate-200 focus:ring-slate-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingMaterial.image}
                   onChange={(e) =>
                     setEditingMaterial({ ...editingMaterial, image: e.target.value })
@@ -357,13 +364,13 @@ const MaterialManagementPage = () => {
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-slate-700 border-slate-300 hover:bg-slate-100"
+                  className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-slate-500 hover:bg-slate-600 text-white"
+                  className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -376,15 +383,15 @@ const MaterialManagementPage = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-slate-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-slate-800">Thêm nguyên liệu mới</DialogTitle>
+            <DialogTitle className="text-black">Thêm nguyên liệu mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-slate-700">Tên</Label>
+              <Label className="text-black">Tên</Label>
               <Input
-                className="border-slate-200 focus:ring-slate-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newMaterial.name}
                 onChange={(e) =>
                   setNewMaterial({ ...newMaterial, name: e.target.value })
@@ -392,9 +399,9 @@ const MaterialManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-slate-700">Loại</Label>
+              <Label className="text-black">Loại</Label>
               <select
-                className="w-full p-2 border border-slate-200 rounded-md bg-white text-gray-900 focus:ring-slate-300 focus:border-slate-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={newMaterial.type}
                 onChange={(e) =>
                   setNewMaterial({ ...newMaterial, type: e.target.value })
@@ -408,10 +415,10 @@ const MaterialManagementPage = () => {
               </select>
             </div>
             <div>
-              <Label className="text-slate-700">Số lượng</Label>
+              <Label className="text-black">Số lượng</Label>
               <Input
                 type="number"
-                className="border-slate-200 focus:ring-slate-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newMaterial.quantity}
                 onChange={(e) =>
                   setNewMaterial({ ...newMaterial, quantity: +e.target.value })
@@ -419,9 +426,9 @@ const MaterialManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-slate-700">Đơn vị</Label>
+              <Label className="text-black">Đơn vị</Label>
               <Input
-                className="border-slate-200 focus:ring-slate-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newMaterial.unit}
                 onChange={(e) =>
                   setNewMaterial({ ...newMaterial, unit: e.target.value })
@@ -429,9 +436,9 @@ const MaterialManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-slate-700">Hình ảnh</Label>
+              <Label className="text-black">Hình ảnh</Label>
               <Input
-                className="border-slate-200 focus:ring-slate-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newMaterial.image}
                 onChange={(e) =>
                   setNewMaterial({ ...newMaterial, image: e.target.value })
@@ -441,13 +448,13 @@ const MaterialManagementPage = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-slate-700 border-slate-300 hover:bg-slate-100"
+                className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-slate-500 hover:bg-slate-600 text-white"
+                className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddMaterial}
               >
                 Thêm

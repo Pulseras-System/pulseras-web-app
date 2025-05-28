@@ -226,7 +226,7 @@ const VoucherManagementPage = () => {
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
-  // Get status badge component
+  // Get status badge (giữ nguyên màu trạng thái)
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -243,7 +243,7 @@ const VoucherManagementPage = () => {
         );
       case "used":
         return (
-          <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-indigo-200">
+          <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-200">
             Đã dùng hết
           </Badge>
         );
@@ -252,21 +252,12 @@ const VoucherManagementPage = () => {
     }
   };
 
-  // Format discount value
-  // const formatDiscountValue = (voucher: Voucher) => {
-  //   if (voucher.discountType === "percentage") {
-  //     return `${voucher.discountValue}%`;
-  //   } else {
-  //     return formatCurrency(voucher.discountValue);
-  //   }
-  // };
-
-  // Progress bar component
+  // Progress bar component (giữ nguyên màu phần trạng thái)
   const UsageProgressBar = ({ current, total }: { current: number, total: number }) => {
     const percentage = Math.min(Math.round((current / total) * 100), 100);
     const getColorClass = () => {
       if (percentage >= 90) return "bg-red-500";
-      if (percentage >= 70) return "bg-indigo-500";
+      if (percentage >= 70) return "bg-pink-500";
       return "bg-green-500";
     };
 
@@ -293,9 +284,7 @@ const VoucherManagementPage = () => {
 
   const handleEditSave = () => {
     if (editingVoucher) {
-      setVouchers((prev) =>
-        prev.map((b) => (b.id === editingVoucher.id ? editingVoucher : b))
-      );
+      setVouchers((prev) => prev.map((v) => (v.id === editingVoucher.id ? editingVoucher : v)));
       setIsEditOpen(false);
     }
   };
@@ -321,18 +310,18 @@ const VoucherManagementPage = () => {
   };
   return (
     <div className="p-6 w-full space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-blue-900">Quản lý Voucher</h2>
-          <p className="text-sm text-blue-600">Danh sách voucher khuyến mãi</p>
+          <h2 className="text-2xl font-bold text-black">Quản lý Voucher</h2>
+          <p className="text-sm text-black">Danh sách voucher khuyến mãi</p>
         </div>
-
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm mã voucher..."
-              className="pl-9 w-full sm:w-64 bg-blue-50 border-blue-200 focus-visible:ring-blue-300"
+              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -340,18 +329,15 @@ const VoucherManagementPage = () => {
               }}
             />
           </div>
-          <Button 
-            variant="outline" 
-            className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+          <Button
+            variant="outline"
+            className="text-black border-pink-100 hover:bg-pink-100"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button 
-            className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm hover:shadow-md transition-all"
-            onClick={() => setIsAddOpen(true)}
-          >
+          <Button className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all" onClick={() => setIsAddOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Thêm voucher
           </Button>
@@ -359,12 +345,12 @@ const VoucherManagementPage = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
+        <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-1">Trạng thái</label>
+              <Label className="block text-sm font-medium text-black mb-1">Trạng thái</Label>
               <select
-                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100"
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
@@ -378,9 +364,9 @@ const VoucherManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-blue-800 mb-1">Loại giảm giá</label>
+              <Label className="block text-sm font-medium text-black mb-1">Loại giảm giá</Label>
               <select
-                className="w-full p-2 border border-blue-200 rounded-md bg-white text-blue-900 focus:ring-blue-300"
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100"
                 value={typeFilter}
                 onChange={(e) => {
                   setTypeFilter(e.target.value);
@@ -396,58 +382,58 @@ const VoucherManagementPage = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-blue-200 bg-white shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-blue-50">
+      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
+        <Table className="min-w-[700px]">
+          <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-blue-900 w-32">Mã voucher</TableHead>
-              <TableHead className="text-blue-900">Mô tả</TableHead>
-              <TableHead className="text-blue-900 w-36">Giảm giá</TableHead>
-              <TableHead className="text-blue-900 w-48">Thời gian</TableHead>
-              <TableHead className="text-blue-900 w-32">Sử dụng</TableHead>
-              <TableHead className="text-blue-900 w-32">Trạng thái</TableHead>
-              <TableHead className="text-blue-900 text-right w-24">Thao tác</TableHead>
+              <TableHead className="text-black">Mã voucher</TableHead>
+              <TableHead className="text-black">Mô tả</TableHead>
+              <TableHead className="text-black">Giảm giá</TableHead>
+              <TableHead className="text-black">Thời gian</TableHead>
+              <TableHead className="text-black">Sử dụng</TableHead>
+              <TableHead className="text-black">Trạng thái</TableHead>
+              <TableHead className="text-black text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentVouchers.map((voucher) => (
-              <TableRow key={voucher.id} className="hover:bg-blue-50/50">
-                <TableCell className="font-bold text-blue-900">
+              <TableRow key={voucher.id} className="hover:bg-pink-100 border-pink-100">
+                <TableCell className="font-bold text-black">
                   {voucher.code}
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm text-blue-950">{voucher.description}</div>
-                  <div className="text-xs text-blue-600 mt-1">
+                  <div className="text-sm text-black">{voucher.description}</div>
+                  <div className="text-xs text-black mt-1">
                     Đơn tối thiểu: {formatCurrency(voucher.minPurchase)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
                     {voucher.discountType === "percentage" ? (
-                      <div className="bg-indigo-100 text-indigo-800 rounded-full px-2 py-1 text-sm flex items-center">
+                      <div className="bg-blue-100 text-black rounded-full px-2 py-1 text-sm flex items-center">
                         <Percent className="h-3 w-3 mr-1" />
                         {voucher.discountValue}%
                       </div>
                     ) : (
-                      <div className="bg-green-100 text-green-800 rounded-full px-2 py-1 text-sm">
+                      <div className="bg-green-100 text-black rounded-full px-2 py-1 text-sm">
                         {formatCurrency(voucher.discountValue)}
                       </div>
                     )}
                   </div>
                   {voucher.maxDiscount && (
-                    <div className="text-xs text-blue-600 mt-1">
+                    <div className="text-xs text-black mt-1">
                       Tối đa: {formatCurrency(voucher.maxDiscount)}
                     </div>
                   )}
                 </TableCell>
                 <TableCell>
                   <div className="text-xs space-y-1">
-                    <div className="flex items-center text-blue-800">
-                      <Calendar className="h-3 w-3 mr-1 text-blue-500" />
+                    <div className="flex items-center text-black">
+                      <Calendar className="h-3 w-3 mr-1 text-black" />
                       Bắt đầu: {formatDate(voucher.startDate)}
                     </div>
-                    <div className="flex items-center text-blue-800">
-                      <Calendar className="h-3 w-3 mr-1 text-blue-500" />
+                    <div className="flex items-center text-black">
+                      <Calendar className="h-3 w-3 mr-1 text-black" />
                       Kết thúc: {formatDate(voucher.endDate)}
                     </div>
                   </div>
@@ -462,19 +448,10 @@ const VoucherManagementPage = () => {
                   {getStatusBadge(voucher.status)}
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-blue-700 border-blue-300 hover:bg-blue-50 hover:text-blue-800"
-                    onClick={() => handleEditClick(voucher)}
-                  >
+                  <Button variant="outline" size="sm" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => handleEditClick(voucher)}>
                     <Pen className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-red-700 border-red-200 hover:bg-red-50"
-                  >
+                  <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -485,10 +462,12 @@ const VoucherManagementPage = () => {
       </div>
 
       {filteredVouchers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-blue-200 rounded-lg bg-blue-50">
-          <Tag className="h-12 w-12 text-blue-400 mb-4" />
-          <h3 className="text-lg font-medium text-blue-900">Không tìm thấy voucher</h3>
-          <p className="text-sm text-blue-600 mt-1">
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
+          <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
+            <Tag className="h-12 w-12 text-blue-100" />
+          </div>
+          <h3 className="text-xl font-medium text-black mb-2">Không tìm thấy voucher</h3>
+          <p className="text-sm text-black mt-1">
             Không có voucher nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
@@ -496,7 +475,7 @@ const VoucherManagementPage = () => {
 
       {filteredVouchers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-blue-700">
+          <div className="text-sm text-black">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredVouchers.length)} của {filteredVouchers.length} voucher
           </div>
           <Pagination
@@ -509,125 +488,98 @@ const VoucherManagementPage = () => {
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-blue-800">Chỉnh sửa Ưu đãi</DialogTitle>
+            <DialogTitle className="text-black">Chỉnh sửa Ưu đãi</DialogTitle>
           </DialogHeader>
           {editingVoucher && (
             <div className="space-y-4">
               <div>
-                <Label className="text-blue-700">Mã ưu đãi</Label>
+                <Label className="text-black">Mã ưu đãi</Label>
                 <Input
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.code}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, code: e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, code: e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Mô tả</Label>
+                <Label className="text-black">Mô tả</Label>
                 <Input
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.description}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, description: e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, description: e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Loại giảm giá</Label>
+                <Label className="text-black">Loại giảm giá</Label>
                 <select
-                  className="w-full border border-blue-200 rounded-lg p-2 focus:ring-blue-300"
+                  className="w-full border border-pink-100 rounded-lg p-2 focus:ring-pink-100"
                   value={editingVoucher.discountType}
                   onChange={(e) =>
-                    setNewVoucher({ ...editingVoucher, discountType: e.target.value as "fixed" | "percentage" })
+                    setEditingVoucher({ ...editingVoucher, discountType: e.target.value as "fixed" | "percentage" })
                   }
                 >
                   <option value="fixed">Giảm số tiền cố định</option>
-                  <option value="percent">Giảm theo phần trăm</option>
+                  <option value="percentage">Giảm theo phần trăm</option>
                 </select>
               </div>
               <div>
-                <Label className="text-blue-700">
+                <Label className="text-black">
                   {editingVoucher.discountType === "percentage" ? "Phần trăm giảm (%)" : "Giá trị giảm (VNĐ)"}
                 </Label>
                 <Input
                   type="number"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.discountValue}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, discountValue: +e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, discountValue: +e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Đơn hàng tối thiểu (VNĐ)</Label>
+                <Label className="text-black">Đơn hàng tối thiểu (VNĐ)</Label>
                 <Input
                   type="number"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.minPurchase}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, minPurchase: +e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, minPurchase: +e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Ngày bắt đầu</Label>
+                <Label className="text-black">Ngày bắt đầu</Label>
                 <Input
                   type="date"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.startDate}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, startDate: e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, startDate: e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Ngày kết thúc</Label>
+                <Label className="text-black">Ngày kết thúc</Label>
                 <Input
                   type="date"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.endDate}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, endDate: e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, endDate: e.target.value })}
                 />
               </div>
               <div>
-                <Label className="text-blue-700">Giới hạn lượt dùng</Label>
+                <Label className="text-black">Giới hạn lượt dùng</Label>
                 <Input
                   type="number"
-                  className="border-blue-200 focus:ring-blue-300"
+                  className="border-pink-100 focus:ring-pink-100"
                   value={editingVoucher.usageLimit}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, usageLimit: +e.target.value })
-                  }
+                  onChange={(e) => setEditingVoucher({ ...editingVoucher, usageLimit: +e.target.value })}
                 />
-              </div>
-              <div>
-                <Label className="text-blue-700">Trạng thái</Label>
-                <select
-                  className="w-full border border-blue-200 rounded-lg p-2 focus:ring-blue-300"
-                  value={editingVoucher.status}
-                  onChange={(e) =>
-                    setEditingVoucher({ ...editingVoucher, status: e.target.value as "active" | "expired" | "used"})
-                  }
-                >
-                  <option value="active">Đang hoạt động</option>
-                  <option value="inactive">Ngừng hoạt động</option>
-                </select>
               </div>
               <DialogFooter>
                 <Button 
                   variant="outline" 
-                  className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                  className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button 
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -641,15 +593,15 @@ const VoucherManagementPage = () => {
 
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md bg-white text-gray-900 rounded-2xl shadow-xl border border-blue-200">
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-blue-800">Thêm ưu đãi mới</DialogTitle>
+            <DialogTitle className="text-black">Thêm ưu đãi mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-blue-700">Mã ưu đãi</Label>
+              <Label className="text-black">Mã ưu đãi</Label>
               <Input
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.code}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, code: e.target.value })
@@ -657,9 +609,9 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Mô tả</Label>
+              <Label className="text-black">Mô tả</Label>
               <Input
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.description}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, description: e.target.value })
@@ -667,25 +619,25 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Loại giảm giá </Label>
+              <Label className="text-black">Loại giảm giá</Label>
               <select
-                className="w-full border border-blue-200 rounded-lg p-2 focus:ring-blue-300"
+                className="w-full border border-pink-100 rounded-lg p-2 focus:ring-pink-100"
                 value={newVoucher.discountType}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, discountType: e.target.value as "fixed" | "percentage" })
                 }
               >
                 <option value="fixed">Giảm số tiền cố định</option>
-                <option value="percent">Giảm theo phần trăm</option>
+                <option value="percentage">Giảm theo phần trăm</option>
               </select>
             </div>
             <div>
-              <Label className="text-blue-700">
+              <Label className="text-black">
                 {newVoucher.discountType === "percentage" ? "Phần trăm giảm (%)" : "Giá trị giảm (VNĐ)"}
               </Label>
               <Input
                 type="number"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.discountValue}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, discountValue: +e.target.value })
@@ -693,10 +645,10 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Đơn hàng tối thiểu (VNĐ)</Label>
+              <Label className="text-black">Đơn hàng tối thiểu (VNĐ)</Label>
               <Input
                 type="number"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.minPurchase}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, minPurchase: +e.target.value })
@@ -704,10 +656,10 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Ngày bắt đầu</Label>
+              <Label className="text-black">Ngày bắt đầu</Label>
               <Input
                 type="date"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.startDate}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, startDate: e.target.value })
@@ -715,10 +667,10 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Ngày kết thúc</Label>
+              <Label className="text-black">Ngày kết thúc</Label>
               <Input
                 type="date"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.endDate}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, endDate: e.target.value })
@@ -726,10 +678,10 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Giới hạn lượt dùng</Label>
+              <Label className="text-black">Giới hạn lượt dùng</Label>
               <Input
                 type="number"
-                className="border-blue-200 focus:ring-blue-300"
+                className="border-pink-100 focus:ring-pink-100"
                 value={newVoucher.usageLimit}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, usageLimit: +e.target.value })
@@ -737,9 +689,9 @@ const VoucherManagementPage = () => {
               />
             </div>
             <div>
-              <Label className="text-blue-700">Trạng thái</Label>
+              <Label className="text-black">Trạng thái</Label>
               <select
-                className="w-full border border-blue-200 rounded-lg p-2 focus:ring-blue-300"
+                className="w-full border border-pink-100 rounded-lg p-2 focus:ring-pink-100"
                 value={newVoucher.status}
                 onChange={(e) =>
                   setNewVoucher({ ...newVoucher, status: e.target.value as "active" | "expired" | "used"})
@@ -752,13 +704,13 @@ const VoucherManagementPage = () => {
             <DialogFooter>
               <Button 
                 variant="outline" 
-                className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
               <Button 
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddVoucher}
               >
                 Thêm

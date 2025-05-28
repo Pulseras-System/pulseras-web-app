@@ -8,8 +8,8 @@ const NotFound404: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white px-4">
-      <Card className="max-w-lg w-full text-center p-8 shadow-lg">
+    <div className="flex items-center justify-center min-h-screen px-4">
+      <Card className="max-w-lg w-full text-center p-8 bg-gray-50 shadow-lg">
         <FaExclamationTriangle className="text-5xl text-yellow-500 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-gray-800 mb-2">404 - Không tìm thấy trang</h1>
         <p className="text-gray-600 mb-6">

@@ -37,8 +37,13 @@ const BraceletCard = ({
   imageSrc,
   id,
 }: Bracelet & { id: number }) => (
-  <Link to={`/shop/${id}`} className="group block transition-transform hover:-translate-y-1">
-    <div className="relative flex flex-col w-full overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100 bg-white">
+  <Link
+    to={`/shop/${id}`}
+    className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
+  >
+    {/* Nội dung sản phẩm mặc định */}
+    <div className="flex flex-col">
+      {/* Hình ảnh */}
       <div className="relative overflow-hidden aspect-square">
         <img
           loading="lazy"
@@ -46,28 +51,50 @@ const BraceletCard = ({
           alt={`Vòng tay ${name}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex flex-col justify-end p-5">
-          <div className="transform translate-y-6 group-hover:translate-y-0 transition-transform duration-300">
-            <h3 className="text-xl font-bold text-white drop-shadow-md">{name}</h3>
-            <p className="text-white/90 mt-1 text-sm">{description}</p>
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-semibold text-white/95">{price}</span>
-              <Button
-                variant="default"
-                size="sm"
-                className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
-              >
-                Xem chi tiết
-              </Button>
-            </div>
+        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
+
+      </div>
+      {/* Phần thông tin và nút mua hàng */}
+      <div className="p-4">
+        {/* Hàng trên: tên, mô tả và giá */}
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+            <p className="text-sm text-gray-600 mt-1">{description}</p>
+          </div>
+          <div className="ml-4 flex-shrink-0">
+            <span className="text-md font-bold text-blue-600">{price}</span>
           </div>
         </div>
+        {/* Hàng dưới: 2 nút */}
+        <div className="flex justify-between gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
+          >
+            Thêm vào giỏ
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Mua ngay
+          </Button>
+        </div>
       </div>
-      <div className="p-4 bg-gradient-to-b from-white to-blue-50/50">
-        <h3 className="font-medium text-blue-900 truncate">{name}</h3>
-        <p className="text-blue-600 text-sm mt-1">{description}</p>
-        <p className="text-pink-500 font-medium mt-2">{price}</p>
-      </div>
+    </div>
+
+    {/* Overlay hover bao toàn bộ thẻ sản phẩm */}
+    <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
+      <Button
+        variant="default"
+        size="lg"
+        className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
+      >
+        Xem chi tiết
+      </Button>
     </div>
   </Link>
 );
@@ -95,9 +122,11 @@ const ProductPage = () => {
   const navigate = useNavigate();
 
   const filteredBracelets = mockBracelets.filter((b) => {
-    const matchesCategory = selectedCategory === "Tất cả" || b.category === selectedCategory;
-    const matchesSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         b.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "Tất cả" || b.category === selectedCategory;
+    const matchesSearch =
+      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -115,16 +144,16 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 py-8 bg-gradient-to-b from-blue-50 to-pink-50 min-h-screen">
+    <div className="px-4 sm:px-6 py-8 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <AnimatedSection>
-          <nav className="flex mb-6" aria-label="Breadcrumb">
-            <ol className="inline-flex items-center space-x-1 md:space-x-2">
+          <nav className="flex mb-6 text-sm sm:text-base" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center space-x-1 sm:space-x-2">
               <li>
-                <button 
+                <button
                   onClick={() => navigate('/')}
-                  className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-600 hover:underline transition-colors"
+                  className="inline-flex items-center font-medium text-blue-700 hover:text-blue-600 hover:underline transition-colors"
                 >
                   Trang chủ
                 </button>
@@ -132,7 +161,7 @@ const ProductPage = () => {
               <li aria-current="page">
                 <div className="flex items-center">
                   <ChevronRight className="w-4 h-4 text-blue-400" />
-                  <span className="ml-1 text-sm font-medium text-blue-600 md:ml-2 hover:underline">
+                  <span className="ml-1 font-medium text-blue-600 sm:ml-2 hover:underline">
                     Vòng tay
                   </span>
                 </div>
@@ -143,21 +172,22 @@ const ProductPage = () => {
 
         {/* Hero Section */}
         <AnimatedSection className="mb-12 text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-blue-900 mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-900 mb-4"
           >
             Bộ Sưu Tập Vòng Tay
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg text-blue-700 max-w-2xl mx-auto"
+            className="text-base sm:text-lg text-blue-700 max-w-2xl mx-auto"
           >
-            Khám phá bộ sưu tập vòng tay độc đáo, kết hợp tinh tế giữa truyền thống và hiện đại
+            Khám phá bộ sưu tập vòng tay độc đáo, kết hợp tinh tế giữa truyền thống và hiện
+            đại
           </motion.p>
         </AnimatedSection>
 
@@ -183,11 +213,11 @@ const ProductPage = () => {
 
             {/* Categories */}
             <AnimatedSection>
-              <h2 className="text-2xl font-bold text-center text-blue-900 mb-6 relative inline-block">
+              <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6 relative inline-block">
                 <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
                 <span className="absolute bottom-3 left-0 right-0 h-1 bg-blue-100 z-0"></span>
               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 {categories.map((cat, index) => (
                   <motion.button
                     key={index}
@@ -214,16 +244,18 @@ const ProductPage = () => {
         </AnimatedSection>
 
         {/* Products */}
-        <AnimatedSection className="mb-16">
+              <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
+
+          
           <AnimatedSection className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-900 relative inline-block">
-              <span className="relative z-10 px-4 bg-gradient-to-b from-blue-50 to-white">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900 relative inline-block">
+              <span className="relative z-10 px-4">
                 {selectedCategory === "Tất cả" ? "Tất cả sản phẩm" : `Vòng tay ${selectedCategory}`}
               </span>
               <span className="absolute bottom-4 left-0 right-0 h-1 bg-blue-100 z-0"></span>
             </h2>
           </AnimatedSection>
-          
+
           {paginated.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {paginated.map((bracelet, index) => (
@@ -282,7 +314,7 @@ const ProductPage = () => {
                 >
                   <ChevronLeft className="h-4 w-4 text-blue-600" />
                 </Button>
-                
+
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
                   if (totalPages <= 5) {
@@ -294,7 +326,6 @@ const ProductPage = () => {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-                  
                   return (
                     <Button
                       key={pageNum}
@@ -337,7 +368,7 @@ const ProductPage = () => {
               </p>
             </AnimatedSection>
           )}
-        </AnimatedSection>
+        </section>
       </div>
     </div>
   );

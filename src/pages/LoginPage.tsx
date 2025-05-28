@@ -40,7 +40,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-violet-200 to-blue-100 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center  relative overflow-hidden">
       {/* Decorative cloud elements */}
       <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/40 blur-xl"></div>
       <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-white/40 blur-xl"></div>
