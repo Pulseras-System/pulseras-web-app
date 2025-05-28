@@ -11,7 +11,6 @@ import Logo from "../assets/images/logo.png";
 import {
   Home, ShoppingBag, LayoutGrid, Sparkles, Info, Phone, // Nav icons
   ShoppingCart, User, Menu, Search, // Utility icons
-  X // For close button in sheet
 } from "lucide-react";
 
 import {
@@ -176,19 +175,10 @@ const MainLayout = () => {
                         alt="Pulsera logo" 
                         className="h-10 w-auto transition-transform hover:scale-105" 
                       />
-                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-500">
-                        Pulseras
-                      </span>
+                   
                     </Link>
                   </SheetTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:rotate-90"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
+                  
                 </SheetHeader>
                 <nav className="flex flex-col gap-4">
                   {/* Search Bar in Mobile Menu */}

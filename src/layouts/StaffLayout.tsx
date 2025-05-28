@@ -98,7 +98,7 @@ const StaffLayout = () => {
                   <img 
                     src={Logo} 
                     alt="Workshop logo" 
-                    className="h-10 w-auto group-hover:rotate-4 transition-transform" 
+                    className="w-10 h-auto group-hover:rotate-4 transition-transform" 
                   />
                 </Link>
 
