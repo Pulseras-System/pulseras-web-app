@@ -7,16 +7,16 @@ import BlankLayout from '@/layouts/BlankLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 
 // Pages
-import HomePage from '@/pages/HomePage';
+import HomePage from '@/pages/Customer/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
-import AboutPage from '@/pages/AboutPage';
-import ContactPage from '@/pages/ContactPage';
+import AboutPage from '@/pages/Customer/AboutPage';
+import ContactPage from '@/pages/Customer/ContactPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import NoPermission from '@/pages/NoPermissionPage';
-import ProductPage from '@/pages/ProductPage';
-import ProductDetailPage from '@/pages/ProductDetailPage';
-import DesignBraceletPage from '@/pages/DesignBraceletPage';
+import ProductPage from '@/pages/Customer/ProductPage';
+import ProductDetailPage from '@/pages/Customer/ProductDetailPage';
+import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
