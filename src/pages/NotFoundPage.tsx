@@ -1,16 +1,20 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FaExclamationTriangle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import NotFoundGif from "../assets/images/404.gif"; 
 
 const NotFound404: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
-      <Card className="max-w-lg w-full text-center p-8 bg-gray-50 shadow-lg">
-        <FaExclamationTriangle className="text-5xl text-yellow-500 mx-auto mb-4" />
+      <Card className="max-w-lg w-1/2 text-center p-8 bg-gray-50 shadow-lg">
+        <img
+          src={NotFoundGif}
+          alt="Not Found"
+          className="mx-auto mb-4 w-full h-1/2 object-contain"
+        />
         <h1 className="text-3xl font-bold text-gray-800 mb-2">404 - Không tìm thấy trang</h1>
         <p className="text-gray-600 mb-6">
           Trang bạn đang tìm kiếm không tồn tại. Có thể đường dẫn đã sai hoặc trang đã bị xóa.

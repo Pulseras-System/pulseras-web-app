@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: ChartArea },
+  { label: "Bảng điều khiển", path: "/admin/dashboard", icon: ChartArea },
   { label: "Vòng tay", path: "/admin/bracelets", icon: Gem },
   { label: "Nguyên liệu", path: "/admin/materials", icon: Package },
   { label: "Đơn hàng", path: "/admin/orders", icon: Box },
@@ -176,7 +176,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col lg:ml-64 mt-16 lg:mt-0">
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Bảng quản lý</h1>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
