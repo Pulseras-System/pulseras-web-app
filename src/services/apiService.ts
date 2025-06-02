@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
 // Cấu hình URL của API
-const API_BASE_URL = "https://localhost:7088/api/v1";
+const API_BASE_URL = "http://localhost:8080/api";
 
 // Tạo đối tượng axios với cấu hình sẵn
 const api: AxiosInstance = axios.create({

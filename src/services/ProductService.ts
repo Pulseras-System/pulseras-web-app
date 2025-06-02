@@ -1,5 +1,7 @@
 import api from "./apiService";
 
+const PRODUCT_URL = "/products";
+
 export interface Product {
   product_id: number;
   category_id: number;
@@ -16,19 +18,19 @@ export interface Product {
 
 const ProductService = {
   get: async (): Promise<Product[]> => {
-    const response = await api.get<Product[]>("/product");
+    const response = await api.get<Product[]>(PRODUCT_URL);
     return response.data;
   },
   getById: async (id: number | string): Promise<Product> => {
-    const response = await api.get<Product>(`/product/${id}`);
+    const response = await api.get<Product>(`/${PRODUCT_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Product>): Promise<Product> => {
-    const response = await api.post<Product>("/product", data);
+    const response = await api.post<Product>(PRODUCT_URL, data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Product>): Promise<Product> => {
-    const response = await api.put<Product>(`/product/${id}`, data);
+    const response = await api.put<Product>(`/${PRODUCT_URL}/${id}`, data);
     return response.data;
   },
 };

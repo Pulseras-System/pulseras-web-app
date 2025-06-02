@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
+import ProductService, { Product } from "@/services/ProductService";
 
-interface Bracelet {
+export interface Bracelet {
   id: number;
   name: string;
   material: string;
@@ -30,23 +31,10 @@ interface Bracelet {
   image: string;
 }
 
-const mockBracelets: Bracelet[] = [
-  { id: 1, name: "Giấc mơ Bohemian", material: "Đá tự nhiên", price: 299000, stock: 12, image: "https://placehold.co/100x100/FFD6E7/000000?text=1" },
-  { id: 2, name: "Tinh thể trị liệu", material: "Pha lê nguyên chất", price: 399000, stock: 8, image: "https://placehold.co/100x100/FFD6E7/000000?text=2" },
-  { id: 3, name: "Hoàng hôn vàng", material: "Mạ vàng", price: 499000, stock: 5, image: "https://placehold.co/100x100/FFD6E7/000000?text=3" },
-  { id: 4, name: "Hơi thở đại dương", material: "Vỏ ốc + Ngọc trai", price: 349000, stock: 10, image: "https://placehold.co/100x100/FFD6E7/000000?text=4" },
-  { id: 5, name: "Vòng đá phong thủy", material: "Đá tự nhiên", price: 199000, stock: 20, image: "https://placehold.co/100x100/FFD6E7/000000?text=5" },
-  { id: 6, name: "Vòng tay tình yêu", material: "Pha lê", price: 299000, stock: 15, image: "https://placehold.co/100x100/FFD6E7/000000?text=6" },
-  { id: 7, name: "Linh hồn biển cả", material: "Vỏ sò", price: 249000, stock: 10, image: "https://placehold.co/100x100/FFD6E7/000000?text=7" },
-  { id: 8, name: "Ánh sáng bình minh", material: "Đá quý", price: 499000, stock: 30, image: "https://placehold.co/100x100/FFD6E7/000000?text=8" },
-  { id: 9, name: "Vòng tay hoa cỏ", material: "Gỗ tự nhiên", price: 149000, stock: 25, image: "https://placehold.co/100x100/FFD6E7/000000?text=9" },
-  { id: 10, name: "Vòng tay ánh trăng", material: "Ngọc trai", price: 399000, stock: 5, image: "https://placehold.co/100x100/FFD6E7/000000?text=10" },
-];
-
 const itemsPerPage = 5;
 
 const BraceletManagement = () => {
-  const [bracelets, setBracelets] = useState(mockBracelets);
+  const [bracelets, setBracelets] = useState<Bracelet[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [priceFilter, setPriceFilter] = useState<string>("all");
@@ -64,21 +52,42 @@ const BraceletManagement = () => {
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  const filteredBracelets = bracelets.filter(bracelet => {
-    const matchesSearch = 
-      bracelet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bracelet.material.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesPrice = 
+  // Gọi API từ ProductService và mapping sang kiểu Bracelet
+  useEffect(() => {
+    ProductService.get()
+      .then((products: Product[]) => {
+        const braceletsFromProducts: Bracelet[] = products.map((product) => ({
+          id: product.product_id,
+          name: product.productName,
+          material: product.productMaterial,
+          price: 0, // nếu có field price
+          stock: product.quantity,
+          image: product.productImage,
+        }));
+        setBracelets(braceletsFromProducts);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch bracelets:", error);
+      });
+  }, []);
+
+  const filteredBracelets = bracelets.filter((bracelet) => {
+    const matchesSearch =
+      (bracelet.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bracelet.material || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesPrice =
       priceFilter === "all" ||
       (priceFilter === "under300" && bracelet.price < 300000) ||
-      (priceFilter === "300to400" && bracelet.price >= 300000 && bracelet.price <= 400000) ||
+      (priceFilter === "300to400" &&
+        bracelet.price >= 300000 &&
+        bracelet.price <= 400000) ||
       (priceFilter === "over400" && bracelet.price > 400000);
-    
-    const matchesMaterial = 
-      materialFilter === "all" || 
-      bracelet.material.toLowerCase().includes(materialFilter.toLowerCase());
-    
+
+    const matchesMaterial =
+      materialFilter === "all" ||
+      (bracelet.material || "").toLowerCase().includes(materialFilter.toLowerCase());
+
     return matchesSearch && matchesPrice && matchesMaterial;
   });
 
@@ -93,34 +102,81 @@ const BraceletManagement = () => {
     }
   };
 
-  const uniqueMaterials = Array.from(new Set(mockBracelets.map(b => b.material)));
+  const uniqueMaterials = Array.from(new Set(bracelets.map((b) => b.material)));
 
-  const handleEditClick = (bracelet: Bracelet) => {
-    setEditingBracelet(bracelet);
-    setIsEditOpen(true);
-  };
-
+  // Update: gọi API update thông qua ProductService
   const handleEditSave = () => {
     if (editingBracelet) {
-      setBracelets((prev) =>
-        prev.map((b) => (b.id === editingBracelet.id ? editingBracelet : b))
-      );
-      setIsEditOpen(false);
+      // Map từ Bracelet sang Product
+      const updatedProduct = {
+        product_id: editingBracelet.id,
+        productName: editingBracelet.name,
+        productMaterial: editingBracelet.material,
+        price: editingBracelet.price,
+        quantity: editingBracelet.stock,
+        productImage: editingBracelet.image,
+      };
+      ProductService.update(editingBracelet.id, updatedProduct)
+        .then((updated: Product) => {
+          // Map ngược lại từ Product sang Bracelet
+          const updatedBracelet: Bracelet = {
+            id: updated.product_id,
+            name: updated.productName,
+            material: updated.productMaterial,
+            price: 0,
+            stock: updated.quantity,
+            image: updated.productImage,
+          };
+          setBracelets((prev) =>
+            prev.map((b) => (b.id === updatedBracelet.id ? updatedBracelet : b))
+          );
+          setIsEditOpen(false);
+        })
+        .catch((error) => {
+          console.error("Update failed:", error);
+        });
     }
   };
 
+  // Create: gọi API create thông qua ProductService
   const handleAddBracelet = () => {
     if (newBracelet.name.trim() && newBracelet.material.trim()) {
-      setBracelets((prev) => [...prev, { ...newBracelet, id: Date.now() }]);
-      setNewBracelet({
-        id: 0,
-        name: "",
-        material: "",
-        price: 0,
-        stock: 0,
-        image: "",
-      });
-      setIsAddOpen(false);
+      const newProduct = {
+        categoryId: 0, // Giả sử categoryId là 1, có thể thay đổi tùy theo yêu cầu
+        productName: newBracelet.name,
+        productDescription: "abc", // Nếu cần mô tả, có thể thêm vào đây
+        productMaterial: newBracelet.material,
+        productImage: newBracelet.image,
+        price: newBracelet.price,
+        quantity: newBracelet.stock,
+        type: "bracelet", // Giả sử type là "bracelet"
+        status: 1, // Giả sử status là 1 (có thể thay đổi tùy theo yêu cầu)
+      };
+      ProductService.create(newProduct)
+        .then((created: Product) => {
+          // Map từ Product trả về sang kiểu Bracelet
+          const createdBracelet: Bracelet = {
+            id: created.product_id,
+            name: created.productName,
+            material: created.productMaterial,
+            price: 0,
+            stock: created.quantity,
+            image: created.productImage,
+          };
+          setBracelets((prev) => [...prev, createdBracelet]);
+          setNewBracelet({
+            id: 0,
+            name: "",
+            material: "",
+            price: 0,
+            stock: 0,
+            image: "",
+          });
+          setIsAddOpen(false);
+        })
+        .catch((error) => {
+          console.error("Create failed:", error);
+        });
     }
   };
 
@@ -145,15 +201,15 @@ const BraceletManagement = () => {
               }}
             />
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button 
+          <Button
             className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
@@ -167,7 +223,9 @@ const BraceletManagement = () => {
         <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">Lọc theo giá</label>
+              <Label className="block text-sm font-medium text-black mb-1">
+                Lọc theo giá
+              </Label>
               <select
                 className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={priceFilter}
@@ -183,7 +241,9 @@ const BraceletManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">Lọc theo chất liệu</label>
+              <Label className="block text-sm font-medium text-black mb-1">
+                Lọc theo chất liệu
+              </Label>
               <select
                 className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={materialFilter}
@@ -193,8 +253,10 @@ const BraceletManagement = () => {
                 }}
               >
                 <option value="all">Tất cả chất liệu</option>
-                {uniqueMaterials.map(material => (
-                  <option key={material} value={material}>{material}</option>
+                {uniqueMaterials.map((material) => (
+                  <option key={material} value={material}>
+                    {material}
+                  </option>
                 ))}
               </select>
             </div>
@@ -219,8 +281,8 @@ const BraceletManagement = () => {
               <TableRow key={bracelet.id} className="hover:bg-pink-100 border-pink-100">
                 <TableCell>
                   <div className="w-16 h-16 rounded-md overflow-hidden border border-pink-100 bg-pink-100">
-                    <img 
-                      src={bracelet.image} 
+                    <img
+                      src={bracelet.image}
                       alt={bracelet.name}
                       className="w-full h-full object-cover"
                     />
@@ -230,31 +292,40 @@ const BraceletManagement = () => {
                   <div className="font-semibold">{bracelet.name}</div>
                   <div className="text-xs text-black">ID: {bracelet.id}</div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-black">{bracelet.material}</TableCell>
-                <TableCell className="font-medium whitespace-nowrap text-black">{bracelet.price.toLocaleString()}₫</TableCell>
+                <TableCell className="whitespace-nowrap text-black">
+                  {bracelet.material}
+                </TableCell>
+                <TableCell className="font-medium whitespace-nowrap text-black">
+                  {bracelet.price.toLocaleString()}₫
+                </TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    bracelet.stock > 10 
-                      ? "bg-green-100 text-green-800" 
-                      : bracelet.stock > 5 
-                        ? "bg-pink-100 text-pink-800" 
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      bracelet.stock > 10
+                        ? "bg-green-100 text-green-800"
+                        : bracelet.stock > 5
+                        ? "bg-pink-100 text-pink-800"
                         : "bg-red-100 text-red-800"
-                  }`}>
+                    }`}
+                  >
                     {bracelet.stock} {bracelet.stock > 5 ? "cái" : "sắp hết"}
                   </span>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditClick(bracelet)}
+                    onClick={() => {
+                      setEditingBracelet(bracelet);
+                      setIsEditOpen(true);
+                    }}
                   >
                     <Pen className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -283,7 +354,8 @@ const BraceletManagement = () => {
       {filteredBracelets.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của {filteredBracelets.length} sản phẩm
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của{" "}
+            {filteredBracelets.length} sản phẩm
           </div>
           <Pagination
             currentPage={currentPage}
@@ -354,14 +426,14 @@ const BraceletManagement = () => {
                 />
               </div>
               <DialogFooter>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
                 >
@@ -433,14 +505,14 @@ const BraceletManagement = () => {
               />
             </div>
             <DialogFooter>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
-              <Button 
+              <Button
                 className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddBracelet}
               >
