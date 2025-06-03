@@ -1,8 +1,11 @@
 import api from "./apiService";
 
+const CATEGORY_URL = "/categories";
+
+
 export interface Category {
-  category_id: number;
-  product_id: number;
+  categoryId: number;
+  productId: number;
   categoryName: string;
   status: number;
   createDate: string;
@@ -11,19 +14,19 @@ export interface Category {
 
 const CategoryService = {
   get: async (): Promise<Category[]> => {
-    const response = await api.get<Category[]>("/category");
+    const response = await api.get<Category[]>(CATEGORY_URL);
     return response.data;
   },
   getById: async (id: number | string): Promise<Category> => {
-    const response = await api.get<Category>(`/category/${id}`);
+    const response = await api.get<Category>(`${CATEGORY_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Category>): Promise<Category> => {
-    const response = await api.post<Category>("/category", data);
+    const response = await api.post<Category>(`${CATEGORY_URL}`, data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Category>): Promise<Category> => {
-    const response = await api.put<Category>(`/category/${id}`, data);
+    const response = await api.put<Category>(`${CATEGORY_URL}/${id}`, data);
     return response.data;
   },
 };

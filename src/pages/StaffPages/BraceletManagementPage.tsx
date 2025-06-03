@@ -9,8 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter } from "lucide-react";
-import { Package } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,82 +18,150 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import Pagination from "@/components/pagination";
 import ProductService, { Product } from "@/services/ProductService";
+import CategoryService from "@/services/CategoryService"; // new import
 
-export interface Bracelet {
-  id: number;
-  name: string;
-  material: string;
-  price: number;
-  stock: number;
-  image: string;
-}
+const itemsPerPage = 8;
 
-const itemsPerPage = 5;
+// Inline pagination component (không dùng import)
+const InlinePagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <Button
+          key={i}
+          variant={i === currentPage ? "default" : "outline"}
+          size="sm"
+          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-pink-600 text-white" : "text-pink-800"}`}
+          onClick={() => onPageChange(i)}
+        >
+          {i}
+        </Button>
+      );
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="text-pink-800 border-pink-300 hover:bg-pink-100"
+      >
+        <ChevronLeft className="h-4 w-4 mr-1" />
+        Trước
+      </Button>
+      {renderPageNumbers()}
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="text-pink-800 border-pink-300 hover:bg-pink-100"
+      >
+        Sau
+        <ChevronRight className="h-4 w-4 ml-1" />
+      </Button>
+    </div>
+  );
+};
 
 const BraceletManagement = () => {
-  const [bracelets, setBracelets] = useState<Bracelet[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [priceFilter, setPriceFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [editingBracelet, setEditingBracelet] = useState<Bracelet | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [newBracelet, setNewBracelet] = useState<Bracelet>({
-    id: 0,
-    name: "",
-    material: "",
+  const [newProduct, setNewProduct] = useState<Product>({
+    productId: "",
+    categoryIds: [],
+    productName: "",
+    productDescription: "",
+    productMaterial: "",
+    productImage: "",
+    quantity: 0,
+    type: "bracelet",
     price: 0,
-    stock: 0,
-    image: "",
+    createDate: "",
+    lastEdited: null,
+    status: 1,
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  // mapping category id -> categoryName
+  const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
+  const [newProductCategoryInput, setNewProductCategoryInput] = useState(""); // dùng cho danh mục (tên danh mục)
 
-  // Gọi API từ ProductService và mapping sang kiểu Bracelet
+  // Load products
   useEffect(() => {
-    ProductService.get()
+    ProductService.get({ keyword: searchTerm, page: currentPage - 1, size: itemsPerPage })
       .then((products: Product[]) => {
-        const braceletsFromProducts: Bracelet[] = products.map((product) => ({
-          id: product.product_id,
-          name: product.productName,
-          material: product.productMaterial,
-          price: 0, // nếu có field price
-          stock: product.quantity,
-          image: product.productImage,
-        }));
-        setBracelets(braceletsFromProducts);
+        setProducts(products.filter((p) => p.type.toLowerCase().includes("bracelet")));
       })
       .catch((error) => {
-        console.error("Failed to fetch bracelets:", error);
+        console.error("Failed to fetch products:", error);
+      });
+  }, [searchTerm, currentPage]);
+
+  // Load categories and build mapping
+  useEffect(() => {
+    CategoryService.get()
+      .then((cats) => {
+        const map: Record<string, string> = {};
+        cats.forEach((cat) => {
+          map[String(cat.categoryId)] = cat.categoryName;
+        });
+        setCategoriesMap(map);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch categories:", error);
       });
   }, []);
 
-  const filteredBracelets = bracelets.filter((bracelet) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch =
-      (bracelet.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (bracelet.material || "").toLowerCase().includes(searchTerm.toLowerCase());
+      product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.productMaterial.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesPrice =
       priceFilter === "all" ||
-      (priceFilter === "under300" && bracelet.price < 300000) ||
+      (priceFilter === "under300" && product.price < 300000) ||
       (priceFilter === "300to400" &&
-        bracelet.price >= 300000 &&
-        bracelet.price <= 400000) ||
-      (priceFilter === "over400" && bracelet.price > 400000);
+        product.price >= 300000 &&
+        product.price <= 400000) ||
+      (priceFilter === "over400" && product.price > 400000);
 
     const matchesMaterial =
       materialFilter === "all" ||
-      (bracelet.material || "").toLowerCase().includes(materialFilter.toLowerCase());
+      product.productMaterial.toLowerCase().includes(materialFilter.toLowerCase());
 
     return matchesSearch && matchesPrice && matchesMaterial;
   });
 
-  const totalPages = Math.ceil(filteredBracelets.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentBracelets = filteredBracelets.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -102,33 +169,27 @@ const BraceletManagement = () => {
     }
   };
 
-  const uniqueMaterials = Array.from(new Set(bracelets.map((b) => b.material)));
+  const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
 
-  // Update: gọi API update thông qua ProductService
   const handleEditSave = () => {
-    if (editingBracelet) {
-      // Map từ Bracelet sang Product
-      const updatedProduct = {
-        product_id: editingBracelet.id,
-        productName: editingBracelet.name,
-        productMaterial: editingBracelet.material,
-        price: editingBracelet.price,
-        quantity: editingBracelet.stock,
-        productImage: editingBracelet.image,
+    if (editingProduct) {
+      const updatedData = {
+        categoryIds: editingProduct.categoryIds,
+        productName: editingProduct.productName,
+        productMaterial: editingProduct.productMaterial,
+        productDescription: editingProduct.productDescription,
+        productImage: editingProduct.productImage,
+        price: editingProduct.price,
+        quantity: editingProduct.quantity,
+        type: editingProduct.type,
+        status: editingProduct.status,
       };
-      ProductService.update(editingBracelet.id, updatedProduct)
+      ProductService.update(editingProduct.productId, updatedData)
         .then((updated: Product) => {
-          // Map ngược lại từ Product sang Bracelet
-          const updatedBracelet: Bracelet = {
-            id: updated.product_id,
-            name: updated.productName,
-            material: updated.productMaterial,
-            price: 0,
-            stock: updated.quantity,
-            image: updated.productImage,
-          };
-          setBracelets((prev) =>
-            prev.map((b) => (b.id === updatedBracelet.id ? updatedBracelet : b))
+          setProducts((prev) =>
+            prev.map((p) =>
+              p.productId === updated.productId ? updated : p
+            )
           );
           setIsEditOpen(false);
         })
@@ -138,46 +199,61 @@ const BraceletManagement = () => {
     }
   };
 
-  // Create: gọi API create thông qua ProductService
-  const handleAddBracelet = () => {
-    if (newBracelet.name.trim() && newBracelet.material.trim()) {
-      const newProduct = {
-        categoryId: 0, // Giả sử categoryId là 1, có thể thay đổi tùy theo yêu cầu
-        productName: newBracelet.name,
-        productDescription: "abc", // Nếu cần mô tả, có thể thêm vào đây
-        productMaterial: newBracelet.material,
-        productImage: newBracelet.image,
-        price: newBracelet.price,
-        quantity: newBracelet.stock,
-        type: "bracelet", // Giả sử type là "bracelet"
-        status: 1, // Giả sử status là 1 (có thể thay đổi tùy theo yêu cầu)
+  const handleAddProduct = () => {
+    if (newProduct.productName.trim() && newProduct.productMaterial.trim()) {
+      // Tách chuỗi tên danh mục đã nhập
+      const categoryNames = newProductCategoryInput
+        .split(',')
+        .map((name) => name.trim())
+        .filter((name) => name !== "");
+
+      // Chuyển từ tên danh mục sang cate id dựa trên mapping (không phân biệt hoa thường)
+      const categoryIds = categoryNames.map((name) => {
+        const found = Object.entries(categoriesMap).find(
+          ([, catName]) => catName.toLowerCase() === name.toLowerCase()
+        );
+        return found ? found[0] : name;
+      });
+
+      const newData = {
+        categoryIds,
+        productName: newProduct.productName,
+        productDescription: newProduct.productDescription,
+        productMaterial: newProduct.productMaterial,
+        productImage: newProduct.productImage,
+        price: newProduct.price,
+        quantity: newProduct.quantity,
+        type: newProduct.type,
+        status: newProduct.status,
       };
-      ProductService.create(newProduct)
+      ProductService.create(newData)
         .then((created: Product) => {
-          // Map từ Product trả về sang kiểu Bracelet
-          const createdBracelet: Bracelet = {
-            id: created.product_id,
-            name: created.productName,
-            material: created.productMaterial,
+          setProducts((prev) => [...prev, created]);
+          setNewProduct({
+            productId: "",
+            categoryIds: [],
+            productName: "",
+            productDescription: "",
+            productMaterial: "",
+            productImage: "",
+            quantity: 0,
+            type: "bracelet",
             price: 0,
-            stock: created.quantity,
-            image: created.productImage,
-          };
-          setBracelets((prev) => [...prev, createdBracelet]);
-          setNewBracelet({
-            id: 0,
-            name: "",
-            material: "",
-            price: 0,
-            stock: 0,
-            image: "",
+            createDate: "",
+            lastEdited: null,
+            status: 1,
           });
+          setNewProductCategoryInput("");
           setIsAddOpen(false);
         })
         .catch((error) => {
           console.error("Create failed:", error);
         });
     }
+  };
+
+  const getCategoryName = (id: number | string) => {
+    return categoriesMap[String(id)] || id;
   };
 
   return (
@@ -270,6 +346,7 @@ const BraceletManagement = () => {
             <TableRow>
               <TableHead className="text-black w-20">Hình ảnh</TableHead>
               <TableHead className="text-black">Tên sản phẩm</TableHead>
+              <TableHead className="text-black">Loại</TableHead>
               <TableHead className="text-black">Chất liệu</TableHead>
               <TableHead className="text-black">Giá (VND)</TableHead>
               <TableHead className="text-black">Tồn kho</TableHead>
@@ -277,38 +354,45 @@ const BraceletManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentBracelets.map((bracelet) => (
-              <TableRow key={bracelet.id} className="hover:bg-pink-100 border-pink-100">
+            {currentProducts.map((product) => (
+              <TableRow key={product.productId} className="hover:bg-pink-100 border-pink-100">
                 <TableCell>
                   <div className="w-16 h-16 rounded-md overflow-hidden border border-pink-100 bg-pink-100">
                     <img
-                      src={bracelet.image}
-                      alt={bracelet.name}
+                      src={product.productImage}
+                      alt={product.productName}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 </TableCell>
                 <TableCell className="font-medium text-black whitespace-nowrap">
-                  <div className="font-semibold">{bracelet.name}</div>
-                  <div className="text-xs text-black">ID: {bracelet.id}</div>
+                  <div className="font-semibold">{product.productName}</div>
+                  <div className="text-xs text-gray-600">
+                    {product.categoryIds.length > 0
+                      ? product.categoryIds.map((id) => getCategoryName(id)).join(", ")
+                      : "Không có danh mục"}
+                  </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-black">
-                  {bracelet.material}
+                  {product.type}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-black">
+                  {product.productMaterial}
                 </TableCell>
                 <TableCell className="font-medium whitespace-nowrap text-black">
-                  {bracelet.price.toLocaleString()}₫
+                  {(product as any).price?.toLocaleString() || "0"}₫
                 </TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
-                      bracelet.stock > 10
+                      product.quantity > 10
                         ? "bg-green-100 text-green-800"
-                        : bracelet.stock > 5
+                        : product.quantity > 5
                         ? "bg-pink-100 text-pink-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {bracelet.stock} {bracelet.stock > 5 ? "cái" : "sắp hết"}
+                    {product.quantity} {product.quantity > 5 ? "cái" : "sắp hết"}
                   </span>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
@@ -317,7 +401,7 @@ const BraceletManagement = () => {
                     size="sm"
                     className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
                     onClick={() => {
-                      setEditingBracelet(bracelet);
+                      setEditingProduct(product);
                       setIsEditOpen(true);
                     }}
                   >
@@ -337,7 +421,16 @@ const BraceletManagement = () => {
         </Table>
       </div>
 
-      {filteredBracelets.length === 0 && (
+      {filteredProducts.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+          <div className="text-sm text-black">
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} của {filteredProducts.length} sản phẩm
+          </div>
+          <InlinePagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+        </div>
+      )}
+
+      {filteredProducts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
             <Package className="h-12 w-12 text-blue-100" />
@@ -351,35 +444,21 @@ const BraceletManagement = () => {
         </div>
       )}
 
-      {filteredBracelets.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredBracelets.length)} của{" "}
-            {filteredBracelets.length} sản phẩm
-          </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      )}
-
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
             <DialogTitle className="text-black">Chỉnh sửa vòng tay</DialogTitle>
           </DialogHeader>
-          {editingBracelet && (
+          {editingProduct && (
             <div className="space-y-4">
               <div>
                 <Label className="text-black">Tên</Label>
                 <Input
                   className="border-pink-100 focus:ring-pink-100"
-                  value={editingBracelet.name}
+                  value={editingProduct.productName}
                   onChange={(e) =>
-                    setEditingBracelet({ ...editingBracelet, name: e.target.value })
+                    setEditingProduct({ ...editingProduct, productName: e.target.value })
                   }
                 />
               </div>
@@ -387,20 +466,104 @@ const BraceletManagement = () => {
                 <Label className="text-black">Chất liệu</Label>
                 <Input
                   className="border-pink-100 focus:ring-pink-100"
-                  value={editingBracelet.material}
+                  value={editingProduct.productMaterial}
                   onChange={(e) =>
-                    setEditingBracelet({ ...editingBracelet, material: e.target.value })
+                    setEditingProduct({ ...editingProduct, productMaterial: e.target.value })
                   }
                 />
+              </div>
+              <div>
+                <Label className="text-black">Mô tả</Label>
+                <Input
+                  className="border-pink-100 focus:ring-pink-100"
+                  value={editingProduct.productDescription}
+                  onChange={(e) =>
+                    setEditingProduct({ ...editingProduct, productDescription: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-black">Loại</Label>
+                <Input
+                  className="border-pink-100 focus:ring-pink-100"
+                  value={editingProduct.type}
+                  onChange={(e) =>
+                    setEditingProduct({ ...editingProduct, type: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-black">Danh mục (Tên danh mục)</Label>
+                <Input
+                  list="categoriesList"
+                  placeholder="Nhập tên danh mục, cách nhau dấu phẩy"
+                  value={
+                    editingProduct.categoryIds
+                      .map((id) => getCategoryName(id))
+                      .join(", ")
+                  }
+                  onChange={(e) => {
+                    const names = e.target.value
+                      .split(",")
+                      .map((name) => name.trim())
+                      .filter((name) => name !== "");
+                    const ids = names.map((name) => {
+                      const found = Object.entries(categoriesMap).find(
+                        ([, catName]) =>
+                          catName.toLowerCase() === name.toLowerCase()
+                      );
+                      return found ? found[0] : name;
+                    });
+                    setEditingProduct({ ...editingProduct, categoryIds: ids });
+                  }}
+                />
+                <datalist id="categoriesList">
+                  {Object.values(categoriesMap).map((name, index) => (
+                    <option key={index} value={name} />
+                  ))}
+                </datalist>
+              </div>
+              <div>
+                <Label className="text-black">Hình ảnh</Label>
+                <div className="flex items-center space-x-4">
+                  <label className="cursor-pointer bg-pink-100 hover:bg-pink-200 text-black border border-pink-100 py-2 px-4 rounded-md">
+                    Chọn Ảnh
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files ? e.target.files[0] : null;
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.readAsDataURL(file);
+                          reader.onload = () => {
+                            setEditingProduct({
+                              ...editingProduct,
+                              productImage: reader.result as string,
+                            });
+                          };
+                        }
+                      }}
+                    />
+                  </label>
+                  {editingProduct?.productImage && (
+                    <img
+                      src={editingProduct.productImage}
+                      alt="preview"
+                      className="w-16 h-16 object-cover rounded-md border border-pink-100"
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <Label className="text-black">Giá</Label>
                 <Input
                   type="number"
                   className="border-pink-100 focus:ring-pink-100"
-                  value={editingBracelet.price}
+                  value={editingProduct.price}
                   onChange={(e) =>
-                    setEditingBracelet({ ...editingBracelet, price: +e.target.value })
+                    setEditingProduct({ ...editingProduct, price: +e.target.value })
                   }
                 />
               </div>
@@ -409,19 +572,9 @@ const BraceletManagement = () => {
                 <Input
                   type="number"
                   className="border-pink-100 focus:ring-pink-100"
-                  value={editingBracelet.stock}
+                  value={editingProduct.quantity}
                   onChange={(e) =>
-                    setEditingBracelet({ ...editingBracelet, stock: +e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="text-black">Hình ảnh</Label>
-                <Input
-                  className="border-pink-100 focus:ring-pink-100"
-                  value={editingBracelet.image}
-                  onChange={(e) =>
-                    setEditingBracelet({ ...editingBracelet, image: e.target.value })
+                    setEditingProduct({ ...editingProduct, quantity: +e.target.value })
                   }
                 />
               </div>
@@ -456,9 +609,9 @@ const BraceletManagement = () => {
               <Label className="text-black">Tên</Label>
               <Input
                 className="border-pink-100 focus:ring-pink-100"
-                value={newBracelet.name}
+                value={newProduct.productName}
                 onChange={(e) =>
-                  setNewBracelet({ ...newBracelet, name: e.target.value })
+                  setNewProduct({ ...newProduct, productName: e.target.value })
                 }
               />
             </div>
@@ -466,20 +619,84 @@ const BraceletManagement = () => {
               <Label className="text-black">Chất liệu</Label>
               <Input
                 className="border-pink-100 focus:ring-pink-100"
-                value={newBracelet.material}
+                value={newProduct.productMaterial}
                 onChange={(e) =>
-                  setNewBracelet({ ...newBracelet, material: e.target.value })
+                  setNewProduct({ ...newProduct, productMaterial: e.target.value })
                 }
               />
+            </div>
+            <div>
+              <Label className="text-black">Mô tả</Label>
+              <Input
+                className="border-pink-100 focus:ring-pink-100"
+                value={newProduct.productDescription}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, productDescription: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="text-black">Loại</Label>
+              <Input
+                className="border-pink-100 focus:ring-pink-100"
+                value={newProduct.type}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, type: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="text-black">Danh mục (Tên danh mục)</Label>
+              <Input
+                list="categoriesList"
+                placeholder="Nhập tên danh mục, cách nhau dấu phẩy"
+                value={newProductCategoryInput}
+                onChange={(e) => setNewProductCategoryInput(e.target.value)}
+              />
+              <datalist id="categoriesList">
+                {Object.values(categoriesMap).map((name, index) => (
+                  <option key={index} value={name} />
+                ))}
+              </datalist>
+            </div>
+            <div>
+              <Label className="text-black">Hình ảnh</Label>
+              <div className="flex items-center space-x-4">
+                <label className="cursor-pointer bg-pink-100 hover:bg-pink-200 text-black border border-pink-100 py-2 px-4 rounded-md">
+                  Chọn Ảnh
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files ? e.target.files[0] : null;
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => {
+                          setNewProduct({ ...newProduct, productImage: reader.result as string });
+                        };
+                      }
+                    }}
+                  />
+                </label>
+                {newProduct.productImage && (
+                  <img
+                    src={newProduct.productImage}
+                    alt="preview"
+                    className="w-16 h-16 object-cover rounded-md border border-pink-100"
+                  />
+                )}
+              </div>
             </div>
             <div>
               <Label className="text-black">Giá</Label>
               <Input
                 type="number"
                 className="border-pink-100 focus:ring-pink-100"
-                value={newBracelet.price}
+                value={newProduct.price}
                 onChange={(e) =>
-                  setNewBracelet({ ...newBracelet, price: +e.target.value })
+                  setNewProduct({ ...newProduct, price: +e.target.value })
                 }
               />
             </div>
@@ -488,19 +705,9 @@ const BraceletManagement = () => {
               <Input
                 type="number"
                 className="border-pink-100 focus:ring-pink-100"
-                value={newBracelet.stock}
+                value={newProduct.quantity}
                 onChange={(e) =>
-                  setNewBracelet({ ...newBracelet, stock: +e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <Label className="text-black">Hình ảnh</Label>
-              <Input
-                className="border-pink-100 focus:ring-pink-100"
-                value={newBracelet.image}
-                onChange={(e) =>
-                  setNewBracelet({ ...newBracelet, image: e.target.value })
+                  setNewProduct({ ...newProduct, quantity: +e.target.value })
                 }
               />
             </div>
@@ -514,7 +721,7 @@ const BraceletManagement = () => {
               </Button>
               <Button
                 className="bg-blue-100 hover:bg-blue-100 text-black"
-                onClick={handleAddBracelet}
+                onClick={handleAddProduct}
               >
                 Thêm
               </Button>

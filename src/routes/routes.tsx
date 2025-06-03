@@ -24,6 +24,7 @@ import MaterialManagement from '@/pages/StaffPages/MaterialManagementPage';
 import OrderManagement from '@/pages/StaffPages/OrderManagementPage';
 import CustomerManagement from '@/pages/StaffPages/CustomerManagementPage';
 import VoucherManagement from '@/pages/StaffPages/VoucherManagementPage';
+import CategoryManagementPage from '@/pages/StaffPages/CategoryManagementPage';
 
 //Admin Pages
 import Dashboard from '@/pages/AdminPages/DashboardPage';
@@ -107,6 +108,10 @@ const routes = [
       {
         path: 'vouchers',
         element: <VoucherManagement />,
+      },
+      {
+        path: 'categories',
+        element: <CategoryManagementPage />,
       },
     ],
   },

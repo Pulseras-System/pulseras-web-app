@@ -3,34 +3,65 @@ import api from "./apiService";
 const PRODUCT_URL = "/products";
 
 export interface Product {
-  product_id: number;
-  category_id: number;
+  productId: string; // ID là string
+  categoryIds: string[]; // Danh sách category ID
   productName: string;
   productDescription: string;
   productMaterial: string;
   productImage: string;
   quantity: number;
   type: string;
+  price: number; // Thêm trường price
   createDate: string;
-  lastEdited: string;
+  lastEdited: string | null;
   status: number;
 }
 
 const ProductService = {
-  get: async (): Promise<Product[]> => {
-    const response = await api.get<Product[]>(PRODUCT_URL);
+  get: async (params?: {
+    keyword?: string;
+    categoryId?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+  }): Promise<Product[]> => {
+    const response = await api.get<Product[]>(PRODUCT_URL, { params });
     return response.data;
   },
-  getById: async (id: number | string): Promise<Product> => {
-    const response = await api.get<Product>(`/${PRODUCT_URL}/${id}`);
+  getById: async (id: string): Promise<Product> => {
+    const response = await api.get<Product>(`${PRODUCT_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Product>): Promise<Product> => {
-    const response = await api.post<Product>(PRODUCT_URL, data);
+    const payload = {
+      categoryIds: data.categoryIds || [],
+      productName: data.productName || "",
+      productDescription: data.productDescription || "",
+      productMaterial: data.productMaterial || "",
+      productImage: data.productImage || "",
+      quantity: data.quantity || 0,
+      type: data.type || "",
+      price: data.price || 0,
+      status: data.status || 0,
+    };
+
+    const response = await api.post<Product>(PRODUCT_URL, payload);
     return response.data;
   },
-  update: async (id: number | string, data: Partial<Product>): Promise<Product> => {
-    const response = await api.put<Product>(`/${PRODUCT_URL}/${id}`, data);
+  update: async (id: string, data: Partial<Product>): Promise<Product> => {
+    const payload = {
+      categoryIds: data.categoryIds || [],
+      productName: data.productName || "",
+      productDescription: data.productDescription || "",
+      productMaterial: data.productMaterial || "",
+      productImage: data.productImage || "",
+      quantity: data.quantity || 0,
+      type: data.type || "",
+      price: data.price || 0,
+      status: data.status || 0,
+    };
+
+    const response = await api.put<Product>(`${PRODUCT_URL}/${id}`, payload);
     return response.data;
   },
 };
