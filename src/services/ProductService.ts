@@ -64,6 +64,10 @@ const ProductService = {
     const response = await api.put<Product>(`${PRODUCT_URL}/${id}`, payload);
     return response.data;
   },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`${PRODUCT_URL}/${id}`);
+  },
 };
 
 export default ProductService;

@@ -38,6 +38,11 @@ const CategoryManagementPage = () => {
     lastEdited: "",
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  // state xoá danh mục
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  // state thông báo
+  const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
     CategoryService.get()
@@ -100,6 +105,31 @@ const CategoryManagementPage = () => {
         })
         .catch((err) => {
           console.error("Create failed:", err);
+        });
+    }
+  };
+
+  // Xử lý mở modal xoá
+  const handleDeleteClick = (cat: Category) => {
+    setDeletingCategory(cat);
+    setIsDeleteOpen(true);
+  };
+
+  // Xử lý confirm xoá
+  const handleDeleteConfirm = () => {
+    if (deletingCategory) {
+      CategoryService.delete(deletingCategory.categoryId)
+        .then(() => {
+          setCategories((prev) =>
+            prev.filter((c) => c.categoryId !== deletingCategory.categoryId)
+          );
+          setDeletingCategory(null);
+          setIsDeleteOpen(false);
+          setNotification("Xoá danh mục thành công!");
+          setTimeout(() => setNotification(null), 3000);
+        })
+        .catch((err) => {
+          console.error("Delete failed:", err);
         });
     }
   };
@@ -180,7 +210,7 @@ const CategoryManagementPage = () => {
                     variant="outline"
                     size="sm"
                     className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                    // onClick={...} // Xử lý xóa nếu muốn
+                    onClick={() => handleDeleteClick(cat)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -318,6 +348,44 @@ const CategoryManagementPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* DELETE CONFIRM MODAL */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+          <DialogHeader>
+            <DialogTitle className="text-black">Xác nhận xoá</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            {deletingCategory && (
+              <p>
+                Bạn có chắc muốn xoá danh mục <strong>{deletingCategory.categoryName}</strong>?
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="text-black border-pink-100 hover:bg-pink-100"
+              onClick={() => setIsDeleteOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button
+              className="bg-red-100 hover:bg-red-100 text-black"
+              onClick={handleDeleteConfirm}
+            >
+              Xoá
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notification */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-green-100 text-green-800 p-4 rounded shadow-lg">
+          {notification}
+        </div>
+      )}
     </div>
   );
 };

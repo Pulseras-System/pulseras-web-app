@@ -29,6 +29,9 @@ const CategoryService = {
     const response = await api.put<Category>(`${CATEGORY_URL}/${id}`, data);
     return response.data;
   },
+  delete: async (id: number | string): Promise<void> => {
+    await api.delete(`${CATEGORY_URL}/${id}`);
+  },
 };
 
 export default CategoryService;

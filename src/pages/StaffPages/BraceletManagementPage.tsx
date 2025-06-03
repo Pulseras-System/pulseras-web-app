@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import ProductService, { Product } from "@/services/ProductService";
-import CategoryService from "@/services/CategoryService"; // new import
+import CategoryService from "@/services/CategoryService";
 
 const itemsPerPage = 8;
 
@@ -108,6 +108,11 @@ const BraceletManagement = () => {
     status: 1,
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  // state cho modal confirm delete
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  // state cho thông báo
+  const [notification, setNotification] = useState<string | null>(null);
   // mapping category id -> categoryName
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
   const [newProductCategoryInput, setNewProductCategoryInput] = useState(""); // dùng cho danh mục (tên danh mục)
@@ -256,6 +261,31 @@ const BraceletManagement = () => {
     return categoriesMap[String(id)] || id;
   };
 
+  // Xử lý delete: mở confirm modal
+  const handleDeleteClick = (product: Product) => {
+    setDeletingProduct(product);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletingProduct) {
+      // Giả sử ProductService có hàm delete, căn cứ API của bạn
+      ProductService.delete(deletingProduct.productId)
+        .then(() => {
+          setProducts((prev) =>
+            prev.filter((p) => p.productId !== deletingProduct.productId)
+          );
+          setDeletingProduct(null);
+          setIsDeleteOpen(false);
+          setNotification("Xoá sản phẩm thành công!");
+          setTimeout(() => setNotification(null), 3000);
+        })
+        .catch((error) => {
+          console.error("Delete failed:", error);
+        });
+    }
+  };
+
   return (
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -266,7 +296,7 @@ const BraceletManagement = () => {
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
@@ -411,6 +441,7 @@ const BraceletManagement = () => {
                     variant="outline"
                     size="sm"
                     className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                    onClick={() => handleDeleteClick(product)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -729,6 +760,44 @@ const BraceletManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* DELETE CONFIRM MODAL */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+          <DialogHeader>
+            <DialogTitle className="text-black">Xác nhận xoá</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            {deletingProduct && (
+              <p>
+                Bạn có chắc muốn xoá sản phẩm <strong>{deletingProduct.productName}</strong>?
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="text-black border-pink-100 hover:bg-pink-100"
+              onClick={() => setIsDeleteOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button
+              className="bg-red-100 hover:bg-red-100 text-black"
+              onClick={handleDeleteConfirm}
+            >
+              Xoá
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notification */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-green-100 text-green-800 p-4 rounded shadow-lg">
+          {notification}
+        </div>
+      )}
     </div>
   );
 };
