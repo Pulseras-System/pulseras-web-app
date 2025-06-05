@@ -33,6 +33,7 @@ import MaterialManagementAdmin from '@/pages/AdminPages/MaterialManagementPage';
 import OrderManagementAdmin from '@/pages/AdminPages/OrderManagementPage';
 import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
+import CartPage from '@/pages/Customer/CartPage';
 
 // Define routes
 const routes = [
@@ -74,6 +75,10 @@ const routes = [
       {
         path: '/no-permission',
         element: <NoPermission />,
+      },
+      {
+        path: '/cart',
+        element: <CartPage />,
       },
       {
         path: '*',

@@ -55,14 +55,22 @@ const BraceletCard = ({ product }: { product: Product }) => (
           <Button
             variant="outline"
             size="sm"
-            className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
+            className="text-sm border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600 flex-1"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = `/shop/${product.productId}`;
+            }}
           >
             Thêm vào giỏ
           </Button>
           <Button
             variant="default"
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = `/shop/${product.productId}`;
+            }}
           >
             Mua ngay
           </Button>
