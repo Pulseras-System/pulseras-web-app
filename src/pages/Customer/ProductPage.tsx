@@ -1,25 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Search, ChevronLeft, ChevronFirst, ChevronLast } from "lucide-react";
-import { motion } from 'framer-motion';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-
-interface Bracelet {
-  name: string;
-  description: string;
-  price: string;
-  imageSrc: string;
-  category: string;
-}
-
-const mockBracelets: Bracelet[] = Array.from({ length: 20 }, (_, i) => ({
-  name: `Vòng tay ${i + 1}`,
-  description: ["Đá tự nhiên", "Mạ vàng", "Tinh thể", "Bohemian"][i % 4],
-  price: `${(700 + i * 50).toLocaleString("vi-VN")}₫`,
-  imageSrc: `https://placehold.co/600x600/cccccc/000000?text=Vong+${i + 1}`,
-  category: ["Tất cả", "Bohemian", "Tinh Thể", "Vàng"][i % 4],
-}));
+import { motion } from "framer-motion";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import ProductService, { Product } from "@/services/ProductService";
 
 const categories = [
   { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-blue-300 to-blue-400", icon: "✨" },
@@ -30,43 +15,33 @@ const categories = [
 
 const BraceletsPerPage = 12;
 
-const BraceletCard = ({
-  name,
-  description,
-  price,
-  imageSrc,
-  id,
-}: Bracelet & { id: number }) => (
+const BraceletCard = ({ product }: { product: Product }) => (
   <Link
-    to={`/shop/${id}`}
+    to={`/shop/${product.productId}`}
     className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
   >
-    {/* Nội dung sản phẩm mặc định */}
     <div className="flex flex-col">
-      {/* Hình ảnh */}
       <div className="relative overflow-hidden aspect-square">
         <img
           loading="lazy"
-          src={imageSrc}
-          alt={`Vòng tay ${name}`}
+          src={product.productImage}
+          alt={`Vòng tay ${product.productName}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
-
+        <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
       </div>
-      {/* Phần thông tin và nút mua hàng */}
       <div className="p-4">
-        {/* Hàng trên: tên, mô tả và giá */}
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            <h3 className="text-lg font-semibold text-gray-800">{product.productName}</h3>
+            <p className="text-sm text-gray-600 mt-1">{product.productDescription}</p>
           </div>
           <div className="ml-4 flex-shrink-0">
-            <span className="text-md font-bold text-blue-600">{price}</span>
+            <span className="text-md font-bold text-blue-600">
+              {product.price.toLocaleString("vi-VN")}₫
+            </span>
           </div>
         </div>
-        {/* Hàng dưới: 2 nút */}
         <div className="flex justify-between gap-2 mt-4">
           <Button
             variant="outline"
@@ -86,7 +61,6 @@ const BraceletCard = ({
       </div>
     </div>
 
-    {/* Overlay hover bao toàn bộ thẻ sản phẩm */}
     <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
       <Button
         variant="default"
@@ -116,17 +90,25 @@ const AnimatedSection = ({ children, className }: { children: React.ReactNode; c
 };
 
 const ProductPage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const filteredBracelets = mockBracelets.filter((b) => {
+  // Lấy dữ liệu sản phẩm từ API khi trang load
+  useEffect(() => {
+    ProductService.get()
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Error fetching products:", err));
+  }, []);
+
+  const filteredBracelets = products.filter((p) => {
     const matchesCategory =
-      selectedCategory === "Tất cả" || b.category === selectedCategory;
+      selectedCategory === "Tất cả" || p.type === selectedCategory;
     const matchesSearch =
-      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.description.toLowerCase().includes(searchTerm.toLowerCase());
+      p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.productDescription.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -194,7 +176,6 @@ const ProductPage = () => {
         {/* Search and Filter */}
         <AnimatedSection className="mb-12">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100">
-            {/* Search input */}
             <AnimatedSection className="max-w-md mx-auto mb-6 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-blue-400" />
@@ -211,7 +192,6 @@ const ProductPage = () => {
               />
             </AnimatedSection>
 
-            {/* Categories */}
             <AnimatedSection>
               <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6 relative inline-block">
                 <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
@@ -244,7 +224,7 @@ const ProductPage = () => {
         </AnimatedSection>
 
         {/* Products */}
-              <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
+        <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
 
           
           <AnimatedSection className="text-center mb-12">
@@ -258,14 +238,14 @@ const ProductPage = () => {
 
           {paginated.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {paginated.map((bracelet, index) => (
+              {paginated.map((bracelet) => (
                 <motion.div
-                  key={index}
+                  key={bracelet.productId}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <BraceletCard id={mockBracelets.indexOf(bracelet) + 1} {...bracelet} />
+                  <BraceletCard product={bracelet} />
                 </motion.div>
               ))}
             </div>
