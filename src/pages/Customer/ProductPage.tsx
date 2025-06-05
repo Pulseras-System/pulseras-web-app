@@ -18,9 +18,9 @@ const BraceletsPerPage = 12;
 const BraceletCard = ({ product }: { product: Product }) => (
   <Link
     to={`/shop/${product.productId}`}
-    className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
+    className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full"
   >
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="relative overflow-hidden aspect-square">
         <img
           loading="lazy"
@@ -28,13 +28,22 @@ const BraceletCard = ({ product }: { product: Product }) => (
           alt={`Vòng tay ${product.productName}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
+          <Button
+            variant="default"
+            size="lg"
+            className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
+          >
+            Xem chi tiết
+          </Button>
+        </div>
       </div>
-      <div className="p-4">
-        <div className="flex justify-between items-start">
+      <div className="p-4 flex flex-col justify-between flex-grow">
+        <div className="flex justify-between items-start mb-auto">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800">{product.productName}</h3>
-            <p className="text-sm text-gray-600 mt-1">{product.productDescription}</p>
+            <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">{product.productName}</h3>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.productMaterial}</p>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.type}</p>
           </div>
           <div className="ml-4 flex-shrink-0">
             <span className="text-md font-bold text-blue-600">
@@ -59,16 +68,6 @@ const BraceletCard = ({ product }: { product: Product }) => (
           </Button>
         </div>
       </div>
-    </div>
-
-    <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
-      <Button
-        variant="default"
-        size="lg"
-        className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
-      >
-        Xem chi tiết
-      </Button>
     </div>
   </Link>
 );
