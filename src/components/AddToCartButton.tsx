@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
 import { useCart, CartItem } from '@/context/CartContext';
+import { createPortal } from 'react-dom';
 
 interface AddToCartProps {
   product: {
@@ -51,8 +52,30 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
     }, 1500);
   };
 
+  // Notification component using portal to render at the top of the page
+  const Notification = () => {
+    if (!showNotification) return null;
+    
+    return createPortal(
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-auto max-w-md">
+        <div className="bg-green-100 border border-green-200 text-green-800 rounded-lg shadow-lg px-4 py-3 animate-fade-in">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 bg-green-500 rounded-full p-1">
+              <Check className="h-4 w-4 text-white" />
+            </div>
+            <div className="ml-3">
+              <p className="font-medium">Đã thêm vào giỏ hàng</p>
+              {/* <p className="text-sm">{quantity} x {product.name}</p> */}
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   return (
-    <div className="relative">
+    <>
       <Button 
         variant={variant} 
         className={`transition-all ${className}`}
@@ -72,14 +95,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
         )}
       </Button>
       
-      {showNotification && (
-        <div className="absolute top-full mt-2 right-0 bg-green-100 text-green-800 text-sm p-2 rounded shadow-md z-50 min-w-[200px]">
-          <div className="flex items-center">
-            <Check className="h-4 w-4 mr-1" />
-            <span>Đã thêm {quantity} sản phẩm vào giỏ hàng</span>
-          </div>
-        </div>
-      )}
-    </div>
+      <Notification />
+    </>
   );
 };

@@ -5,6 +5,7 @@ import { ChevronRight, Search, ChevronLeft, ChevronFirst, ChevronLast } from "lu
 import { motion } from "framer-motion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import ProductService, { Product } from "@/services/ProductService";
+import { AddToCartButton } from "@/components/AddToCartButton";
 
 const categories = [
   { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-blue-300 to-blue-400", icon: "✨" },
@@ -16,10 +17,7 @@ const categories = [
 const BraceletsPerPage = 12;
 
 const BraceletCard = ({ product }: { product: Product }) => (
-  <Link
-    to={`/shop/${product.productId}`}
-    className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full"
-  >
+    <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
     <div className="flex flex-col h-full">
       <div className="relative overflow-hidden aspect-square">
         <img
@@ -28,18 +26,44 @@ const BraceletCard = ({ product }: { product: Product }) => (
           alt={`Vòng tay ${product.productName}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 p-4">
           <Button
             variant="default"
             size="lg"
-            className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
+            className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all w-full"
+            onClick={() => window.location.href = `/shop/${product.productId}`}
           >
             Xem chi tiết
           </Button>
+          <div className="flex gap-2 w-full">
+            <AddToCartButton
+              product={{
+                id: product.productId,
+                name: product.productName,
+                image: product.productImage,
+                price: product.price,
+                type: product.type,
+                material: product.productMaterial
+              }}
+              variant="outline"
+              className="text-sm border-white bg-white/80 text-pink-500 hover:bg-white hover:text-pink-600 flex-1 shadow-md"
+            />
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-blue-600/90 hover:bg-blue-700 text-white flex-1 shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = `/shop/${product.productId}`;
+              }}
+            >
+              Mua ngay
+            </Button>
+          </div>
         </div>
       </div>
       <div className="p-4 flex flex-col justify-between flex-grow">
-        <div className="flex justify-between items-start mb-auto">
+        <div className="flex justify-between items-start">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">{product.productName}</h3>
             <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.productMaterial}</p>
@@ -51,33 +75,9 @@ const BraceletCard = ({ product }: { product: Product }) => (
             </span>
           </div>
         </div>
-        <div className="flex justify-between gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-sm border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600 flex-1"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = `/shop/${product.productId}`;
-            }}
-          >
-            Thêm vào giỏ
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = `/shop/${product.productId}`;
-            }}
-          >
-            Mua ngay
-          </Button>
-        </div>
       </div>
     </div>
-  </Link>
+    </div>
 );
 
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {

@@ -17,6 +17,7 @@ import NoPermission from '@/pages/NoPermissionPage';
 import ProductPage from '@/pages/Customer/ProductPage';
 import ProductDetailPage from '@/pages/Customer/ProductDetailPage';
 import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
+import CartPage from '@/pages/Customer/CartPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
@@ -33,8 +34,7 @@ import MaterialManagementAdmin from '@/pages/AdminPages/MaterialManagementPage';
 import OrderManagementAdmin from '@/pages/AdminPages/OrderManagementPage';
 import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
-import CartPage from '@/pages/Customer/CartPage';
-
+import CategoryManagementPageAdmin from '@/pages/AdminPages/CategoryManagementPage';
 // Define routes
 const routes = [
   {
@@ -116,7 +116,7 @@ const routes = [
       },
       {
         path: 'categories',
-        element: <CategoryManagementPage />,
+        element: <CategoryManagementPageAdmin />,
       },
     ],
   },
@@ -162,6 +162,10 @@ const routes = [
         path: 'vouchers',
         element: <VoucherManagementAdmin />,
       },
+      {
+        path: 'categories',
+        element: <CategoryManagementPage />,
+      }
     ],
   },  
   

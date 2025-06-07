@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu, ChartArea} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, ChartArea, Layers} from "lucide-react";
 import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ import {
 const navItems = [
   { label: "Bảng điều khiển", path: "/admin/dashboard", icon: ChartArea },
   { label: "Vòng tay", path: "/admin/bracelets", icon: Gem },
+  { label: "Danh mục", path: "/admin/categories", icon: Layers },
+
   { label: "Nguyên liệu", path: "/admin/materials", icon: Package },
   { label: "Đơn hàng", path: "/admin/orders", icon: Box },
   { label: "Người dùng", path: "/admin/users", icon: Users },
