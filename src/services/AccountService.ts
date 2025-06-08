@@ -1,17 +1,17 @@
 import api from "./apiService";
+import Cookies from "js-cookie";
 
 // Định nghĩa interface Account dựa trên bảng dữ liệu
 export interface Account {
-  account_id: number;
+  id: string;
   fullName: string;
-  password?: string; // Có thể không cần gửi password khi lấy danh sách
   username: string;
   phone: string;
   email: string;
-  role_id: number;
+  roleId: number;
   createDate: string; // ISO format datetime
   lastEdited: string; // ISO format datetime
-  status: number; // Có thể là 0 (inactive) hoặc 1 (active)
+  status: number; // 0 (inactive) hoặc 1 (active)
 }
 
 const AccountService = {
@@ -50,6 +50,19 @@ const AccountService = {
     status: number;
   }) => {
     const response = await api.post("/accounts/signup", data);
+    return response.data;
+  },
+
+  // Đăng nhập tài khoản và xử lý lưu token, account
+  login: async (data: { username: string; password: string }) => {
+    const response = await api.post("/accounts/login", data);
+    const { token, account } = response.data;
+    // 1. Lưu JWT vào cookie (7 ngày)
+    Cookies.set("token", token, { expires: 7 });
+    // 2. Lưu object account nhận từ API vào localStorage
+    localStorage.setItem("account", JSON.stringify(account));
+    // 3. Cập nhật header Authorization cho axios instance
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     return response.data;
   },
 };
