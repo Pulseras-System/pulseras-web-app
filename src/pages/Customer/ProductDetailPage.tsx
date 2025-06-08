@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react";
+// import { motion } from "framer-motion";
 import ProductService, { Product } from "@/services/ProductService";
-import { AddToCartButton } from "@/components/AddToCartButton";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -177,27 +177,13 @@ const ProductDetailPage = () => {
             {/* Action Buttons */}
             <div className="mt-8 pt-6 border-t border-blue-100">
               <div className="flex flex-col sm:flex-row gap-4">
-                {product.quantity > 0 ? (
-                  <AddToCartButton 
-                    product={{
-                      id: product.productId,
-                      name: product.productName,
-                      image: product.productImage,
-                      price: product.price,
-                      type: product.type,
-                      material: product.productMaterial
-                    }}
-                    className="flex-1 h-12 bg-pink-400 hover:bg-pink-500 text-white shadow-md gap-2 transition-all duration-300"
-                  />
-                ) : (
-                  <Button
-                    className="flex-1 h-12 bg-gray-300 text-gray-500 cursor-not-allowed shadow-md gap-2"
-                    disabled
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    Tạm hết hàng
-                  </Button>
-                )}
+                <Button 
+                  className="flex-1 h-12 bg-pink-400 hover:bg-pink-500 text-white shadow-md gap-2 transition-all duration-300"
+                  disabled={product.quantity <= 0}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Thêm vào giỏ hàng
+                </Button>
                 <Button 
                   variant="outline" 
                   className="flex-1 h-12 border-blue-300 text-blue-700 hover:bg-blue-50 gap-2"

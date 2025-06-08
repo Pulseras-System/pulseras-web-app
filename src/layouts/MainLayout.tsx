@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +9,8 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
-  Home, ShoppingBag, LayoutGrid, Sparkles, Info, Phone, // Nav icons
-  ShoppingCart, User, Menu, Search, // Utility icons
+  Home, ShoppingBag, LayoutGrid, Sparkles, Info, Phone,
+  ShoppingCart, User, Menu, Search,
 } from "lucide-react";
 
 import {
@@ -25,16 +25,25 @@ const MainLayout = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [account, setAccount] = useState<any>(null);
   const navigate = useNavigate();
 
   const navLinks = {
     "/": { label: "Trang chủ", icon: Home },
     "/shop": { label: "Cửa hàng", icon: ShoppingBag },
     "/categories": { label: "Danh mục", icon: LayoutGrid },
-    "/design": { label: "Thiết kế", "icon": Sparkles },
+    "/design": { label: "Thiết kế", icon: Sparkles },
     "/about": { label: "Về chúng tôi", icon: Info },
     "/contact": { label: "Liên hệ", icon: Phone },
   };
+
+  useEffect(() => {
+    // Lấy thông tin account từ localStorage nếu có
+    const accountStr = localStorage.getItem("account");
+    if (accountStr) {
+      setAccount(JSON.parse(accountStr));
+    }
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,15 +136,26 @@ const MainLayout = () => {
               </span>
             </Button>
 
-            {/* User Icon */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110"
-              onClick={() => navigate("/login")}
-            >
-              <User className="h-5 w-5" />
-            </Button>
+            {/* User Button: nếu có account thì hiện tên, ngược lại hiện nút đăng nhập */}
+            {account ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110"
+                onClick={() => navigate("/profile")}
+              >
+                {account.fullName}
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110"
+                onClick={() => navigate("/login")}
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -175,10 +195,8 @@ const MainLayout = () => {
                         alt="Pulsera logo" 
                         className="h-10 w-auto transition-transform hover:scale-105" 
                       />
-                   
                     </Link>
                   </SheetTitle>
-                  
                 </SheetHeader>
                 <nav className="flex flex-col gap-4">
                   {/* Search Bar in Mobile Menu */}
@@ -210,18 +228,30 @@ const MainLayout = () => {
 
                   {/* Utility Actions in Mobile Menu */}
                   <hr className="my-2 border-gray-200" />
-
-                  <Button
-                    variant="ghost"
-                    className="flex items-center justify-start gap-3 px-4 py-3 text-lg rounded-lg transition-all hover:bg-blue-50 hover:text-blue-600 font-medium w-full hover:pl-6"
-                    onClick={() => {
-                      navigate("/login");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <User className="h-5 w-5 text-blue-500" />
-                    Đăng nhập
-                  </Button>
+                  {account ? (
+                    <Button
+                      variant="ghost"
+                      className="flex items-center justify-start gap-3 px-4 py-3 text-lg rounded-lg transition-all hover:bg-blue-50 hover:text-blue-600 font-medium w-full hover:pl-6"
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      {account.fullName}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      className="flex items-center justify-start gap-3 px-4 py-3 text-lg rounded-lg transition-all hover:bg-blue-50 hover:text-blue-600 font-medium w-full hover:pl-6"
+                      onClick={() => {
+                        navigate("/login");
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <User className="h-5 w-5 text-blue-500" />
+                      Đăng nhập
+                    </Button>
+                  )}
 
                   <div className="flex items-center justify-between px-4 py-3 text-lg rounded-lg hover:bg-blue-50 transition-all hover:pl-6">
                     <span className="flex items-center gap-3 font-medium">
@@ -238,7 +268,7 @@ const MainLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container  mx-auto py-10 px-4">
+      <main className="flex-1 container mx-auto py-10 px-4">
         <Outlet />
       </main>
 
