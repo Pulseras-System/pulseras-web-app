@@ -38,6 +38,20 @@ const AccountService = {
     const response = await api.put<Account>(`/account/${id}`, data);
     return response.data;
   },
+
+  // Đăng ký tài khoản mới
+  signup: async (data: {
+    fullName: string;
+    password: string;
+    username: string;
+    phone: string;
+    email: string;
+    roleId: number;
+    status: number;
+  }) => {
+    const response = await api.post("/accounts/signup", data);
+    return response.data;
+  },
 };
 
 export default AccountService;
