@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -18,6 +18,9 @@ import {
   Tag,
   Calendar,
   Percent,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
-
+import VoucherService from "@/services/VoucherService";
 
 // Voucher Management Types
 interface Voucher {
@@ -47,145 +50,137 @@ interface Voucher {
   status: "active" | "expired" | "used";
 }
 
-// Mock Data
-const mockVouchers: Voucher[] = [
-  {
-    id: 1,
-    code: "SUMMER25",
-    description: "Giảm giá 25% cho mùa hè",
-    discountType: "percentage",
-    discountValue: 25,
-    minPurchase: 500000,
-    maxDiscount: 200000,
-    startDate: "2025-05-01",
-    endDate: "2025-07-31",
-    usageLimit: 100,
-    usageCount: 45,
-    status: "active"
-  },
-  {
-    id: 2,
-    code: "WELCOME100K",
-    description: "Giảm 100K cho khách hàng mới",
-    discountType: "fixed",
-    discountValue: 100000,
-    minPurchase: 300000,
-    startDate: "2025-01-01",
-    endDate: "2025-12-31",
-    usageLimit: 200,
-    usageCount: 187,
-    status: "active"
-  },
-  {
-    id: 3,
-    code: "SPECIAL50",
-    description: "Giảm 50% cho khách VIP",
-    discountType: "percentage",
-    discountValue: 50,
-    minPurchase: 1000000,
-    maxDiscount: 500000,
-    startDate: "2025-04-15",
-    endDate: "2025-04-25",
-    usageLimit: 50,
-    usageCount: 50,
-    status: "used"
-  },
-  {
-    id: 4,
-    code: "NEWYEAR2025",
-    description: "Khuyến mãi đầu năm 2025",
-    discountType: "percentage",
-    discountValue: 30,
-    minPurchase: 800000,
-    maxDiscount: 300000,
-    startDate: "2025-01-01",
-    endDate: "2025-01-31",
-    usageLimit: 150,
-    usageCount: 150,
-    status: "expired"
-  },
-  {
-    id: 5,
-    code: "FREESHIP",
-    description: "Miễn phí vận chuyển",
-    discountType: "fixed",
-    discountValue: 50000,
-    minPurchase: 250000,
-    startDate: "2025-05-01",
-    endDate: "2025-06-30",
-    usageLimit: 300,
-    usageCount: 122,
-    status: "active"
-  },
-  {
-    id: 6,
-    code: "BIRTHDAY30",
-    description: "Giảm 30% cho sinh nhật khách hàng",
-    discountType: "percentage",
-    discountValue: 30,
-    minPurchase: 400000,
-    maxDiscount: 300000,
-    startDate: "2025-01-01",
-    endDate: "2025-12-31",
-    usageLimit: 500,
-    usageCount: 215,
-    status: "active"
-  },
-  {
-    id: 7,
-    code: "FLASH24H",
-    description: "Flash sale 24h giảm 15%",
-    discountType: "percentage",
-    discountValue: 15,
-    minPurchase: 200000,
-    maxDiscount: 100000,
-    startDate: "2025-03-10",
-    endDate: "2025-03-11",
-    usageLimit: 100,
-    usageCount: 82,
-    status: "expired"
-  },
-  {
-    id: 8,
-    code: "LOYALTY200K",
-    description: "Giảm 200K cho khách hàng thân thiết",
-    discountType: "fixed",
-    discountValue: 200000,
-    minPurchase: 1000000,
-    startDate: "2025-05-01",
-    endDate: "2025-12-31",
-    usageLimit: 50,
-    usageCount: 12,
-    status: "active"
+// Adapters to convert between API types and UI types
+const mapApiToVoucher = (apiVoucher: any): Voucher => {
+  // Map API status (number) to our status values
+  let status: "active" | "expired" | "used" = "active";
+  if (apiVoucher.status === 0) {
+    status = "expired";
+  } else if (apiVoucher.status === 2) {
+    status = "used";
   }
-];
+
+  return {
+    id: apiVoucher.voucher_id,
+    code: apiVoucher.voucherName,
+    description: apiVoucher.voucherName, // API doesn't have description, using name as fallback
+    discountType: "percentage", // Assuming API only has percentage discounts
+    discountValue: apiVoucher.discountPercentage,
+    minPurchase: apiVoucher.minPrice,
+    maxDiscount: apiVoucher.maxDiscount,
+    startDate: apiVoucher.startDay,
+    endDate: apiVoucher.expireDay,
+    usageLimit: apiVoucher.voucherQuantity || 0,
+    usageCount: 0, // API doesn't provide usage count, assuming 0
+    status: status
+  };
+};
+
+const mapVoucherToApi = (voucher: Voucher): any => {
+  // Map our status values to API status (number)
+  let status = 1; // active
+  if (voucher.status === "expired") {
+    status = 0;
+  } else if (voucher.status === "used") {
+    status = 2;
+  }
+
+  return {
+    voucherName: voucher.code,
+    voucherQuantity: voucher.usageLimit,
+    minPrice: voucher.minPurchase,
+    maxDiscount: voucher.maxDiscount || 0,
+    discountPercentage: voucher.discountValue,
+    startDay: voucher.startDate,
+    expireDay: voucher.endDate,
+    status: status,
+    // voucher_id is not included in create requests
+  };
+};
 
 const itemsPerPage = 5;
 
+// Simple toast notification component
+const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg flex items-center space-x-2 z-50 ${
+      type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+    }`}>
+      {type === 'success' ? (
+        <CheckCircle className="h-5 w-5" />
+      ) : (
+        <AlertCircle className="h-5 w-5" />
+      )}
+      <span>{message}</span>
+    </div>
+  );
+};
+
 const VoucherManagementPage = () => {
+  // Toast state instead of using the useToast hook
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Show toast function
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+  };
+  
   // Voucher States
-  const [vouchers, setVouchers] = useState(mockVouchers);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [newVoucher, setNewVoucher] = useState<Voucher>({
-      id: 0,
-      code: "",
-      description: "",
-      discountType: "fixed",
-      discountValue: 0,
-      minPurchase: 0,
-      startDate: Date.now().toString(),
-      endDate: Date.now().toString(),
-      usageLimit: 0,
-      usageCount: 0,
-      status: "active"
-    });
-    const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [newVoucher, setNewVoucher] = useState<Voucher>({
+    id: 0,
+    code: "",
+    description: "",
+    discountType: "percentage",
+    discountValue: 0,
+    minPurchase: 0,
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    usageLimit: 0,
+    usageCount: 0,
+    status: "active"
+  });
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  // Fetch vouchers
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
+
+  const fetchVouchers = async () => {
+    try {
+      setLoading(true);
+      const data = await VoucherService.get();
+      const mappedVouchers = data.map(mapApiToVoucher);
+      setVouchers(mappedVouchers);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch vouchers:', err);
+      setError('Failed to load vouchers. Please try again later.');
+      showToast("Failed to load vouchers", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filtered Vouchers
   const filteredVouchers = vouchers.filter(voucher => {
@@ -226,7 +221,7 @@ const VoucherManagementPage = () => {
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
-  // Get status badge (giữ nguyên màu trạng thái)
+  // Get status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -252,7 +247,7 @@ const VoucherManagementPage = () => {
     }
   };
 
-  // Progress bar component (giữ nguyên màu phần trạng thái)
+  // Progress bar component
   const UsageProgressBar = ({ current, total }: { current: number, total: number }) => {
     const percentage = Math.min(Math.round((current / total) * 100), 100);
     const getColorClass = () => {
@@ -282,34 +277,91 @@ const VoucherManagementPage = () => {
     setIsEditOpen(true);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (editingVoucher) {
-      setVouchers((prev) => prev.map((v) => (v.id === editingVoucher.id ? editingVoucher : v)));
-      setIsEditOpen(false);
+      try {
+        const apiData = mapVoucherToApi(editingVoucher);
+        await VoucherService.update(editingVoucher.id, apiData);
+        
+        // Update local state
+        setVouchers((prev) => prev.map((v) => (v.id === editingVoucher.id ? editingVoucher : v)));
+        setIsEditOpen(false);
+        showToast("Voucher updated successfully", "success");
+      } catch (err) {
+        console.error('Failed to update voucher:', err);
+        showToast("Failed to update voucher", "error");
+      }
     }
   };
 
-  const handleAddVoucher = () => {
-    if (newVoucher.code.trim() && newVoucher.discountValue > 0) {
-      setVouchers((prev) => [...prev, { ...newVoucher, id: Date.now() }]);
-      setNewVoucher({
-        id: 0,
-        code: "",
-        description: "",
-        discountType: "fixed",
-        discountValue: 0,
-        minPurchase: 0,
-        startDate: Date.now().toString(),
-        endDate: Date.now().toString(),
-        usageLimit: 0,
-        usageCount: 0,
-        status: "active"
+  const handleAddVoucher = async () => {
+    try {
+      if (newVoucher.code.trim() && newVoucher.discountValue > 0) {
+        const apiData = mapVoucherToApi(newVoucher);
+        const createdVoucher = await VoucherService.create(apiData);
+        
+        // Map the response back to our format and add to state
+        const uiVoucher = mapApiToVoucher(createdVoucher);
+        setVouchers((prev) => [...prev, uiVoucher]);
+        
+        // Reset form
+        setNewVoucher({
+          id: 0,
+          code: "",
+          description: "",
+          discountType: "percentage",
+          discountValue: 0,
+          minPurchase: 0,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date().toISOString().split('T')[0],
+          usageLimit: 0,
+          usageCount: 0,
+          status: "active"
         });
-      setIsAddOpen(false);
+        
+        setIsAddOpen(false);
+        showToast("Voucher added successfully", "success");
+      }
+    } catch (err) {
+      console.error('Failed to add voucher:', err);
+      showToast("Failed to add voucher", "error");
     }
   };
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await VoucherService.delete(deleteId);
+        
+        // Update local state
+        setVouchers((prev) => prev.filter((v) => v.id !== deleteId));
+        setIsDeleteDialogOpen(false);
+        showToast("Voucher deleted successfully", "success");
+      } catch (err) {
+        console.error('Failed to delete voucher:', err);
+        showToast("Failed to delete voucher", "error");
+      } finally {
+        setDeleteId(null);
+      }
+    }
+  };
+
   return (
     <div className="p-6 w-full space-y-6">
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
@@ -383,85 +435,97 @@ const VoucherManagementPage = () => {
       )}
 
       <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
-        <Table className="min-w-[700px]">
-          <TableHeader className="bg-pink-100">
-            <TableRow>
-              <TableHead className="text-black">Mã voucher</TableHead>
-              <TableHead className="text-black">Mô tả</TableHead>
-              <TableHead className="text-black">Giảm giá</TableHead>
-              <TableHead className="text-black">Thời gian</TableHead>
-              <TableHead className="text-black">Sử dụng</TableHead>
-              <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentVouchers.map((voucher) => (
-              <TableRow key={voucher.id} className="hover:bg-pink-100 border-pink-100">
-                <TableCell className="font-bold text-black">
-                  {voucher.code}
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-black">{voucher.description}</div>
-                  <div className="text-xs text-black mt-1">
-                    Đơn tối thiểu: {formatCurrency(voucher.minPurchase)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    {voucher.discountType === "percentage" ? (
-                      <div className="bg-blue-100 text-black rounded-full px-2 py-1 text-sm flex items-center">
-                        <Percent className="h-3 w-3 mr-1" />
-                        {voucher.discountValue}%
-                      </div>
-                    ) : (
-                      <div className="bg-green-100 text-black rounded-full px-2 py-1 text-sm">
-                        {formatCurrency(voucher.discountValue)}
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-100" />
+            <span className="ml-2 text-black">Đang tải vouchers...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center p-8 text-red-500">
+            <p>{error}</p>
+            <Button className="mt-4" onClick={fetchVouchers}>Thử lại</Button>
+          </div>
+        ) : (
+          <Table className="min-w-[700px]">
+            <TableHeader className="bg-pink-100">
+              <TableRow>
+                <TableHead className="text-black">Mã voucher</TableHead>
+                <TableHead className="text-black">Mô tả</TableHead>
+                <TableHead className="text-black">Giảm giá</TableHead>
+                <TableHead className="text-black">Thời gian</TableHead>
+                <TableHead className="text-black">Sử dụng</TableHead>
+                <TableHead className="text-black">Trạng thái</TableHead>
+                <TableHead className="text-black text-right">Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentVouchers.map((voucher) => (
+                <TableRow key={voucher.id} className="hover:bg-pink-100 border-pink-100">
+                  <TableCell className="font-bold text-black">
+                    {voucher.code}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-black">{voucher.description}</div>
+                    <div className="text-xs text-black mt-1">
+                      Đơn tối thiểu: {formatCurrency(voucher.minPurchase)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {voucher.discountType === "percentage" ? (
+                        <div className="bg-blue-100 text-black rounded-full px-2 py-1 text-sm flex items-center">
+                          <Percent className="h-3 w-3 mr-1" />
+                          {voucher.discountValue}%
+                        </div>
+                      ) : (
+                        <div className="bg-green-100 text-black rounded-full px-2 py-1 text-sm">
+                          {formatCurrency(voucher.discountValue)}
+                        </div>
+                      )}
+                    </div>
+                    {voucher.maxDiscount && (
+                      <div className="text-xs text-black mt-1">
+                        Tối đa: {formatCurrency(voucher.maxDiscount)}
                       </div>
                     )}
-                  </div>
-                  {voucher.maxDiscount && (
-                    <div className="text-xs text-black mt-1">
-                      Tối đa: {formatCurrency(voucher.maxDiscount)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs space-y-1">
+                      <div className="flex items-center text-black">
+                        <Calendar className="h-3 w-3 mr-1 text-black" />
+                        Bắt đầu: {formatDate(voucher.startDate)}
+                      </div>
+                      <div className="flex items-center text-black">
+                        <Calendar className="h-3 w-3 mr-1 text-black" />
+                        Kết thúc: {formatDate(voucher.endDate)}
+                      </div>
                     </div>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="text-xs space-y-1">
-                    <div className="flex items-center text-black">
-                      <Calendar className="h-3 w-3 mr-1 text-black" />
-                      Bắt đầu: {formatDate(voucher.startDate)}
-                    </div>
-                    <div className="flex items-center text-black">
-                      <Calendar className="h-3 w-3 mr-1 text-black" />
-                      Kết thúc: {formatDate(voucher.endDate)}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <UsageProgressBar 
-                    current={voucher.usageCount} 
-                    total={voucher.usageLimit} 
-                  />
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(voucher.status)}
-                </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => handleEditClick(voucher)}>
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableCell>
+                  <TableCell>
+                    <UsageProgressBar 
+                      current={voucher.usageCount} 
+                      total={voucher.usageLimit} 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(voucher.status)}
+                  </TableCell>
+                  <TableCell className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => handleEditClick(voucher)}>
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50" onClick={() => handleDeleteClick(voucher.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
-      {filteredVouchers.length === 0 && (
+      {!loading && filteredVouchers.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
             <Tag className="h-12 w-12 text-blue-100" />
@@ -473,7 +537,7 @@ const VoucherManagementPage = () => {
         </div>
       )}
 
-      {filteredVouchers.length > 0 && (
+      {!loading && filteredVouchers.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-black">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredVouchers.length)} của {filteredVouchers.length} voucher
@@ -590,7 +654,6 @@ const VoucherManagementPage = () => {
         </DialogContent>
       </Dialog>
 
-
       {/* ADD MODAL */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
@@ -688,19 +751,6 @@ const VoucherManagementPage = () => {
                 }
               />
             </div>
-            <div>
-              <Label className="text-black">Trạng thái</Label>
-              <select
-                className="w-full border border-pink-100 rounded-lg p-2 focus:ring-pink-100"
-                value={newVoucher.status}
-                onChange={(e) =>
-                  setNewVoucher({ ...newVoucher, status: e.target.value as "active" | "expired" | "used"})
-                }
-              >
-                <option value="active">Đang hoạt động</option>
-                <option value="inactive">Ngừng hoạt động</option>
-              </select>
-            </div>
             <DialogFooter>
               <Button 
                 variant="outline" 
@@ -720,6 +770,32 @@ const VoucherManagementPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+          <DialogHeader>
+            <DialogTitle className="text-black">Xác nhận xóa</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Bạn có chắc chắn muốn xóa voucher này không? Hành động này không thể hoàn tác.</p>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              className="text-black border-pink-100 hover:bg-pink-100"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button 
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={handleDeleteConfirm}
+            >
+              Xóa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
