@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react";
-// import { motion } from "framer-motion";
 import ProductService, { Product } from "@/services/ProductService";
 
 const ProductDetailPage = () => {
@@ -19,12 +18,12 @@ const ProductDetailPage = () => {
         .then((data) => {
           setProduct(data);
           // Sau khi lấy được sản phẩm, load sản phẩm liên quan dựa trên type
-          return ProductService.get({ sort: "createDate" });
+          return ProductService.get({ sort: "createDate", size: 20 });
         })
         .then((allProducts) => {
           if (product) {
             // Lọc các sản phẩm có cùng type và loại trừ sản phẩm hiện tại, giới hạn 4 sản phẩm
-            const related = allProducts.filter(
+            const related = allProducts.items.filter(
               (p) => p.productId !== product.productId && p.type === product.type
             );
             setRelatedProducts(related.slice(0, 4));
@@ -33,7 +32,8 @@ const ProductDetailPage = () => {
         .catch((err) => console.error("Error fetching product:", err))
         .finally(() => setLoading(false));
     }
-  }, [id, product?.productId, product?.type]);
+  // Thêm product vào dependency để đảm bảo cập nhật đúng
+  }, [id, product]);
 
   if (loading || !product) {
     return (

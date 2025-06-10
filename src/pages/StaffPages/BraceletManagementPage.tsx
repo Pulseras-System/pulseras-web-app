@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter, Package } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,74 +20,15 @@ import {
 import { Label } from "@/components/ui/label";
 import ProductService, { Product } from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
+import Pagination from "@/components/pagination";
 
 const itemsPerPage = 8;
-
-// Inline pagination component (không dùng import)
-const InlinePagination = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) => {
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <Button
-          key={i}
-          variant={i === currentPage ? "default" : "outline"}
-          size="sm"
-          className={`w-8 h-8 p-0 ${i === currentPage ? "bg-pink-600 text-white" : "text-pink-800"}`}
-          onClick={() => onPageChange(i)}
-        >
-          {i}
-        </Button>
-      );
-    }
-    return pages;
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="text-pink-800 border-pink-300 hover:bg-pink-100"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Trước
-      </Button>
-      {renderPageNumbers()}
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="text-pink-800 border-pink-300 hover:bg-pink-100"
-      >
-        Sau
-        <ChevronRight className="h-4 w-4 ml-1" />
-      </Button>
-    </div>
-  );
-};
 
 const BraceletManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Thêm state này
   const [priceFilter, setPriceFilter] = useState<string>("all");
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
@@ -117,16 +58,22 @@ const BraceletManagement = () => {
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
   const [newProductCategoryInput, setNewProductCategoryInput] = useState(""); // dùng cho danh mục (tên danh mục)
 
-  // Load products
+  // Load products từ API, không lọc trên client nữa
   useEffect(() => {
-    ProductService.get({ keyword: searchTerm, page: currentPage - 1, size: itemsPerPage })
-      .then((products: Product[]) => {
-        setProducts(products.filter((p) => p.type.toLowerCase().includes("bracelet")));
+    ProductService.get({
+      keyword: searchTerm,
+      page: currentPage - 1,
+      size: itemsPerPage,
+      // Có thể truyền thêm filter nếu backend hỗ trợ
+    })
+      .then((res) => {
+        setProducts(res.items.filter((p) => p.type.toLowerCase().includes("bracelet")));
+        setTotalPages(res.totalPages);
       })
       .catch((error) => {
         console.error("Failed to fetch products:", error);
       });
-  }, [searchTerm, currentPage]);
+  }, [searchTerm, currentPage, priceFilter, materialFilter]);
 
   // Load categories and build mapping
   useEffect(() => {
@@ -162,17 +109,6 @@ const BraceletManagement = () => {
 
     return matchesSearch && matchesPrice && matchesMaterial;
   });
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
 
   const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
 
@@ -286,6 +222,22 @@ const BraceletManagement = () => {
     }
   };
 
+  // Khi đổi filter hoặc search thì reset về trang 1
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handlePriceFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPriceFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleMaterialFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMaterialFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -301,10 +253,7 @@ const BraceletManagement = () => {
               placeholder="Tìm kiếm..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={handleSearchChange}
             />
           </div>
           <Button
@@ -335,10 +284,7 @@ const BraceletManagement = () => {
               <select
                 className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={priceFilter}
-                onChange={(e) => {
-                  setPriceFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={handlePriceFilterChange}
               >
                 <option value="all">Tất cả giá</option>
                 <option value="under300">Dưới 300.000₫</option>
@@ -353,10 +299,7 @@ const BraceletManagement = () => {
               <select
                 className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
                 value={materialFilter}
-                onChange={(e) => {
-                  setMaterialFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={handleMaterialFilterChange}
               >
                 <option value="all">Tất cả chất liệu</option>
                 {uniqueMaterials.map((material) => (
@@ -384,7 +327,7 @@ const BraceletManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentProducts.map((product) => (
+            {products.map((product) => (
               <TableRow key={product.productId} className="hover:bg-pink-100 border-pink-100">
                 <TableCell>
                   <div className="w-16 h-16 rounded-md overflow-hidden border border-pink-100 bg-pink-100">
@@ -452,16 +395,16 @@ const BraceletManagement = () => {
         </Table>
       </div>
 
-      {filteredProducts.length > 0 && (
+      {products.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} của {filteredProducts.length} sản phẩm
+            Trang {currentPage} / {totalPages}
           </div>
-          <InlinePagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       )}
 
-      {filteredProducts.length === 0 && (
+      {products.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
             <Package className="h-12 w-12 text-blue-100" />
