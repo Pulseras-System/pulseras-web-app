@@ -101,29 +101,29 @@ const ProductPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const navigate = useNavigate();
 
-  // Lấy dữ liệu sản phẩm từ API khi trang load
+  // Lấy dữ liệu sản phẩm từ API khi trang load hoặc filter/pagination thay đổi
   useEffect(() => {
-    ProductService.get()
-      .then((data) => setProducts(data))
+    ProductService.get({
+      keyword: searchTerm,
+      page: currentPage - 1,
+      size: BraceletsPerPage,
+      // Có thể thêm filter theo category nếu backend hỗ trợ
+    })
+      .then((data) => {
+        setProducts(
+          selectedCategory === "Tất cả"
+            ? data.items
+            : data.items.filter((p) => p.type === selectedCategory)
+        );
+        setTotalPages(data.totalPages);
+        setTotalItems(data.totalItems);
+      })
       .catch((err) => console.error("Error fetching products:", err));
-  }, []);
-
-  const filteredBracelets = products.filter((p) => {
-    const matchesCategory =
-      selectedCategory === "Tất cả" || p.type === selectedCategory;
-    const matchesSearch =
-      p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.productDescription.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const totalPages = Math.ceil(filteredBracelets.length / BraceletsPerPage);
-  const paginated = filteredBracelets.slice(
-    (currentPage - 1) * BraceletsPerPage,
-    currentPage * BraceletsPerPage
-  );
+  }, [searchTerm, currentPage, selectedCategory]);
 
   const changePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -232,8 +232,6 @@ const ProductPage = () => {
 
         {/* Products */}
         <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
-
-          
           <AnimatedSection className="text-center mb-12">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900 relative inline-block">
               <span className="relative z-10 px-4">
@@ -243,9 +241,9 @@ const ProductPage = () => {
             </h2>
           </AnimatedSection>
 
-          {paginated.length > 0 ? (
+          {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {paginated.map((bracelet) => (
+              {products.map((bracelet) => (
                 <motion.div
                   key={bracelet.productId}
                   initial={{ opacity: 0, y: 30 }}
@@ -350,8 +348,8 @@ const ProductPage = () => {
               </div>
               <p className="text-sm text-blue-600">
                 Hiển thị {(currentPage - 1) * BraceletsPerPage + 1} -{" "}
-                {Math.min(currentPage * BraceletsPerPage, filteredBracelets.length)} trong số{" "}
-                {filteredBracelets.length} sản phẩm
+                {Math.min(currentPage * BraceletsPerPage, totalItems)} trong số{" "}
+                {totalItems} sản phẩm
               </p>
             </AnimatedSection>
           )}

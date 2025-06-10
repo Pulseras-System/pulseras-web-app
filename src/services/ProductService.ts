@@ -24,9 +24,13 @@ const ProductService = {
     page?: number;
     size?: number;
     sort?: string;
-  }): Promise<Product[]> => {
-    const response = await api.get<Product[]>(PRODUCT_URL, { params });
-    return response.data;
+  }): Promise<{ items: Product[]; totalPages: number; totalItems: number }> => {
+    const response = await api.get(PRODUCT_URL, { params });
+    return {
+      items: response.data.items || [],
+      totalPages: response.data.totalPages || 1,
+      totalItems: response.data.totalItems || 0,
+    };
   },
   getById: async (id: string): Promise<Product> => {
     const response = await api.get<Product>(`${PRODUCT_URL}/${id}`);
