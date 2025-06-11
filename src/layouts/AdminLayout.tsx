@@ -162,7 +162,7 @@ const AdminLayout = () => {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="w-64 p-2 rounded-xl shadow-lg border-0 bg-white/95" align="end" >
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
@@ -199,7 +199,7 @@ const AdminLayout = () => {
                   </svg>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent className="bg-white/95" align="end">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Hồ sơ</DropdownMenuItem>

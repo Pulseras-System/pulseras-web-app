@@ -159,7 +159,7 @@ const CartPage = () => {
   const total = subtotal + shipping;
 
   return (
-    <div className="px-4 sm:px-6 py-8 min-h-screen bg-blue-50/30">
+    <div className="px-4 sm:px-6 py-8 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <AnimatedSection>

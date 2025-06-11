@@ -143,7 +143,7 @@ function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {/* Skeleton header */}
@@ -151,7 +151,6 @@ function ProfilePage() {
               <div className="h-8 w-1/3 bg-gray-200 rounded animate-pulse mb-2"></div>
               <div className="h-4 w-1/4 bg-gray-200 rounded animate-pulse"></div>
             </div>
-            
             {/* Skeleton content */}
             <div className="p-6">
               <div className="flex items-center mb-8">
@@ -161,7 +160,6 @@ function ProfilePage() {
                   <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
                 </div>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="space-y-2">
@@ -179,7 +177,7 @@ function ProfilePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white p-6 shadow rounded-lg border-l-4 border-red-500">
             <div className="flex items-center">
@@ -189,7 +187,7 @@ function ProfilePage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-lg font-medium text-red-800">Error Loading Profile</h3>
+                <h3 className="text-lg font-medium text-red-800">Lỗi tải hồ sơ</h3>
                 <div className="mt-2 text-sm text-red-700">
                   <p>{error}</p>
                 </div>
@@ -199,7 +197,7 @@ function ProfilePage() {
                     onClick={() => window.location.reload()}
                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
-                    Try Again
+                    Thử lại
                   </button>
                 </div>
               </div>
@@ -211,7 +209,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {updateSuccess && (
           <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-4 rounded">
@@ -222,7 +220,7 @@ function ProfilePage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-green-700">Profile updated successfully!</p>
+                <p className="text-sm text-green-700">Cập nhật hồ sơ thành công!</p>
               </div>
             </div>
           </div>
@@ -237,7 +235,7 @@ function ProfilePage() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">Error: {updateError}</p>
+                <p className="text-sm text-red-700">Lỗi: {updateError}</p>
               </div>
             </div>
           </div>
@@ -247,7 +245,7 @@ function ProfilePage() {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-white">My Profile</h1>
+              <h1 className="text-2xl font-bold text-white">Hồ sơ của tôi</h1>
               <button
                 className="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium text-sm flex items-center"
                 onClick={() => setIsEditing(!isEditing)}
@@ -258,14 +256,14 @@ function ProfilePage() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    Cancel Edit
+                    Hủy chỉnh sửa
                   </>
                 ) : (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-                    Edit Profile
+                    Chỉnh sửa hồ sơ
                   </>
                 )}
               </button>
@@ -280,14 +278,14 @@ function ProfilePage() {
                   {account.fullName ? account.fullName.slice(0, 2).toUpperCase() : "U"}
                 </div>
                 <div className="md:ml-8 text-center md:text-left">
-                  <h2 className="text-3xl font-bold text-gray-800">{account.fullName || "User"}</h2>
+                  <h2 className="text-3xl font-bold text-gray-800">{account.fullName || "Người dùng"}</h2>
                   <div className="mt-2 flex items-center justify-center md:justify-start">
                     <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium ${
                       account.status === 1 
                         ? "bg-green-100 text-green-800" 
                         : "bg-red-100 text-red-800"
                     }`}>
-                      {account.status === 1 ? "Active Account" : "Inactive Account"}
+                      {account.status === 1 ? "Tài khoản đang hoạt động" : "Tài khoản bị khóa"}
                     </span>
                   </div>
                   <p className="mt-1 text-gray-500">{account.email}</p>
@@ -295,14 +293,14 @@ function ProfilePage() {
               </div>
               
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin tài khoản</h3>
                 
                 {isEditing ? (
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                          Full Name
+                          Họ và tên
                         </label>
                         <input
                           type="text"
@@ -317,7 +315,7 @@ function ProfilePage() {
                       
                       <div className="space-y-2">
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                          Username
+                          Tên đăng nhập
                         </label>
                         <input
                           type="text"
@@ -327,12 +325,12 @@ function ProfilePage() {
                           disabled
                           className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm px-3 py-2 border"
                         />
-                        <p className="text-xs text-gray-500">Username cannot be changed</p>
+                        <p className="text-xs text-gray-500">Không thể thay đổi tên đăng nhập</p>
                       </div>
                       
                       <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                          Email Address
+                          Email
                         </label>
                         <input
                           type="email"
@@ -347,7 +345,7 @@ function ProfilePage() {
                       
                       <div className="space-y-2">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                          Phone Number
+                          Số điện thoại
                         </label>
                         <input
                           type="tel"
@@ -367,7 +365,7 @@ function ProfilePage() {
                         onClick={() => setIsEditing(false)}
                         className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        Cancel
+                        Hủy
                       </button>
                       <button
                         type="submit"
@@ -380,9 +378,9 @@ function ProfilePage() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Saving...
+                            Đang lưu...
                           </>
-                        ) : 'Save Changes'}
+                        ) : 'Lưu thay đổi'}
                       </button>
                     </div>
                   </form>
@@ -390,32 +388,32 @@ function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
                     <ProfileField 
                       icon="user" 
-                      label="Username" 
-                      value={account.username || 'Not set'} 
+                      label="Tên đăng nhập" 
+                      value={account.username || 'Chưa có'} 
                     />
                     <ProfileField 
                       icon="mail" 
                       label="Email" 
-                      value={account.email || 'Not set'} 
+                      value={account.email || 'Chưa có'} 
                     />
                     <ProfileField 
                       icon="phone" 
-                      label="Phone" 
-                      value={account.phone || 'Not set'} 
+                      label="Số điện thoại" 
+                      value={account.phone || 'Chưa có'} 
                     />
                     <ProfileField 
                       icon="calendar" 
-                      label="Account Created" 
+                      label="Ngày tạo tài khoản" 
                       value={formatDate(account.createDate)} 
                     />
                     <ProfileField 
                       icon="clock" 
-                      label="Last Updated" 
+                      label="Cập nhật lần cuối" 
                       value={formatDate(account.lastEdited)} 
                     />
                     <ProfileField 
                       icon="badge" 
-                      label="Role" 
+                      label="Vai trò" 
                       value={getRoleName(account.roleId)} 
                     />
                   </div>
@@ -486,29 +484,27 @@ function ProfileField({
 
 // Helper function to format dates safely
 function formatDate(dateString: string | null | undefined): string {
-  if (!dateString) return 'Not available';
-  
+  if (!dateString) return 'Không có';
   try {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString("vi-VN");
   } catch (error) {
     console.error("Invalid date format:", dateString);
-    return 'Invalid date';
+    return 'Không hợp lệ';
   }
 }
 
 // Helper function to convert roleId to a readable name
 function getRoleName(roleId: number | null | undefined): string {
-  if (roleId === null || roleId === undefined) return 'Unknown';
-  
+  if (roleId === null || roleId === undefined) return 'Không rõ';
   switch (roleId) {
     case 1:
-      return "Administrator";
+      return "Quản trị viên";
     case 2:
-      return "Customer";
+      return "Khách hàng";
     case 3:
-      return "Staff";
+      return "Nhân viên";
     default:
-      return `Role ${roleId}`;
+      return `Vai trò ${roleId}`;
   }
 }
 
