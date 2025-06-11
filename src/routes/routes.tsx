@@ -19,6 +19,7 @@ import ProductDetailPage from '@/pages/Customer/ProductDetailPage';
 import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
 import CartPage from '@/pages/Customer/CartPage';
 import ProfilePage from '@/pages/Customer/ProfilePage';
+import MyOrderPage from '@/pages/Customer/MyOrderPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
@@ -84,6 +85,10 @@ const routes = [
       {
         path: '/profile',
         element: <ProfilePage />,
+      },
+      {
+        path: '/orders',
+        element: <MyOrderPage />,
       },
       {
         path: '*',
