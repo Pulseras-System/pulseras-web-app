@@ -23,7 +23,7 @@ const AccountService = {
 
   // Lấy thông tin 1 tài khoản theo id
   getById: async (id: number | string): Promise<Account> => {
-    const response = await api.get<Account>(`/account/${id}`);
+    const response = await api.get<Account>(`/accounts/${id}`);
     return response.data;
   },
 
@@ -35,7 +35,24 @@ const AccountService = {
 
   // Cập nhật thông tin tài khoản
   update: async (id: number | string, data: Partial<Account>): Promise<Account> => {
-    const response = await api.put<Account>(`/account/${id}`, data);
+    // Only send fields that have values (not undefined)
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== undefined)
+    );
+    
+    const response = await api.put<Account>(`/accounts/${id}`, filteredData);
+    
+    // Update the localStorage account data if it exists
+    const storedAccount = localStorage.getItem('account');
+    if (storedAccount) {
+      const currentAccount = JSON.parse(storedAccount);
+      // Only update if the ID matches the current user
+      if (currentAccount.id === id) {
+        const updatedAccount = { ...currentAccount, ...response.data };
+        localStorage.setItem('account', JSON.stringify(updatedAccount));
+      }
+    }
+    
     return response.data;
   },
 
@@ -64,6 +81,13 @@ const AccountService = {
     // 3. Cập nhật header Authorization cho axios instance
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     return response.data;
+  },
+  
+  // Đăng xuất
+  logout: () => {
+    Cookies.remove("token");
+    localStorage.removeItem("account");
+    delete api.defaults.headers.common["Authorization"];
   },
 };
 
