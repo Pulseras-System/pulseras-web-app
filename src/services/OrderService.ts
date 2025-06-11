@@ -14,19 +14,19 @@ export interface Order {
 
 const OrderService = {
   get: async (): Promise<Order[]> => {
-    const response = await api.get<Order[]>("/order");
+    const response = await api.get<Order[]>("/orders");
     return response.data;
   },
   getById: async (id: number | string): Promise<Order> => {
-    const response = await api.get<Order>(`/order/${id}`);
+    const response = await api.get<Order>(`/orders/${id}`);
     return response.data;
   },
   create: async (data: Partial<Order>): Promise<Order> => {
-    const response = await api.post<Order>("/order", data);
+    const response = await api.post<Order>("/orders", data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Order>): Promise<Order> => {
-    const response = await api.put<Order>(`/order/${id}`, data);
+    const response = await api.put<Order>(`/orders/${id}`, data);
     return response.data;
   },
 };

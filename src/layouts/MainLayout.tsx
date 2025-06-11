@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
   Home, ShoppingBag, LayoutGrid, Sparkles, Info, Phone,
-  ShoppingCart, User, Menu, Search,
+  ShoppingCart, User, Menu, Search, LogOut, Settings, Heart, Package,
 } from "lucide-react";
 
 import {
@@ -20,6 +20,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MainLayout = () => {
   const [showSearch, setShowSearch] = useState(false);
@@ -44,6 +52,24 @@ const MainLayout = () => {
       setAccount(JSON.parse(accountStr));
     }
   }, []);
+
+  const handleLogout = () => {
+    // Clear all localStorage items
+    localStorage.clear();
+    
+    // Clear all cookies
+    document.cookie.split(";").forEach(cookie => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+    
+    // Update state
+    setAccount(null);
+    
+    // Navigate to home page
+    navigate("/");
+  };
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -136,16 +162,51 @@ const MainLayout = () => {
               </span>
             </Button>
 
-            {/* User Button: nếu có account thì hiện tên, ngược lại hiện nút đăng nhập */}
+            {/* User Button: nếu có account thì hiện dropdown menu, ngược lại hiện nút đăng nhập */}
             {account ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110"
-                onClick={() => navigate("/profile")}
-              >
-                {account.fullName}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110 gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                        {account.fullName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-medium">{account.fullName.split(' ')[0]}</span>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl shadow-lg border-0 bg-white/95">
+                  <div className="px-3 py-2 mb-2">
+                    <div className="font-medium">{account.fullName}</div>
+                    <div className="text-xs text-gray-500">{account.email}</div>
+                  </div>
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                    <User className="h-4 w-4 text-blue-500" />
+                    <span>Trang cá nhân</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                    <Package className="h-4 w-4 text-blue-500" />
+                    <span>Đơn hàng của tôi</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                    <Heart className="h-4 w-4 text-blue-500" />
+                    <span>Danh sách yêu thích</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
+                    <Settings className="h-4 w-4 text-blue-500" />
+                    <span>Cài đặt tài khoản</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuItem onClick={handleLogout} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-red-50 focus:bg-red-50 text-red-500">
+                    <LogOut className="h-4 w-4" />
+                    <span>Đăng xuất</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button
                 variant="ghost"
@@ -229,33 +290,58 @@ const MainLayout = () => {
                   {/* Utility Actions in Mobile Menu */}
                   <hr className="my-2 border-gray-200" />
                   {account ? (
-                    <Button
-                      variant="ghost"
-                      className="flex items-center justify-start gap-3 px-4 py-3 text-lg rounded-lg transition-all hover:bg-blue-50 hover:text-blue-600 font-medium w-full hover:pl-6"
-                      onClick={() => {
-                        navigate("/profile");
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      {account.fullName}
-                    </Button>
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-2 shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-medium shadow-md">
+                          {account.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-800">{account.fullName}</div>
+                          <div className="text-xs text-gray-500">{account.email}</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-blue-100 hover:border-blue-200 shadow-sm py-2"
+                          onClick={() => {
+                            navigate("/profile");
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <User className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium">Hồ sơ</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-red-50 hover:border-red-200 text-red-500 shadow-sm py-2"
+                          onClick={() => {
+                            handleLogout();
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span className="font-medium">Đăng xuất</span>
+                        </Button>
+                      </div>
+                    </div>
                   ) : (
                     <Button
-                      variant="ghost"
-                      className="flex items-center justify-start gap-3 px-4 py-3 text-lg rounded-lg transition-all hover:bg-blue-50 hover:text-blue-600 font-medium w-full hover:pl-6"
+                      variant="outline"
+                      className="flex items-center justify-center gap-3 px-4 py-3 text-base rounded-lg transition-all hover:bg-blue-500 hover:text-white font-medium w-full border border-gray-200 shadow-sm"
                       onClick={() => {
                         navigate("/login");
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      <User className="h-5 w-5 text-blue-500" />
+                      <User className="h-5 w-5" />
                       Đăng nhập
                     </Button>
                   )}
 
-                  <div className="flex items-center justify-between px-4 py-3 text-lg rounded-lg hover:bg-blue-50 transition-all hover:pl-6">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-100 shadow-sm">
                     <span className="flex items-center gap-3 font-medium">
-                      <Sparkles className="h-5 w-5 text-blue-500" />
+                      <Sparkles className="h-5 w-5 text-amber-500" />
                       Giao diện
                     </span>
                     <ThemeToggle />

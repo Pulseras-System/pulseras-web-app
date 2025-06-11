@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter, Package } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter, Package, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,34 +19,37 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
+import OrderService, { Order as ApiOrder } from "../../services/OrderService";
 
+// Updated Order interface to match our UI needs
 interface Order {
   id: number;
   customerName: string;
   orderDate: string;
   status: string;
   totalAmount: number;
+  accountId: number;
+  voucherId: number | null;
+  orderInfo: string;
 }
 
-const mockOrders: Order[] = [
-  { id: 1, customerName: "Nguyễn Văn A", orderDate: "2025-05-01", status: "Đang xử lý", totalAmount: 299000 },
-  { id: 2, customerName: "Trần Thị B", orderDate: "2025-05-02", status: "Đã giao", totalAmount: 399000 },
-  { id: 3, customerName: "Lê Văn C", orderDate: "2025-05-03", status: "Hủy", totalAmount: 499000 },
-  { id: 4, customerName: "Phạm Thị D", orderDate: "2025-05-04", status: "Đang xử lý", totalAmount: 349000 },
-  { id: 5, customerName: "Hoàng Minh E", orderDate: "2025-05-05", status: "Đã giao", totalAmount: 499000 },
-  { id: 6, customerName: "Nguyễn Thị F", orderDate: "2025-05-06", status: "Đang xử lý", totalAmount: 199000 },
-  { id: 7, customerName: "Trần Thanh G", orderDate: "2025-05-07", status: "Hủy", totalAmount: 249000 },
-  { id: 8, customerName: "Lê Minh H", orderDate: "2025-05-08", status: "Đang xử lý", totalAmount: 349000 },
-  { id: 9, customerName: "Võ Thị I", orderDate: "2025-05-09", status: "Đã giao", totalAmount: 459000 },
-  { id: 10, customerName: "Đặng Văn J", orderDate: "2025-05-10", status: "Đang xử lý", totalAmount: 279000 },
-  { id: 11, customerName: "Bùi Thị K", orderDate: "2025-05-11", status: "Đã giao", totalAmount: 389000 },
-  { id: 12, customerName: "Phan Văn L", orderDate: "2025-05-12", status: "Hủy", totalAmount: 199000 },
-];
+// Status mapping
+const statusMapping: Record<number, string> = {
+  0: "Đang xử lý",
+  1: "Đã xác nhận",
+  2: "Đang giao",
+  3: "Đã giao",
+  4: "Hủy"
+};
 
 const itemsPerPage = 5;
 
 const OrderManagement = () => {
-  const [orders, setOrders] = useState(mockOrders);
+  // API related states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -60,13 +63,49 @@ const OrderManagement = () => {
     orderDate: new Date().toISOString().split('T')[0],
     status: "Đang xử lý",
     totalAmount: 0,
+    accountId: 0,
+    voucherId: null,
+    orderInfo: ""
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  // Fetch orders from API
+  useEffect(() => {
+    async function fetchOrders() {
+      setIsLoading(true);
+      try {
+        const apiOrders = await OrderService.get();
+        
+        // Map API data to our UI format
+        const mappedOrders: Order[] = apiOrders.map(apiOrder => ({
+          id: apiOrder.order_id,
+          customerName: `Khách hàng #${apiOrder.account_id}`,  // In a real app, you'd fetch customer names
+          orderDate: apiOrder.createDate,
+          status: statusMapping[apiOrder.status] || "Không xác định",
+          totalAmount: apiOrder.totalPrice,
+          accountId: apiOrder.account_id,
+          voucherId: apiOrder.voucher_id || null,
+          orderInfo: apiOrder.orderInfor
+        }));
+        
+        setOrders(mappedOrders);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setError("Không thể tải dữ liệu đơn hàng, vui lòng thử lại sau.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch =
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.status.toLowerCase().includes(searchTerm.toLowerCase());
+      order.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.orderInfo.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || order.status === statusFilter;
@@ -92,10 +131,10 @@ const OrderManagement = () => {
     }
   };
 
-  // Lấy danh sách trạng thái độc nhất
-  const uniqueStatuses = Array.from(new Set(mockOrders.map(order => order.status)));
+  // Get unique statuses
+  const uniqueStatuses = Array.from(new Set(orders.map(order => order.status)));
 
-  // Hàm định dạng ngày tháng
+  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -106,26 +145,88 @@ const OrderManagement = () => {
     setIsEditOpen(true);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (editingOrder) {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === editingOrder.id ? editingOrder : o))
-      );
-      setIsEditOpen(false);
+      setIsLoading(true);
+      try {
+        // Get the numeric status from our mapping
+        const numericStatus = Object.entries(statusMapping)
+          .find(([_, value]) => value === editingOrder.status)?.[0];
+          
+        if (!numericStatus) throw new Error("Invalid status");
+        
+        // Call API to update the order
+        await OrderService.update(editingOrder.id, {
+          status: parseInt(numericStatus),
+          totalPrice: editingOrder.totalAmount,
+          // Add other fields as needed
+        });
+        
+        // Update local state
+        setOrders(prev =>
+          prev.map(o => (o.id === editingOrder.id ? editingOrder : o))
+        );
+        
+        setIsEditOpen(false);
+      } catch (err) {
+        console.error("Failed to update order:", err);
+        setError("Không thể cập nhật đơn hàng, vui lòng thử lại sau.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleAddOrder = () => {
+  const handleAddOrder = async () => {
     if (newOrder.customerName.trim()) {
-      setOrders((prev) => [...prev, { ...newOrder, id: Date.now() }]);
-      setNewOrder({
-        id: 0,
-        customerName: "",
-        orderDate: new Date().toISOString().split('T')[0],
-        status: "Đang xử lý",
-        totalAmount: 0,
-      });
-      setIsAddOpen(false);
+      setIsLoading(true);
+      try {
+        // Get the numeric status from our mapping
+        const numericStatus = Object.entries(statusMapping)
+          .find(([_, value]) => value === newOrder.status)?.[0];
+          
+        if (!numericStatus) throw new Error("Invalid status");
+        
+        // Call API to create the order
+        const response = await OrderService.create({
+          account_id: newOrder.accountId,
+          orderInfor: newOrder.orderInfo,
+          status: parseInt(numericStatus),
+          totalPrice: newOrder.totalAmount,
+          amount: 1, // Default amount
+          // Add other required fields
+        });
+        
+        // Map the API response to our UI format
+        const createdOrder: Order = {
+          id: response.order_id,
+          customerName: newOrder.customerName,
+          orderDate: response.createDate,
+          status: statusMapping[response.status] || "Không xác định",
+          totalAmount: response.totalPrice,
+          accountId: response.account_id,
+          voucherId: response.voucher_id || null,
+          orderInfo: response.orderInfor
+        };
+        
+        setOrders(prev => [...prev, createdOrder]);
+        setNewOrder({
+          id: 0,
+          customerName: "",
+          orderDate: new Date().toISOString().split('T')[0],
+          status: "Đang xử lý",
+          totalAmount: 0,
+          accountId: 0,
+          voucherId: null,
+          orderInfo: ""
+        });
+        setIsAddOpen(false);
+      } catch (err) {
+        console.error("Failed to add order:", err);
+        setError("Không thể thêm đơn hàng mới, vui lòng thử lại sau.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -168,6 +269,13 @@ const OrderManagement = () => {
         </div>
       </div>
 
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+
       {/* Filters */}
       {showFilters && (
         <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
@@ -208,89 +316,102 @@ const OrderManagement = () => {
         </div>
       )}
 
-      {/* Table */}
-      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
-        <Table className="min-w-[700px]">
-          <TableHeader className="bg-pink-100">
-            <TableRow>
-              <TableHead className="text-black">ID</TableHead>
-              <TableHead className="text-black">Tên khách hàng</TableHead>
-              <TableHead className="text-black">Ngày đặt hàng</TableHead>
-              <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black">Tổng tiền (VND)</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentOrders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell className="font-medium text-black">
-                  <div className="font-semibold">{order.customerName}</div>
-                </TableCell>
-                <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    order.status === "Đang xử lý" 
-                      ? "bg-yellow-100 text-yellow-800" 
-                      : order.status === "Đã giao"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {order.status}
-                  </span>
-                </TableCell>
-                <TableCell className="font-medium text-black">
-                  {order.totalAmount.toLocaleString()}₫
-                </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditClick(order)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {filteredOrders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
-          <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
-            <Package className="h-12 w-12 text-blue-100" />
-          </div>
-          <h3 className="text-xl font-medium text-black mb-2">
-            Không tìm thấy đơn hàng
-          </h3>
-          <p className="text-sm text-black mt-1">
-            Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
-          </p>
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-800" />
+          <span className="ml-2 text-lg text-blue-800">Đang tải dữ liệu...</span>
         </div>
-      )}
-
-      {filteredOrders.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-          <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} của {filteredOrders.length} đơn hàng
+      ) : (
+        <>
+          {/* Table */}
+          <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
+            <Table className="min-w-[700px]">
+              <TableHeader className="bg-pink-100">
+                <TableRow>
+                  <TableHead className="text-black">ID</TableHead>
+                  <TableHead className="text-black">Tên khách hàng</TableHead>
+                  <TableHead className="text-black">Ngày đặt hàng</TableHead>
+                  <TableHead className="text-black">Trạng thái</TableHead>
+                  <TableHead className="text-black">Tổng tiền (VND)</TableHead>
+                  <TableHead className="text-black text-right">Thao tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentOrders.map((order) => (
+                  <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
+                    <TableCell className="font-medium">{order.id}</TableCell>
+                    <TableCell className="font-medium text-black">
+                      <div className="font-semibold">{order.customerName}</div>
+                      <div className="text-xs text-gray-500 truncate max-w-[200px]">{order.orderInfo}</div>
+                    </TableCell>
+                    <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        order.status === "Đang xử lý" || order.status === "Đã xác nhận" || order.status === "Đang giao"
+                          ? "bg-yellow-100 text-yellow-800" 
+                          : order.status === "Đã giao"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {order.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-medium text-black">
+                      {order.totalAmount.toLocaleString()}₫
+                    </TableCell>
+                    <TableCell className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                        onClick={() => handleEditClick(order)}
+                      >
+                        <Pen className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
+
+          {/* No results */}
+          {filteredOrders.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
+              <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                <Package className="h-12 w-12 text-blue-100" />
+              </div>
+              <h3 className="text-xl font-medium text-black mb-2">
+                Không tìm thấy đơn hàng
+              </h3>
+              <p className="text-sm text-black mt-1">
+                Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
+              </p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {filteredOrders.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+              <div className="text-sm text-black">
+                Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} của {filteredOrders.length} đơn hàng
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+        </>
       )}
 
       {/* EDIT MODAL */}
@@ -312,13 +433,12 @@ const OrderManagement = () => {
                 />
               </div>
               <div>
-                <Label className="text-black">Ngày đặt hàng</Label>
+                <Label className="text-black">Thông tin đơn hàng</Label>
                 <Input
-                  type="date"
                   className="border-pink-100 focus:ring-pink-100"
-                  value={editingOrder.orderDate}
+                  value={editingOrder.orderInfo}
                   onChange={(e) =>
-                    setEditingOrder({ ...editingOrder, orderDate: e.target.value })
+                    setEditingOrder({ ...editingOrder, orderInfo: e.target.value })
                   }
                 />
               </div>
@@ -331,7 +451,7 @@ const OrderManagement = () => {
                     setEditingOrder({ ...editingOrder, status: e.target.value })
                   }
                 >
-                  {uniqueStatuses.map(status => (
+                  {Object.values(statusMapping).map(status => (
                     <option key={status} value={status}>{status}</option>
                   ))}
                 </select>
@@ -352,14 +472,23 @@ const OrderManagement = () => {
                   variant="outline" 
                   className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
+                  disabled={isLoading}
                 >
                   Hủy
                 </Button>
                 <Button 
                   className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
+                  disabled={isLoading}
                 >
-                  Lưu
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang lưu
+                    </>
+                  ) : (
+                    "Lưu"
+                  )}
                 </Button>
               </DialogFooter>
             </div>
@@ -385,13 +514,23 @@ const OrderManagement = () => {
               />
             </div>
             <div>
-              <Label className="text-black">Ngày đặt hàng</Label>
+              <Label className="text-black">Thông tin đơn hàng</Label>
               <Input
-                type="date"
                 className="border-pink-100 focus:ring-pink-100"
-                value={newOrder.orderDate}
+                value={newOrder.orderInfo}
                 onChange={(e) =>
-                  setNewOrder({ ...newOrder, orderDate: e.target.value })
+                  setNewOrder({ ...newOrder, orderInfo: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label className="text-black">ID Tài khoản</Label>
+              <Input
+                type="number"
+                className="border-pink-100 focus:ring-pink-100"
+                value={newOrder.accountId || ''}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, accountId: +e.target.value })
                 }
               />
             </div>
@@ -404,7 +543,7 @@ const OrderManagement = () => {
                   setNewOrder({ ...newOrder, status: e.target.value })
                 }
               >
-                {uniqueStatuses.map(status => (
+                {Object.values(statusMapping).map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
@@ -425,14 +564,23 @@ const OrderManagement = () => {
                 variant="outline" 
                 className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
+                disabled={isLoading}
               >
                 Hủy
               </Button>
               <Button 
                 className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddOrder}
+                disabled={isLoading}
               >
-                Thêm
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang thêm
+                  </>
+                ) : (
+                  "Thêm"
+                )}
               </Button>
             </DialogFooter>
           </div>

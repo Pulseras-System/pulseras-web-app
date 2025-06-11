@@ -11,29 +11,30 @@ const ProductDetailPage = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 1. Lấy chi tiết sản phẩm
   useEffect(() => {
     if (id) {
-      // Lấy thông tin sản phẩm theo id
+      setLoading(true);
       ProductService.getById(id)
-        .then((data) => {
-          setProduct(data);
-          // Sau khi lấy được sản phẩm, load sản phẩm liên quan dựa trên type
-          return ProductService.get({ sort: "createDate", size: 20 });
-        })
-        .then((allProducts) => {
-          if (product) {
-            // Lọc các sản phẩm có cùng type và loại trừ sản phẩm hiện tại, giới hạn 4 sản phẩm
-            const related = allProducts.items.filter(
-              (p) => p.productId !== product.productId && p.type === product.type
-            );
-            setRelatedProducts(related.slice(0, 4));
-          }
-        })
+        .then((data) => setProduct(data))
         .catch((err) => console.error("Error fetching product:", err))
         .finally(() => setLoading(false));
     }
-  // Thêm product vào dependency để đảm bảo cập nhật đúng
-  }, [id, product]);
+  }, [id]);
+
+  // 2. Lấy sản phẩm liên quan khi đã có product
+  useEffect(() => {
+    if (product) {
+      ProductService.get({ sort: "createDate", size: 20 })
+        .then((allProducts) => {
+          const related = allProducts.items.filter(
+            (p) => p.productId !== product.productId && p.type === product.type
+          );
+          setRelatedProducts(related.slice(0, 4));
+        })
+        .catch((err) => console.error("Error fetching related products:", err));
+    }
+  }, [product]);
 
   if (loading || !product) {
     return (

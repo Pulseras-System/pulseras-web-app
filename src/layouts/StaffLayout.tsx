@@ -160,7 +160,7 @@ const StaffLayout = () => {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white/95">
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
@@ -197,7 +197,7 @@ const StaffLayout = () => {
                   </svg>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-white/95">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Hồ sơ</DropdownMenuItem>

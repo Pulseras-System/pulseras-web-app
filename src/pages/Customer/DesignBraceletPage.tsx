@@ -13,11 +13,15 @@ interface BraceletPart {
 }
 
 const DesignBraceletPage: React.FC = () => {
-    // Thêm ref cho controls
-    const controlsRef = useRef<OrbitControls | null>(null);
+    // Basic references and state
     const mountRef = useRef<HTMLDivElement>(null);
-    const sceneRef = useRef<THREE.Scene | null>(null); // Add scene reference
-    const [objects, setObjects] = useState<THREE.Object3D[]>([]); // State để lưu danh sách khối
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const controlsRef = useRef<OrbitControls | null>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    
+    // State for parts and objects
+    const [objects, setObjects] = useState<THREE.Object3D[]>([]);
     const [availableParts, setAvailableParts] = useState<BraceletPart[]>([
         {
             id: 'base-bracelet',
@@ -37,342 +41,47 @@ const DesignBraceletPage: React.FC = () => {
         {
             id: 'block-gem',
             name: 'Gem Block',
-            modelPath: '/scene.glb' // Replace with actual model path
+            modelPath: '/scene.glb'
         }
     ]);
+    
+    // Basic UI state
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isPanning, setIsPanning] = useState(false);
-    const lastMousePosition = useRef({ x: 0, y: 0 });
-    const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
-    const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2());
-    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-
-    const loadModel = async (partData: BraceletPart, position?: THREE.Vector3) => {
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            const gltfLoader = new GLTFLoader();
-            gltfLoader.load(
-                partData.modelPath,
-                (gltf) => {
-                    const model = gltf.scene;
-                    model.traverse((child) => {
-                        if ((child as THREE.Mesh).isMesh) {
-                            const mesh = child as THREE.Mesh;
-                            mesh.castShadow = true;
-                            mesh.receiveShadow = true;
-                        }
-                    });
-                    
-                    if (position) {
-                        model.position.copy(position);
-                    }
-                    
-                    if (sceneRef.current) {
-                        sceneRef.current.add(model);
-                        setObjects((prevObjects) => [...prevObjects, model]);
-                    }
-                    setIsLoading(false);
-                },
-                (xhr) => {
-                    const progress = (xhr.loaded / xhr.total) * 100;
-                    console.log(`Loading: ${progress}%`);
-                },
-                (error) => {
-                    console.error('Error loading model:', error);
-                    setError('Failed to load model');
-                    setIsLoading(false);
-                }
-            );
-        } catch (err) {
-            setError('Failed to load model');
-            setIsLoading(false);
-        }
-    };
-
-    // Cập nhật handleObjectSelection
-    const handleObjectSelection = (event: React.MouseEvent) => {
-        if (!sceneRef.current || !mountRef.current || !cameraRef.current) return;
-
-        // Vô hiệu hóa controls khi bắt đầu kéo
-        if (controlsRef.current) {
-            controlsRef.current.enabled = false;
-        }
-
-        const rect = mountRef.current.getBoundingClientRect();
-        mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-        const intersects = raycasterRef.current.intersectObjects(objects, true);
-
-        if (intersects.length > 0) {
-            const selected = intersects[0].object;
-            const parentObject = selected.parent;
-            if (parentObject && objects.includes(parentObject)) {
-                setSelectedObject(parentObject);
-                setIsDragging(true);
-            }
-        } else {
-            setSelectedObject(null);
-        }
-    };
-
-    // Cập nhật handleDragEnd
-    const handleDragEnd = () => {
-        // Kích hoạt lại controls khi kết thúc kéo
-        if (controlsRef.current) {
-            controlsRef.current.enabled = true;
-        }
-        setIsDragging(false);
-    };
-
-    // Thêm hàm xử lý di chuyển khối
-    const handleObjectDrag = (event: React.MouseEvent) => {
-        if (!isDragging || !selectedObject || !mountRef.current || !cameraRef.current) return;
-
-        const rect = mountRef.current.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycasterRef.current.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
-        const intersectPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-        const targetPosition = new THREE.Vector3();
-        raycasterRef.current.ray.intersectPlane(intersectPlane, targetPosition);
-
-        selectedObject.position.copy(targetPosition);
-    };
-
-    // Thêm hàm xử lý phím
-    const handleKeyDown = (event: KeyboardEvent) => {
-        if (!cameraRef.current) return;
-        const speed = 0.5;
-
-        switch (event.key) {
-            case 'ArrowUp':
-                cameraRef.current.position.y += speed;
-                break;
-            case 'ArrowDown':
-                cameraRef.current.position.y -= speed;
-                break;
-            case 'ArrowLeft':
-                cameraRef.current.position.x -= speed;
-                break;
-            case 'ArrowRight':
-                cameraRef.current.position.x += speed;
-                break;
-            case '+':
-            case '=':
-                cameraRef.current.position.z -= speed;
-                break;
-            case '-':
-            case '_':
-                cameraRef.current.position.z += speed;
-                break;
-            case 'r':
-            case 'R':
-                // Reset camera
-                cameraRef.current.position.set(0, 0, 8);
-                cameraRef.current.lookAt(0, 0, 0);
-                break;
-        }
-    };
-
-    // Thêm xử lý pan camera với chuột phải
-    const handleMouseDown = (event: React.MouseEvent) => {
-        if (event.button === 2) { // Chuột phải
-            setIsPanning(true);
-            lastMousePosition.current = {
-                x: event.clientX,
-                y: event.clientY
-            };
-            event.preventDefault();
-        } else {
-            handleObjectSelection(event);
-        }
-    };
-
-    const handleMouseMove = (event: React.MouseEvent) => {
-        if (isDragging) {
-            handleObjectDrag(event);
-        } else if (isPanning && cameraRef.current) {
-            const deltaX = event.clientX - lastMousePosition.current.x;
-            const deltaY = event.clientY - lastMousePosition.current.y;
-            
-            cameraRef.current.position.x -= deltaX * 0.01;
-            cameraRef.current.position.y += deltaY * 0.01;
-            
-            lastMousePosition.current = {
-                x: event.clientX,
-                y: event.clientY
-            };
-        }
-    };
-
-    const handleMouseUp = (event: React.MouseEvent) => {
-        if (event.button === 2) {
-            setIsPanning(false);
-        } else {
-            handleDragEnd();
-        }
-    };
-
-    // Thêm wheel zoom
-    const handleWheel = (event: WheelEvent) => {
-        if (!cameraRef.current) return;
-        const zoomSpeed = 0.5;
-        cameraRef.current.position.z += event.deltaY * 0.01 * zoomSpeed;
-    };
-
+    
     useEffect(() => {
-        // Scene setup
+        // Initialize empty scene for workspace
         const scene = new THREE.Scene();
-        sceneRef.current = scene; // Store scene reference
-        scene.background = new THREE.Color(0xcccccc);
-
-        // Camera setup
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            (window.innerWidth - 300) / (window.innerHeight - 150), // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
-            0.1,
-            1000
-        );
-        camera.position.z = 8;
-        cameraRef.current = camera; // Store camera reference
-
-        // Renderer setup
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-
-        const updateDimensions = () => {
-            if (mountRef.current) {
-                const containerHeight = window.innerHeight - 150; // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
-                const containerWidth = window.innerWidth - 300; // Trừ đi chiều rộng của sidebar
-                
-                renderer.setSize(containerWidth, containerHeight);
-                camera.aspect = containerWidth / containerHeight;
-                camera.updateProjectionMatrix();
-            }
-        };
-
-        // Gọi ngay khi khởi tạo
-        updateDimensions();
-
-        if (mountRef.current) {
-            mountRef.current.innerHTML = '';
-            mountRef.current.appendChild(renderer.domElement);
-        }
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        pointLight.castShadow = true;
-        scene.add(pointLight);
-
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controlsRef.current = controls; // Lưu reference đến controls
-
-        // Load GLB model
-        const gltfLoader = new GLTFLoader();
-        gltfLoader.load(
-            '/scene.glb', // Replace with the path to your GLB file
-            (gltf) => {
-                const model = gltf.scene;
-                model.traverse((child) => {
-                    if ((child as THREE.Mesh).isMesh) {
-                        const mesh = child as THREE.Mesh;
-                        mesh.castShadow = true;
-                        mesh.receiveShadow = true;
-                    }
-                });
-                model.position.set(0, 0, 0); // Set the position of the loaded model
-                scene.add(model);
-
-                // Cập nhật danh sách khối
-                setObjects((prevObjects) => [...prevObjects, model]);
-            },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-            },
-            (error) => {
-                console.error('An error occurred while loading the GLB file:', error);
-            }
-        );
-
-        // Animation loop
-        const animate = () => {
-            if (controlsRef.current) {
-                controlsRef.current.update();
-            }
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        };
-        animate();
-
-        // Handle window resize
-        const handleResize = () => {
-            updateDimensions();
-        };
-
-        // Initial resize
-        handleResize();
-
-        // Add resize event listener
-        const debouncedResize = debounce(handleResize, 150);
-        window.addEventListener('resize', debouncedResize);
-
-        // Cleanup on component unmount
+        sceneRef.current = scene;
+        scene.background = new THREE.Color(0x333333); // Dark background
+        
+        // Create empty container for workspace
+        const container = mountRef.current;
+        if (!container) return;
+        
+        // Clean up on component unmount
         return () => {
-            window.removeEventListener('resize', debouncedResize);
-            debouncedResize.cancel();
-            // Cleanup models
-            objects.forEach(object => {
-                object.traverse((child) => {
-                    if ((child as THREE.Mesh).isMesh) {
-                        const mesh = child as THREE.Mesh;
-                        mesh.geometry.dispose();
-                        if (mesh.material instanceof THREE.Material) {
-                            mesh.material.dispose();
-                        }
-                    }
-                });
-            });
-            
-            if (mountRef.current) {
-                mountRef.current.removeChild(renderer.domElement);
-            }
-            renderer.dispose();
-            if (controlsRef.current) {
-                controlsRef.current.dispose();
+            // Basic cleanup only for now
+            if (rendererRef.current && container) {
+                container.removeChild(rendererRef.current.domElement);
+                rendererRef.current.dispose();
             }
         };
     }, []);
 
-    // Cập nhật div workspace
     return (
-        <div style={{ display: 'flex', height: 'calc(100vh - 150px)', overflow: 'hidden' }}>
-            {/* Sidebar */}
+        <div style={{ display: 'flex', height: 'calc(100vh - 150px)', overflow: 'hidden', background: '#1e1e1e' }}>
+            {/* Sidebar - Preserved */}
             <div
                 style={{
                     width: '300px',
-                    background: '#f5f5f5',
-                    borderRight: '1px solid #ddd',
+                    background: '#2a2a2a',
+                    borderRight: '1px solid #444',
                     padding: '10px',
                     overflowY: 'auto',
                 }}
             >
-                <h3>Available Parts</h3>
+                <h3 style={{ color: '#f0f0f0', marginBottom: '15px' }}>Available Parts</h3>
                 <div style={{ display: 'grid', gap: '10px', padding: '10px' }}>
                     {availableParts.map((part) => (
                         <div
@@ -383,10 +92,10 @@ const DesignBraceletPage: React.FC = () => {
                             }}
                             style={{
                                 padding: '15px',
-                                border: '1px solid #ddd',
+                                border: '1px solid #444',
                                 borderRadius: '8px',
                                 cursor: 'grab',
-                                background: 'white',
+                                background: '#333',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
@@ -394,70 +103,34 @@ const DesignBraceletPage: React.FC = () => {
                             }}
                         >
                             <PartPreview modelPath={part.modelPath} size={150} />
-                            <span style={{ fontWeight: '500' }}>{part.name}</span>
+                            <span style={{ fontWeight: '500', color: '#f0f0f0' }}>{part.name}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Three.js Canvas */}
-            <div
+            {/* New Empty Workspace */}
+            <div 
                 ref={mountRef}
-                onDragOver={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                }}
-                onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    try {
-                        const partData = JSON.parse(e.dataTransfer.getData('application/json')) as BraceletPart;
-                        
-                        const gltfLoader = new GLTFLoader();
-                        gltfLoader.load(
-                            partData.modelPath,
-                            (gltf) => {
-                                const model = gltf.scene;
-                                model.traverse((child) => {
-                                    if ((child as THREE.Mesh).isMesh) {
-                                        const mesh = child as THREE.Mesh;
-                                        mesh.castShadow = true;
-                                        mesh.receiveShadow = true;
-                                    }
-                                });
-                                
-                                const rect = mountRef.current?.getBoundingClientRect();
-                                if (rect) {
-                                    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                                    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-                                    model.position.set(x * 5, y * 5, 0);
-                                }
-                                
-                                if (sceneRef.current) {
-                                    sceneRef.current.add(model);
-                                    setObjects((prevObjects) => [...prevObjects, model]);
-                                }
-                            },
-                            undefined,
-                            (error) => {
-                                console.error('Error loading model:', error);
-                            }
-                        );
-                    } catch (err) {
-                        console.error('Invalid drag data');
-                    }
-                }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onContextMenu={(e) => e.preventDefault()} // Prevent right-click menu
-                style={{
-                    flex: 1,
+                style={{ 
+                    flex: 1, 
                     position: 'relative',
-                    margin: 0,
-                    padding: 0,
-                    cursor: isPanning ? 'move' : isDragging ? 'grabbing' : 'default'
+                    backgroundColor: '#333333',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}
-            />
+            >
+                <div style={{ 
+                    color: '#888', 
+                    fontSize: '16px', 
+                    textAlign: 'center',
+                    padding: '20px'
+                }}>
+                    <p>3D Workspace Ready</p>
+                    <p>Build your new implementation here</p>
+                </div>
+            </div>
         </div>
     );
 };
