@@ -38,12 +38,15 @@ function ProfilePage() {
         // Fetch account details using the ID
         const accountData = await AccountService.getById(parsedAccount.id);
         setAccount(accountData);
-        setLoading(false);
         
-        // Nếu có roleId, fetch thông tin về role từ API
+        // Nếu có roleId hoặc role_id, fetch thông tin về role từ API
         if (accountData.roleId) {
           fetchRoleName(accountData.roleId);
+        } else if (accountData.roleId) {
+          fetchRoleName(accountData.roleId);
         }
+        
+        setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể tải hồ sơ');
         setLoading(false);
@@ -65,36 +68,45 @@ function ProfilePage() {
             break;
           default:
             // Thử gọi API nếu không nhận diện được UUID
-            const roleData = await RoleService.getById(roleId);
-            setRoleName(roleData.roleName);
+            try {
+              const roleData = await RoleService.getById(roleId);
+              setRoleName(roleData.roleName);
+            } catch (innerErr) {
+              console.error("Lỗi khi gọi API với UUID:", innerErr);
+              setRoleName('Khách hàng'); // Giá trị mặc định khi không lấy được từ API
+            }
         }
       } else {
         // Gọi API với roleId là số
-        const roleData = await RoleService.getById(roleId);
-        setRoleName(roleData.roleName);
+        try {
+          const roleData = await RoleService.getById(roleId);
+          setRoleName(roleData.roleName);
+        } catch (innerErr) {
+          console.error("Lỗi khi gọi API với roleId số:", innerErr);
+          
+          // Map các roleId số sang tên vai trò làm giá trị backup
+          if (typeof roleId === 'number') {
+            switch (roleId) {
+              case 1:
+                setRoleName('Quản trị viên');
+                break;
+              case 2:
+                setRoleName('Khách hàng');
+                break;
+              case 3:
+                setRoleName('Nhân viên');
+                break;
+              default:
+                setRoleName(`Vai trò ${roleId}`);
+            }
+          } else {
+            setRoleName('Vai trò không xác định');
+          }
+        }
       }
     } catch (err) {
       console.error("Không thể lấy thông tin vai trò:", err);
-      
-      // Kiểm tra xem roleId có phải là số không
-      if (typeof roleId === 'number') {
-        // Map các roleId số sang tên vai trò
-        switch (roleId) {
-          case 1:
-            setRoleName('Quản trị viên');
-            break;
-          case 2:
-            setRoleName('Khách hàng');
-            break;
-          case 3:
-            setRoleName('Nhân viên');
-            break;
-          default:
-            setRoleName(`Vai trò không xác định`);
-        }
-      } else {
-        setRoleName('Vai trò không xác định');
-      }
+      setRoleName('Vai trò không xác định');
     }
   };
 
@@ -239,15 +251,7 @@ function ProfilePage() {
                 </svg>
               </div>
               <div className="ml-3">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                <h3 className="text-lg font-medium text-red-800">Lỗi tải hồ sơ</h3>
-=======
                 <h3 className="text-lg font-medium text-red-800">Lỗi Tải Hồ Sơ</h3>
->>>>>>> Stashed changes
-=======
-                <h3 className="text-lg font-medium text-red-800">Lỗi Tải Hồ Sơ</h3>
->>>>>>> Stashed changes
                 <div className="mt-2 text-sm text-red-700">
                   <p>{error}</p>
                 </div>
@@ -257,15 +261,7 @@ function ProfilePage() {
                     onClick={() => window.location.reload()}
                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    Thử lại
-=======
                     Thử Lại
->>>>>>> Stashed changes
-=======
-                    Thử Lại
->>>>>>> Stashed changes
                   </button>
                 </div>
               </div>
@@ -313,15 +309,7 @@ function ProfilePage() {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
             <div className="flex justify-between items-center">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-              <h1 className="text-2xl font-bold text-white">Hồ sơ của tôi</h1>
-=======
               <h1 className="text-2xl font-bold text-white">Hồ Sơ Của Tôi</h1>
->>>>>>> Stashed changes
-=======
-              <h1 className="text-2xl font-bold text-white">Hồ Sơ Của Tôi</h1>
->>>>>>> Stashed changes
               <button
                 className="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium text-sm flex items-center"
                 onClick={() => setIsEditing(!isEditing)}
@@ -332,30 +320,14 @@ function ProfilePage() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    Hủy chỉnh sửa
-=======
                     Hủy Chỉnh Sửa
->>>>>>> Stashed changes
-=======
-                    Hủy Chỉnh Sửa
->>>>>>> Stashed changes
                   </>
                 ) : (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    Chỉnh sửa hồ sơ
-=======
                     Chỉnh Sửa Hồ Sơ
->>>>>>> Stashed changes
-=======
-                    Chỉnh Sửa Hồ Sơ
->>>>>>> Stashed changes
                   </>
                 )}
               </button>
@@ -377,15 +349,7 @@ function ProfilePage() {
                         ? "bg-green-100 text-green-800" 
                         : "bg-red-100 text-red-800"
                     }`}>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                      {account.status === 1 ? "Tài khoản đang hoạt động" : "Tài khoản bị khóa"}
-=======
                       {account.status === 1 ? "Tài Khoản Hoạt Động" : "Tài Khoản Không Hoạt Động"}
->>>>>>> Stashed changes
-=======
-                      {account.status === 1 ? "Tài Khoản Hoạt Động" : "Tài Khoản Không Hoạt Động"}
->>>>>>> Stashed changes
                     </span>
                   </div>
                   <p className="mt-1 text-gray-500">{account.email}</p>
@@ -393,30 +357,14 @@ function ProfilePage() {
               </div>
               
               <div className="border-t border-gray-200 pt-6">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Thông tin tài khoản</h3>
-=======
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Thông Tin Tài Khoản</h3>
->>>>>>> Stashed changes
-=======
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Thông Tin Tài Khoản</h3>
->>>>>>> Stashed changes
                 
                 {isEditing ? (
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                          Họ và tên
-=======
                           Họ Và Tên
->>>>>>> Stashed changes
-=======
-                          Họ Và Tên
->>>>>>> Stashed changes
                         </label>
                         <input
                           type="text"
@@ -431,15 +379,7 @@ function ProfilePage() {
                       
                       <div className="space-y-2">
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                          Tên đăng nhập
-=======
                           Tên Đăng Nhập
->>>>>>> Stashed changes
-=======
-                          Tên Đăng Nhập
->>>>>>> Stashed changes
                         </label>
                         <input
                           type="text"
@@ -449,28 +389,12 @@ function ProfilePage() {
                           disabled
                           className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm sm:text-sm px-3 py-2 border"
                         />
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                        <p className="text-xs text-gray-500">Không thể thay đổi tên đăng nhập</p>
-=======
                         <p className="text-xs text-gray-500">Tên đăng nhập không thể thay đổi</p>
->>>>>>> Stashed changes
-=======
-                        <p className="text-xs text-gray-500">Tên đăng nhập không thể thay đổi</p>
->>>>>>> Stashed changes
                       </div>
                       
                       <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                          Email
-=======
                           Địa Chỉ Email
->>>>>>> Stashed changes
-=======
-                          Địa Chỉ Email
->>>>>>> Stashed changes
                         </label>
                         <input
                           type="email"
@@ -485,15 +409,7 @@ function ProfilePage() {
                       
                       <div className="space-y-2">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                          Số điện thoại
-=======
                           Số Điện Thoại
->>>>>>> Stashed changes
-=======
-                          Số Điện Thoại
->>>>>>> Stashed changes
                         </label>
                         <input
                           type="tel"
@@ -526,21 +442,9 @@ function ProfilePage() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                            Đang lưu...
-                          </>
-                        ) : 'Lưu thay đổi'}
-=======
                             Đang Lưu...
                           </>
                         ) : 'Lưu Thay Đổi'}
->>>>>>> Stashed changes
-=======
-                            Đang Lưu...
-                          </>
-                        ) : 'Lưu Thay Đổi'}
->>>>>>> Stashed changes
                       </button>
                     </div>
                   </form>
@@ -548,35 +452,12 @@ function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
                     <ProfileField 
                       icon="user" 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                      label="Tên đăng nhập" 
-                      value={account.username || 'Chưa có'} 
-=======
                       label="Tên Đăng Nhập" 
                       value={account.username || 'Chưa thiết lập'} 
->>>>>>> Stashed changes
-=======
-                      label="Tên Đăng Nhập" 
-                      value={account.username || 'Chưa thiết lập'} 
->>>>>>> Stashed changes
                     />
                     <ProfileField 
                       icon="mail" 
                       label="Email" 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                      value={account.email || 'Chưa có'} 
-                    />
-                    <ProfileField 
-                      icon="phone" 
-                      label="Số điện thoại" 
-                      value={account.phone || 'Chưa có'} 
-                    />
-                    <ProfileField 
-                      icon="calendar" 
-                      label="Ngày tạo tài khoản" 
-=======
                       value={account.email || 'Chưa thiết lập'} 
                     />
                     <ProfileField 
@@ -587,48 +468,17 @@ function ProfilePage() {
                     <ProfileField 
                       icon="calendar" 
                       label="Ngày Tạo Tài Khoản" 
->>>>>>> Stashed changes
-=======
-                      value={account.email || 'Chưa thiết lập'} 
-                    />
-                    <ProfileField 
-                      icon="phone" 
-                      label="Số Điện Thoại" 
-                      value={account.phone || 'Chưa thiết lập'} 
-                    />
-                    <ProfileField 
-                      icon="calendar" 
-                      label="Ngày Tạo Tài Khoản" 
->>>>>>> Stashed changes
                       value={formatDate(account.createDate)} 
                     />
                     <ProfileField 
                       icon="clock" 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                      label="Cập nhật lần cuối" 
-=======
                       label="Cập Nhật Lần Cuối" 
->>>>>>> Stashed changes
-=======
-                      label="Cập Nhật Lần Cuối" 
->>>>>>> Stashed changes
                       value={formatDate(account.lastEdited)} 
                     />
                     <ProfileField 
                       icon="badge" 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                      label="Vai trò" 
-                      value={getRoleName(account.roleId)} 
-=======
                       label="Vai Trò" 
                       value={roleName} 
->>>>>>> Stashed changes
-=======
-                      label="Vai Trò" 
-                      value={roleName} 
->>>>>>> Stashed changes
                     />
                   </div>
                 )}
@@ -698,43 +548,13 @@ function ProfileField({
 
 // Helper function to format dates safely
 function formatDate(dateString: string | null | undefined): string {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  if (!dateString) return 'Không có';
-=======
-=======
->>>>>>> Stashed changes
   if (!dateString) return 'Không có sẵn';
   
->>>>>>> Stashed changes
   try {
     return new Date(dateString).toLocaleDateString("vi-VN");
   } catch (error) {
     console.error("Invalid date format:", dateString);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    return 'Không hợp lệ';
-  }
-}
-
-// Helper function to convert roleId to a readable name
-function getRoleName(roleId: number | null | undefined): string {
-  if (roleId === null || roleId === undefined) return 'Không rõ';
-  switch (roleId) {
-    case 1:
-      return "Quản trị viên";
-    case 2:
-      return "Khách hàng";
-    case 3:
-      return "Nhân viên";
-    default:
-      return `Vai trò ${roleId}`;
-=======
     return 'Ngày không hợp lệ';
->>>>>>> Stashed changes
-=======
-    return 'Ngày không hợp lệ';
->>>>>>> Stashed changes
   }
 }
 
