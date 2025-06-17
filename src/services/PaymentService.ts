@@ -1,5 +1,7 @@
 import api from "./apiService";
 
+const PAYMENT_URL = "/payment";
+
 export interface Payment {
   payment_id: number;
   order_id: number;
@@ -11,19 +13,19 @@ export interface Payment {
 
 const PaymentService = {
   get: async (): Promise<Payment[]> => {
-    const response = await api.get<Payment[]>("/payment");
+    const response = await api.get<Payment[]>(`${PAYMENT_URL}`);
     return response.data;
   },
   getById: async (id: number | string): Promise<Payment> => {
-    const response = await api.get<Payment>(`/payment/${id}`);
+    const response = await api.get<Payment>(`${PAYMENT_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Payment>): Promise<Payment> => {
-    const response = await api.post<Payment>("/payment", data);
+    const response = await api.post<Payment>(`${PAYMENT_URL}`, data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Payment>): Promise<Payment> => {
-    const response = await api.put<Payment>(`/payment/${id}`, data);
+    const response = await api.put<Payment>(`${PAYMENT_URL}/${id}`, data);
     return response.data;
   },
 };

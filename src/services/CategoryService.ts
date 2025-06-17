@@ -14,7 +14,7 @@ export interface Category {
 
 const CategoryService = {
   get: async (): Promise<Category[]> => {
-    const response = await api.get<Category[]>(CATEGORY_URL);
+    const response = await api.get<Category[]>(`${CATEGORY_URL}`);
     return response.data;
   },
   getById: async (id: number | string): Promise<Category> => {

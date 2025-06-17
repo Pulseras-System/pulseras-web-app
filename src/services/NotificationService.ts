@@ -1,5 +1,7 @@
 import api from "./apiService";
 
+const NOTIFICATION_URL = "/notifications";
+
 export interface Notification {
   notification_id: number;
   account_id: number;
@@ -11,19 +13,19 @@ export interface Notification {
 
 const NotificationService = {
   get: async (): Promise<Notification[]> => {
-    const response = await api.get<Notification[]>("/notification");
+    const response = await api.get<Notification[]>(`${NOTIFICATION_URL}`);
     return response.data;
   },
   getById: async (id: number | string): Promise<Notification> => {
-    const response = await api.get<Notification>(`/notification/${id}`);
+    const response = await api.get<Notification>(`${NOTIFICATION_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Notification>): Promise<Notification> => {
-    const response = await api.post<Notification>("/notification", data);
+    const response = await api.post<Notification>(`${NOTIFICATION_URL}`, data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Notification>): Promise<Notification> => {
-    const response = await api.put<Notification>(`/notification/${id}`, data);
+    const response = await api.put<Notification>(`${NOTIFICATION_URL}/${id}`, data);
     return response.data;
   },
 };

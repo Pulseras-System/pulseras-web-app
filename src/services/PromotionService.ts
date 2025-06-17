@@ -1,5 +1,6 @@
 import api from "./apiService";
 
+const PROMOTION_URL = "/promotions";
 export interface Promotion {
   promotion_id: number;
   product_id: number;
@@ -15,19 +16,19 @@ export interface Promotion {
 
 const PromotionService = {
   get: async (): Promise<Promotion[]> => {
-    const response = await api.get<Promotion[]>("/promotion");
+    const response = await api.get<Promotion[]>(`${PROMOTION_URL}`);
     return response.data;
   },
   getById: async (id: number | string): Promise<Promotion> => {
-    const response = await api.get<Promotion>(`/promotion/${id}`);
+    const response = await api.get<Promotion>(`${PROMOTION_URL}/${id}`);
     return response.data;
   },
   create: async (data: Partial<Promotion>): Promise<Promotion> => {
-    const response = await api.post<Promotion>("/promotion", data);
+    const response = await api.post<Promotion>(`${PROMOTION_URL}`, data);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Promotion>): Promise<Promotion> => {
-    const response = await api.put<Promotion>(`/promotion/${id}`, data);
+    const response = await api.put<Promotion>(`${PROMOTION_URL}/${id}`, data);
     return response.data;
   },
 };

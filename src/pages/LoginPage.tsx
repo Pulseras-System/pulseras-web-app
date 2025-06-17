@@ -7,7 +7,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
-import AccountService from "@/services/AccountService";
+import AuthService from "@/services/AuthService";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,8 +24,9 @@ const LoginPage = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-      console.log("Google Login Success:", user);
-      console.log("JWT Token:", token); // Log JWT token
+      await AuthService.googleLogin(token); // Gọi service để lưu token và account
+      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
+      window.location.reload();
     } catch (error) {
       console.error("Google Login Error:", error);
     }
@@ -51,7 +52,7 @@ const LoginPage = () => {
     setError(null);
     setLoading(true);
     try {
-      await AccountService.login({ username, password });
+      await AuthService.login({ username, password });
       navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
       window.location.reload();
 
