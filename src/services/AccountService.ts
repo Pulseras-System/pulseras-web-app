@@ -17,7 +17,7 @@ export interface Account {
 const AccountService = {
   // Lấy danh sách tài khoản
   get: async (): Promise<Account[]> => {
-    const response = await api.get<Account[]>("/account");
+    const response = await api.get<Account[]>("/accounts");
     return response.data;
   },
 
