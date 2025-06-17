@@ -7,7 +7,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
-import AccountService from "@/services/AccountService";
+import AuthService from "@/services/AuthService";
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,8 +30,9 @@ const RegisterPage = () => {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
-      console.log("Google Register Success:", result.user);
-      console.log("JWT Token:", token);
+      await AuthService.googleLogin(token); // Gọi service để lưu token và account
+      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
+      window.location.reload();
     } catch (error) {
       console.error("Google Register Error:", error);
     }
@@ -66,7 +67,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       // Gọi API đăng ký
-      await AccountService.signup({
+      await AuthService.signup({
         fullName,
         password,
         username,
