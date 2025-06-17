@@ -1,5 +1,7 @@
 import api from "./apiService";
-import Cookies from "js-cookie";
+
+const ACCOUNT_URL = "/accounts";
+
 
 // Định nghĩa interface Account dựa trên bảng dữ liệu
 export interface Account {
@@ -17,19 +19,19 @@ export interface Account {
 const AccountService = {
   // Lấy danh sách tài khoản
   get: async (): Promise<Account[]> => {
-    const response = await api.get<Account[]>("/accounts");
+    const response = await api.get<Account[]>(`${ACCOUNT_URL}`);
     return response.data;
   },
 
   // Lấy thông tin 1 tài khoản theo id
   getById: async (id: number | string): Promise<Account> => {
-    const response = await api.get<Account>(`/accounts/${id}`);
+    const response = await api.get<Account>(`${ACCOUNT_URL}/${id}`);
     return response.data;
   },
 
   // Tạo tài khoản mới
   create: async (data: Partial<Account>): Promise<Account> => {
-    const response = await api.post<Account>("/account", data);
+    const response = await api.post<Account>(`${ACCOUNT_URL}`, data);
     return response.data;
   },
 
@@ -40,7 +42,7 @@ const AccountService = {
       Object.entries(data).filter(([_, value]) => value !== undefined)
     );
     
-    const response = await api.put<Account>(`/accounts/${id}`, filteredData);
+    const response = await api.put<Account>(`${ACCOUNT_URL}/${id}`, filteredData);
     
     // Update the localStorage account data if it exists
     const storedAccount = localStorage.getItem('account');
@@ -56,39 +58,6 @@ const AccountService = {
     return response.data;
   },
 
-  // Đăng ký tài khoản mới
-  signup: async (data: {
-    fullName: string;
-    password: string;
-    username: string;
-    phone: string;
-    email: string;
-    roleId: number;
-    status: number;
-  }) => {
-    const response = await api.post("/accounts/signup", data);
-    return response.data;
-  },
-
-  // Đăng nhập tài khoản và xử lý lưu token, account
-  login: async (data: { username: string; password: string }) => {
-    const response = await api.post("/auth/login", data);
-    const { token, account } = response.data;
-    // 1. Lưu JWT vào cookie (7 ngày)
-    Cookies.set("token", token, { expires: 7 });
-    // 2. Lưu object account nhận từ API vào localStorage
-    localStorage.setItem("account", JSON.stringify(account));
-    // 3. Cập nhật header Authorization cho axios instance
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    return response.data;
-  },
-  
-  // Đăng xuất
-  logout: () => {
-    Cookies.remove("token");
-    localStorage.removeItem("account");
-    delete api.defaults.headers.common["Authorization"];
-  },
 };
 
 export default AccountService;

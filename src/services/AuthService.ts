@@ -1,6 +1,8 @@
 import api from "./apiService";
 import Cookies from "js-cookie";
 
+const AUTH_URL = "/auth";
+
 // Định nghĩa interface Account dựa trên bảng dữ liệu
 export interface Account {
   id: string;
@@ -26,13 +28,13 @@ const AuthService = {
     roleId: number;
     status: number;
   }) => {
-    const response = await api.post("/accounts/signup", data);
+    const response = await api.post(`${AUTH_URL}/signup`, data);
     return response.data;
   },
 
   // Đăng nhập tài khoản và xử lý lưu token, account
   login: async (data: { username: string; password: string }) => {
-    const response = await api.post("/auth/login", data);
+    const response = await api.post(`${AUTH_URL}/login`, data);
     const { token, account } = response.data;
     // 1. Lưu JWT vào cookie (7 ngày)
     Cookies.set("token", token, { expires: 7 });
@@ -45,7 +47,7 @@ const AuthService = {
   
   // Đăng nhập bằng Google
   googleLogin: async (idToken: string) => {
-    const response = await api.post("/auth/google", { idToken });
+    const response = await api.post(`${AUTH_URL}/google`, { idToken });
     const { token, account } = response.data;
     // 1. Lưu JWT vào cookie (7 ngày)
     Cookies.set("token", token, { expires: 7 });
