@@ -3,11 +3,11 @@ import api from "./apiService";
 const ORDER_URL = "/orders";
 
 export interface Order {
-  order_id: number;
+  id: number;
   orderInfor: string;
   amount: number;
-  account_id: number;
-  voucher_id: number;
+  accountId: number;
+  voucherId: number;
   totalPrice: number;
   status: number;
   createDate: string;

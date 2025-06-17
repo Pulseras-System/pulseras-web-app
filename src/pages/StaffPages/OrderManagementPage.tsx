@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter, Package } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter, Package, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,54 +19,107 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
+import OrderService, { Order as ApiOrder } from "@/services/OrderService";
+import AccountService from "@/services/AccountService";
 
-interface Order {
-  id: number;
+const itemsPerPage = 5;
+
+interface OrderRow {
+  id: string | number;
   customerName: string;
   orderDate: string;
   status: string;
   totalAmount: number;
+  orderInfor: string;
+  amount: number;
+  raw: ApiOrder;
 }
 
-const mockOrders: Order[] = [
-  { id: 1, customerName: "Nguyễn Văn A", orderDate: "2025-05-01", status: "Đang xử lý", totalAmount: 299000 },
-  { id: 2, customerName: "Trần Thị B", orderDate: "2025-05-02", status: "Đã giao", totalAmount: 399000 },
-  { id: 3, customerName: "Lê Văn C", orderDate: "2025-05-03", status: "Hủy", totalAmount: 499000 },
-  { id: 4, customerName: "Phạm Thị D", orderDate: "2025-05-04", status: "Đang xử lý", totalAmount: 349000 },
-  { id: 5, customerName: "Hoàng Minh E", orderDate: "2025-05-05", status: "Đã giao", totalAmount: 499000 },
-  { id: 6, customerName: "Nguyễn Thị F", orderDate: "2025-05-06", status: "Đang xử lý", totalAmount: 199000 },
-  { id: 7, customerName: "Trần Thanh G", orderDate: "2025-05-07", status: "Hủy", totalAmount: 249000 },
-  { id: 8, customerName: "Lê Minh H", orderDate: "2025-05-08", status: "Đang xử lý", totalAmount: 349000 },
-  { id: 9, customerName: "Võ Thị I", orderDate: "2025-05-09", status: "Đã giao", totalAmount: 459000 },
-  { id: 10, customerName: "Đặng Văn J", orderDate: "2025-05-10", status: "Đang xử lý", totalAmount: 279000 },
-  { id: 11, customerName: "Bùi Thị K", orderDate: "2025-05-11", status: "Đã giao", totalAmount: 389000 },
-  { id: 12, customerName: "Phan Văn L", orderDate: "2025-05-12", status: "Hủy", totalAmount: 199000 },
-];
+const statusMap: Record<number, string> = {
+  0: "Đã hủy",
+  1: "Đã đặt hàng",
+  2: "Đã thanh toán",
+  3: "Đã hoàn thành",
+};
 
-const itemsPerPage = 5;
+// Danh sách trạng thái chuyển tiếp
+const statusTransitions: Record<string, string[]> = {
+  "Đã đặt hàng": ["Đã thanh toán", "Đã hoàn thành", "Đã hủy"],
+  "Đã thanh toán": ["Đã hoàn thành", "Đã hủy"],
+  "Đã hoàn thành": [],
+  "Đã hủy": [],
+};
 
 const OrderManagement = () => {
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priceFilter, setPriceFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [editingOrder, setEditingOrder] = useState<OrderRow | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [newOrder, setNewOrder] = useState<Order>({
-    id: 0,
+  const [newOrder, setNewOrder] = useState<Partial<OrderRow>>({
     customerName: "",
     orderDate: new Date().toISOString().split('T')[0],
     status: "Đang xử lý",
     totalAmount: 0,
+    orderInfor: "",
+    amount: 1,
   });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [viewOrder, setViewOrder] = useState<OrderRow | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<null | { type: "cancel" | "delete", order: OrderRow }> (null);
 
+  // Fetch orders and customer names
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const orderList = await OrderService.get();
+        // Lấy tên khách hàng cho từng order bằng getById
+        const ordersWithCustomer = await Promise.all(
+          orderList.map(async (order) => {
+            let customerName = "Unknown";
+            try {
+              const account = await AccountService.getById(order.accountId);
+              customerName = account.fullName;
+            } catch {
+              // Nếu lỗi thì giữ là Unknown
+            }
+            return {
+              id: order.id,
+              customerName,
+              orderDate: order.createDate,
+              status: statusMap[order.status] || "Đang xử lý",
+              totalAmount: order.totalPrice,
+              orderInfor: order.orderInfor,
+              amount: order.amount,
+              raw: order,
+            } as OrderRow;
+          })
+        );
+        setOrders(ordersWithCustomer);
+      } catch (e) {
+        setOrders([]);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  // Lấy danh sách trạng thái độc nhất
+  const uniqueStatuses = Array.from(new Set(Object.values(statusMap)));
+
+  // Filter logic
   const filteredOrders = orders.filter(order => {
     const matchesSearch =
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.status.toLowerCase().includes(searchTerm.toLowerCase());
+      order.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.orderInfor?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || order.status === statusFilter;
@@ -92,22 +145,25 @@ const OrderManagement = () => {
     }
   };
 
-  // Lấy danh sách trạng thái độc nhất
-  const uniqueStatuses = Array.from(new Set(mockOrders.map(order => order.status)));
-
   // Hàm định dạng ngày tháng
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
-  const handleEditClick = (order: Order) => {
+  // CRUD handlers (bạn có thể thay thế bằng API nếu muốn)
+  const handleEditClick = (order: OrderRow) => {
     setEditingOrder(order);
     setIsEditOpen(true);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (editingOrder) {
+      if (editingOrder.status === "Đã hủy" && !showCancelModal) {
+        setPendingAction({ type: "cancel", order: editingOrder });
+        setShowCancelModal(true);
+        return;
+      }
       setOrders((prev) =>
         prev.map((o) => (o.id === editingOrder.id ? editingOrder : o))
       );
@@ -115,18 +171,61 @@ const OrderManagement = () => {
     }
   };
 
-  const handleAddOrder = () => {
-    if (newOrder.customerName.trim()) {
-      setOrders((prev) => [...prev, { ...newOrder, id: Date.now() }]);
+  const handleAddOrder = async () => {
+    if (newOrder.customerName?.trim()) {
+      setOrders((prev) => [
+        ...prev,
+        {
+          ...newOrder,
+          id: Date.now(),
+          status: newOrder.status || "Đang xử lý",
+          totalAmount: newOrder.totalAmount || 0,
+          orderInfor: newOrder.orderInfor || "",
+          amount: newOrder.amount || 1,
+        } as OrderRow,
+      ]);
       setNewOrder({
-        id: 0,
         customerName: "",
         orderDate: new Date().toISOString().split('T')[0],
         status: "Đang xử lý",
         totalAmount: 0,
+        orderInfor: "",
+        amount: 1,
       });
       setIsAddOpen(false);
     }
+  };
+
+  // Khi bấm nút Xóa
+  const handleDeleteClick = (order: OrderRow) => {
+    setPendingAction({ type: "delete", order });
+    setShowCancelModal(true);
+  };
+
+  // Xác nhận lý do hủy/xóa
+  const handleConfirmCancel = () => {
+    if (pendingAction) {
+      if (pendingAction.type === "cancel") {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === pendingAction.order.id
+              ? { ...o, status: "Đã hủy", cancelReason }
+              : o
+          )
+        );
+        setIsEditOpen(false);
+      } else if (pendingAction.type === "delete") {
+        setOrders((prev) => prev.filter((o) => o.id !== pendingAction.order.id));
+      }
+    }
+    setShowCancelModal(false);
+    setCancelReason("");
+    setPendingAction(null);
+  };
+
+  // Lấy danh sách trạng thái tiếp theo cho Edit
+  const getNextStatuses = (current: string) => {
+    return [current, ...(statusTransitions[current] || [])];
   };
 
   return (
@@ -213,7 +312,7 @@ const OrderManagement = () => {
         <Table className="min-w-[700px]">
           <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-black">ID</TableHead>
+              <TableHead className="text-black">STT</TableHead>
               <TableHead className="text-black">Tên khách hàng</TableHead>
               <TableHead className="text-black">Ngày đặt hàng</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
@@ -222,51 +321,76 @@ const OrderManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentOrders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell className="font-medium text-black">
-                  <div className="font-semibold">{order.customerName}</div>
-                </TableCell>
-                <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    order.status === "Đang xử lý" 
-                      ? "bg-yellow-100 text-yellow-800" 
-                      : order.status === "Đã giao"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {order.status}
-                  </span>
-                </TableCell>
-                <TableCell className="font-medium text-black">
-                  {order.totalAmount.toLocaleString()}₫
-                </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditClick(order)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">Đang tải...</TableCell>
               </TableRow>
-            ))}
+            ) : currentOrders.map((order, idx) => {
+              const isCancelled = order.status === "Đã hủy";
+              return (
+                <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
+                  <TableCell className="font-medium">{startIndex + idx + 1}</TableCell>
+                  <TableCell className="font-medium text-black">
+                    <div className="font-semibold">{order.customerName}</div>
+                  </TableCell>
+                  <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      order.status === "Đã hủy"
+                        ? "bg-red-100 text-red-800"
+                        : order.status === "Đã đặt hàng"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : order.status === "Đã thanh toán"
+                        ? "bg-blue-100 text-blue-800"
+                        : order.status === "Đã hoàn thành"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}>
+                      {order.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-medium text-black">
+                    {order.totalAmount.toLocaleString()}₫
+                  </TableCell>
+                  <TableCell className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                      onClick={() => setViewOrder(order)}
+                      title="Xem chi tiết"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                      onClick={() => handleEditClick(order)}
+                      title="Chỉnh sửa trạng thái"
+                      disabled={isCancelled}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                      onClick={() => handleDeleteClick(order)}
+                      disabled={isCancelled}
+                      title="Xóa đơn hàng"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
 
-      {filteredOrders.length === 0 && (
+      {filteredOrders.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6">
             <Package className="h-12 w-12 text-blue-100" />
@@ -297,31 +421,10 @@ const OrderManagement = () => {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
           <DialogHeader>
-            <DialogTitle className="text-black">Chỉnh sửa đơn hàng</DialogTitle>
+            <DialogTitle className="text-black">Chỉnh sửa trạng thái đơn hàng</DialogTitle>
           </DialogHeader>
           {editingOrder && (
             <div className="space-y-4">
-              <div>
-                <Label className="text-black">Tên khách hàng</Label>
-                <Input
-                  className="border-pink-100 focus:ring-pink-100"
-                  value={editingOrder.customerName}
-                  onChange={(e) =>
-                    setEditingOrder({ ...editingOrder, customerName: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="text-black">Ngày đặt hàng</Label>
-                <Input
-                  type="date"
-                  className="border-pink-100 focus:ring-pink-100"
-                  value={editingOrder.orderDate}
-                  onChange={(e) =>
-                    setEditingOrder({ ...editingOrder, orderDate: e.target.value })
-                  }
-                />
-              </div>
               <div>
                 <Label className="text-black">Trạng thái</Label>
                 <select
@@ -331,31 +434,20 @@ const OrderManagement = () => {
                     setEditingOrder({ ...editingOrder, status: e.target.value })
                   }
                 >
-                  {uniqueStatuses.map(status => (
+                  {getNextStatuses(editingOrder.status).map(status => (
                     <option key={status} value={status}>{status}</option>
                   ))}
                 </select>
               </div>
-              <div>
-                <Label className="text-black">Tổng tiền</Label>
-                <Input
-                  type="number"
-                  className="border-pink-100 focus:ring-pink-100"
-                  value={editingOrder.totalAmount}
-                  onChange={(e) =>
-                    setEditingOrder({ ...editingOrder, totalAmount: +e.target.value })
-                  }
-                />
-              </div>
               <DialogFooter>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="text-black border-pink-100 hover:bg-pink-100"
                   onClick={() => setIsEditOpen(false)}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   className="bg-blue-100 hover:bg-blue-100 text-black"
                   onClick={handleEditSave}
                 >
@@ -364,6 +456,45 @@ const OrderManagement = () => {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* CANCEL/DELETE REASON MODAL */}
+      <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <DialogContent className="sm:max-w-md bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+          <DialogHeader>
+            <DialogTitle className="text-black">
+              {pendingAction?.type === "delete" ? "Lý do xóa đơn hàng" : "Lý do hủy đơn hàng"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              className="border-pink-100 focus:ring-pink-100"
+              placeholder="Nhập lý do..."
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+            />
+            <DialogFooter>
+              <Button
+                variant="outline"
+                className="text-black border-pink-100 hover:bg-pink-100"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancelReason("");
+                  setPendingAction(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                className="bg-blue-100 hover:bg-blue-100 text-black"
+                onClick={handleConfirmCancel}
+                disabled={!cancelReason.trim()}
+              >
+                Xác nhận
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -436,6 +567,25 @@ const OrderManagement = () => {
               </Button>
             </DialogFooter>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* VIEW MODAL */}
+      <Dialog open={!!viewOrder} onOpenChange={() => setViewOrder(null)}>
+        <DialogContent className="sm:max-w-lg bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+          <DialogHeader>
+            <DialogTitle className="text-black">Chi tiết đơn hàng</DialogTitle>
+          </DialogHeader>
+          {viewOrder && (
+            <div className="space-y-2">
+              <div><b>Khách hàng:</b> {viewOrder.customerName}</div>
+              <div><b>Ngày đặt:</b> {formatDate(viewOrder.orderDate)}</div>
+              <div><b>Trạng thái:</b> {viewOrder.status}</div>
+              <div><b>Tổng tiền:</b> {viewOrder.totalAmount.toLocaleString()}₫</div>
+              <div><b>Thông tin đơn:</b> {viewOrder.orderInfor}</div>
+              <div><b>Số lượng:</b> {viewOrder.amount}</div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
