@@ -1,11 +1,11 @@
 import api from "./apiService";
 
 export interface Order {
-  order_id: number;
+  id: string;
   orderInfor: string;
   amount: number;
-  account_id: number;
-  voucher_id: number;
+  accountId: string;
+  voucherId: string;
   totalPrice: number;
   status: number;
   createDate: string;
