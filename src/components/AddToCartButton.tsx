@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
-import { useCart, CartItem } from '@/context/CartContext';
 import { createPortal } from 'react-dom';
+import OrderService from '@/services/OrderService';
+import OrderDetailService from '@/services/OrderDetailService';
 
 interface AddToCartProps {
   product: {
@@ -19,37 +20,55 @@ interface AddToCartProps {
 }
 
 export const AddToCartButton = ({ product, quantity = 1, className = '', variant = 'default' }: AddToCartProps) => {
-  const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
-  const handleAddToCart = () => {
+  // Lấy accountId từ localStorage mỗi lần click để đảm bảo luôn lấy giá trị mới nhất
+  const handleAddToCart = async () => {
+    const accountStr = localStorage.getItem('account');
+    const accountId = accountStr ? JSON.parse(accountStr).id : null;
+    if (!accountId) {
+      alert('Bạn cần đăng nhập để thêm vào giỏ hàng!');
+      return;
+    }
     setIsAdding(true);
-    
-    // Create cart item from product
-    const cartItem: CartItem = {
-      productId: product.id,
-      productName: product.name,
-      productImage: product.image,
-      price: product.price,
-      quantity: quantity,
-      type: product.type,
-      productMaterial: product.material
-    };
-
-    // Add to cart
-    addToCart(cartItem);
-    
-    // Show success message
-    setShowNotification(true);
-
-    // Reset button state after animation
-    setTimeout(() => {
+    try {
+      // 1. Lấy danh sách order của account (status = 0 là giỏ hàng)
+      const orders = await OrderService.get();
+      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => (o.accountId === accountId || o.account_id === accountId) && o.status === 0) : null;
+      // 2. Nếu chưa có order, tạo mới
+      if (!cartOrder) {
+        const now = new Date().toISOString();
+        const newOrder = await OrderService.create({
+          orderInfor: 'Giỏ hàng',
+          amount: 0,
+          accountId: accountId,
+          voucherId: "0", // truyền string "0" thay vì null
+          totalPrice: 0,
+          status: 0,
+          lastEdited: now,
+          createDate: now
+        });
+        cartOrder = newOrder;
+      }
+      // 3. Thêm sản phẩm vào order-detail
+      await OrderDetailService.create({
+        orderId: String(cartOrder.id),
+        productId: String(product.id),
+        quantity: quantity,
+        price: product.price,
+        promotionId: "0", // truyền string nếu interface mới yêu cầu string
+        status: 0,
+        lastEdited: new Date().toISOString(),
+        createDate: new Date().toISOString()
+      });
+      setShowNotification(true);
+    } catch (error) {
+      alert('Có lỗi khi thêm vào giỏ hàng!');
+    } finally {
       setIsAdding(false);
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 500);
-    }, 1500);
+      setTimeout(() => setShowNotification(false), 1500);
+    }
   };
 
   // Notification component using portal to render at the top of the page

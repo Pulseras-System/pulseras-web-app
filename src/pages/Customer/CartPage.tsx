@@ -4,7 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { useCart, CartItem } from "@/context/CartContext";
+import OrderService from "@/services/OrderService";
+import OrderDetailService from "@/services/OrderDetailService";
+import ProductService from "@/services/ProductService";
 
 // AnimatedSection component remains the same
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
@@ -28,9 +30,9 @@ const CartItemCard = ({
   updateQuantity, 
   removeItem 
 }: { 
-  item: CartItem; 
-  updateQuantity: (id: string, quantity: number) => void;
-  removeItem: (id: string) => void;
+  item: any; 
+  updateQuantity: (id: number, quantity: number) => void;
+  removeItem: (id: number) => void;
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all">
@@ -56,7 +58,7 @@ const CartItemCard = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-blue-700"
-            onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+            onClick={() => updateQuantity(item.orderDetail_id, Math.max(1, item.quantity - 1))}
           >
             <Minus className="h-4 w-4" />
           </Button>
@@ -65,7 +67,7 @@ const CartItemCard = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-blue-700"
-            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+            onClick={() => updateQuantity(item.orderDetail_id, item.quantity + 1)}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -80,7 +82,7 @@ const CartItemCard = ({
         variant="ghost" 
         size="icon"
         className="text-red-500 hover:bg-red-50 hover:text-red-600"
-        onClick={() => removeItem(item.productId)}
+        onClick={() => removeItem(item.orderDetail_id)}
       >
         <Trash2 className="h-5 w-5" />
       </Button>
@@ -142,19 +144,140 @@ const OrderSummary = ({
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, updateQuantity, subtotal, itemCount } = useCart();
+  // Lấy accountId từ localStorage
+  const [accountId, setAccountId] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subtotal, setSubtotal] = useState(0);
+  const [itemCount, setItemCount] = useState(0);
 
-  // Simulating loading state
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
+    // Lấy accountId từ account.id trong localStorage (key mới: 'account')
+    const accountStr = localStorage.getItem('account');
+    if (accountStr) {
+      try {
+        const account = JSON.parse(accountStr);
+        setAccountId(account.id || null);
+      } catch {
+        setAccountId(null);
+      }
+    } else {
+      setAccountId(null);
+    }
   }, []);
 
-  // Calculate shipping cost
+  useEffect(() => {
+    if (!accountId) return;
+    const fetchCart = async () => {
+      setLoading(true);
+      try {
+        // Lấy đúng order của accountId và status = 0
+        const orders = await OrderService.get();
+        const cartOrder = orders.find((o: any) => (o.accountId === accountId || o.account_id === accountId) && o.status === 0);
+        if (!cartOrder) {
+          setCartItems([]);
+          setSubtotal(0);
+          setItemCount(0);
+          setLoading(false);
+          return;
+        }
+        // Lấy order-details theo orderId
+        const details = await OrderDetailService.get();
+        const items = details.filter((d: any) => d.orderId === cartOrder.id || d.order_id === cartOrder.id);
+        // Lấy thông tin sản phẩm cho từng item
+        const productPromises = items.map((item: any) => ProductService.getById(item.productId || item.product_id));
+        const products = await Promise.all(productPromises);
+        // Kết hợp thông tin sản phẩm vào từng item
+        const cartWithProduct = items.map((item: any) => {
+          const product = products.find((p: any) => p.productId === String(item.productId || item.product_id));
+          return {
+            ...item,
+            productName: product?.productName || '',
+            productImage: product?.productImage || '',
+            type: product?.type || '',
+            productMaterial: product?.productMaterial || '',
+          };
+        });
+        // Gộp các sản phẩm giống nhau (cùng productId) thành 1 item, tăng quantity
+        const mergedMap = new Map<string, any>();
+        cartWithProduct.forEach((item: any) => {
+          const key = item.productId || item.product_id;
+          if (mergedMap.has(key)) {
+            const exist = mergedMap.get(key);
+            mergedMap.set(key, {
+              ...exist,
+              quantity: exist.quantity + item.quantity,
+              // Có thể cộng thêm các trường khác nếu cần
+            });
+          } else {
+            mergedMap.set(key, { ...item });
+          }
+        });
+        const mergedCart = Array.from(mergedMap.values());
+        setCartItems(mergedCart);
+        // Tính tổng tiền và số lượng
+        let sub = 0, count = 0;
+        mergedCart.forEach((item: any) => {
+          sub += item.price * item.quantity;
+          count += item.quantity;
+        });
+        setSubtotal(sub);
+        setItemCount(count);
+      } catch (e) {
+        setCartItems([]);
+        setSubtotal(0);
+        setItemCount(0);
+      }
+      setLoading(false);
+    };
+    fetchCart();
+  }, [accountId]);
+
+  // Cập nhật số lượng sản phẩm
+  const updateQuantity = async (orderDetail_id: number, quantity: number) => {
+    if (quantity < 1) return;
+    try {
+      const item = cartItems.find(i => i.orderDetail_id === orderDetail_id);
+      if (!item) return;
+      await OrderDetailService.update(orderDetail_id, { quantity });
+      setCartItems(prev => prev.map(i => i.orderDetail_id === orderDetail_id ? { ...i, quantity } : i));
+      // Cập nhật lại tổng tiền và số lượng
+      let sub = 0, count = 0;
+      cartItems.forEach((i: any) => {
+        if (i.orderDetail_id === orderDetail_id) {
+          sub += i.price * quantity;
+          count += quantity;
+        } else {
+          sub += i.price * i.quantity;
+          count += i.quantity;
+        }
+      });
+      setSubtotal(sub);
+      setItemCount(count);
+    } catch (e) {
+      alert('Không thể cập nhật số lượng!');
+    }
+  };
+
+  // Xóa sản phẩm khỏi giỏ hàng
+  const removeItem = async (orderDetail_id: number) => {
+    try {
+      await OrderDetailService.update(orderDetail_id, { status: 1 }); // Hoặc gọi API xóa nếu có
+      setCartItems(prev => prev.filter(i => i.orderDetail_id !== orderDetail_id));
+      // Cập nhật lại tổng tiền và số lượng
+      let sub = 0, count = 0;
+      cartItems.filter(i => i.orderDetail_id !== orderDetail_id).forEach((i: any) => {
+        sub += i.price * i.quantity;
+        count += i.quantity;
+      });
+      setSubtotal(sub);
+      setItemCount(count);
+    } catch (e) {
+      alert('Không thể xóa sản phẩm!');
+    }
+  };
+
+  // Tính phí ship
   const shipping = subtotal > 0 ? 30000 : 0;
   const total = subtotal + shipping;
 
@@ -217,10 +340,10 @@ const CartPage = () => {
               <AnimatedSection className="space-y-4">
                 {cartItems.map((item) => (
                   <CartItemCard 
-                    key={item.productId} 
+                    key={item.orderDetail_id} 
                     item={item} 
                     updateQuantity={updateQuantity}
-                    removeItem={removeFromCart}
+                    removeItem={removeItem}
                   />
                 ))}
               </AnimatedSection>

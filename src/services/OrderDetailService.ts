@@ -3,12 +3,12 @@ import api from "./apiService";
 const ORDER_DETAIL_URL = "/order-details";
 
 export interface OrderDetail {
-  orderDetail_id: number;
-  order_id: number;
-  product_id: number;
+  id: string;
+  orderId: string;
+  productId: string;
   quantity: number;
   price: number;
-  promotion_id: number;
+  promotionId: string;
   status: number;
   createDate: string;
   lastEdited: string;
