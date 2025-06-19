@@ -58,7 +58,7 @@ const CartItemCard = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-blue-700"
-            onClick={() => updateQuantity(item.orderDetail_id, Math.max(1, item.quantity - 1))}
+            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
           >
             <Minus className="h-4 w-4" />
           </Button>
@@ -67,7 +67,7 @@ const CartItemCard = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-blue-700"
-            onClick={() => updateQuantity(item.orderDetail_id, item.quantity + 1)}
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -82,7 +82,7 @@ const CartItemCard = ({
         variant="ghost" 
         size="icon"
         className="text-red-500 hover:bg-red-50 hover:text-red-600"
-        onClick={() => removeItem(item.orderDetail_id)}
+        onClick={() => removeItem(item.id)}
       >
         <Trash2 className="h-5 w-5" />
       </Button>
@@ -171,9 +171,8 @@ const CartPage = () => {
     const fetchCart = async () => {
       setLoading(true);
       try {
-        // Lấy đúng order của accountId và status = 0
         const orders = await OrderService.get();
-        const cartOrder = orders.find((o: any) => (o.accountId === accountId || o.account_id === accountId) && o.status === 0);
+        const cartOrder = orders.find((o: any) => o.accountId === accountId && o.status === 1);
         if (!cartOrder) {
           setCartItems([]);
           setSubtotal(0);
@@ -183,13 +182,13 @@ const CartPage = () => {
         }
         // Lấy order-details theo orderId
         const details = await OrderDetailService.get();
-        const items = details.filter((d: any) => d.orderId === cartOrder.id || d.order_id === cartOrder.id);
+        const items = details.filter((d: any) => d.orderId === cartOrder.id);
         // Lấy thông tin sản phẩm cho từng item
-        const productPromises = items.map((item: any) => ProductService.getById(item.productId || item.product_id));
+        const productPromises = items.map((item: any) => ProductService.getById(item.productId));
         const products = await Promise.all(productPromises);
         // Kết hợp thông tin sản phẩm vào từng item
         const cartWithProduct = items.map((item: any) => {
-          const product = products.find((p: any) => p.productId === String(item.productId || item.product_id));
+          const product = products.find((p: any) => p.productId === String(item.productId));
           return {
             ...item,
             productName: product?.productName || '',
@@ -201,7 +200,7 @@ const CartPage = () => {
         // Gộp các sản phẩm giống nhau (cùng productId) thành 1 item, tăng quantity
         const mergedMap = new Map<string, any>();
         cartWithProduct.forEach((item: any) => {
-          const key = item.productId || item.product_id;
+          const key = item.productId;
           if (mergedMap.has(key)) {
             const exist = mergedMap.get(key);
             mergedMap.set(key, {
@@ -234,17 +233,17 @@ const CartPage = () => {
   }, [accountId]);
 
   // Cập nhật số lượng sản phẩm
-  const updateQuantity = async (orderDetail_id: number, quantity: number) => {
+  const updateQuantity = async (id: number, quantity: number) => {
     if (quantity < 1) return;
     try {
-      const item = cartItems.find(i => i.orderDetail_id === orderDetail_id);
+      const item = cartItems.find(i => i.id === id);
       if (!item) return;
-      await OrderDetailService.update(orderDetail_id, { quantity });
-      setCartItems(prev => prev.map(i => i.orderDetail_id === orderDetail_id ? { ...i, quantity } : i));
+      await OrderDetailService.update(id, { quantity });
+      setCartItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i));
       // Cập nhật lại tổng tiền và số lượng
       let sub = 0, count = 0;
       cartItems.forEach((i: any) => {
-        if (i.orderDetail_id === orderDetail_id) {
+        if (i.id === id) {
           sub += i.price * quantity;
           count += quantity;
         } else {
@@ -260,13 +259,13 @@ const CartPage = () => {
   };
 
   // Xóa sản phẩm khỏi giỏ hàng
-  const removeItem = async (orderDetail_id: number) => {
+  const removeItem = async (id: number) => {
     try {
-      await OrderDetailService.update(orderDetail_id, { status: 1 }); // Hoặc gọi API xóa nếu có
-      setCartItems(prev => prev.filter(i => i.orderDetail_id !== orderDetail_id));
+      await OrderDetailService.update(id, { status: 0 }); 
+      setCartItems(prev => prev.filter(i => i.id !== id));
       // Cập nhật lại tổng tiền và số lượng
       let sub = 0, count = 0;
-      cartItems.filter(i => i.orderDetail_id !== orderDetail_id).forEach((i: any) => {
+      cartItems.filter(i => i.id !== id).forEach((i: any) => {
         sub += i.price * i.quantity;
         count += i.quantity;
       });
@@ -340,7 +339,7 @@ const CartPage = () => {
               <AnimatedSection className="space-y-4">
                 {cartItems.map((item) => (
                   <CartItemCard 
-                    key={item.orderDetail_id} 
+                    key={item.id} 
                     item={item} 
                     updateQuantity={updateQuantity}
                     removeItem={removeItem}

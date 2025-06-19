@@ -37,13 +37,15 @@ interface OrderRow {
 
 const statusMap: Record<number, string> = {
   0: "Đã hủy",
-  1: "Đã đặt hàng",
-  2: "Đã thanh toán",
-  3: "Đã hoàn thành",
+  1: "Trong giỏ hàng",
+  2: "Đã đặt hàng",
+  3: "Đã thanh toán",
+  4: "Đã hoàn thành",
 };
 
 // Danh sách trạng thái chuyển tiếp
 const statusTransitions: Record<string, string[]> = {
+  "Trong giỏ hàng": ["Đã đặt hàng", "Đã hủy"],
   "Đã đặt hàng": ["Đã thanh toán", "Đã hoàn thành", "Đã hủy"],
   "Đã thanh toán": ["Đã hoàn thành", "Đã hủy"],
   "Đã hoàn thành": [],
@@ -72,7 +74,7 @@ const OrderManagement = () => {
   const [viewOrder, setViewOrder] = useState<OrderRow | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<null | { type: "cancel" | "delete", order: OrderRow }> (null);
+  const [pendingAction, setPendingAction] = useState<null | { type: "cancel" | "delete", order: OrderRow }>(null);
 
   // Fetch orders and customer names
   useEffect(() => {
@@ -249,15 +251,15 @@ const OrderManagement = () => {
               }}
             />
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button 
+          <Button
             className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
@@ -326,7 +328,11 @@ const OrderManagement = () => {
                 <TableCell colSpan={6} className="text-center">Đang tải...</TableCell>
               </TableRow>
             ) : currentOrders.map((order, idx) => {
-              const isCancelled = order.status === "Đã hủy";
+              // const isCancelled = order.status === "Đã hủy";
+              const isDisabled =
+                order.status === "Đã hủy" ||
+                order.status === "Đã hoàn thành" ||
+                order.status === "Trong giỏ hàng";
               return (
                 <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
                   <TableCell className="font-medium">{startIndex + idx + 1}</TableCell>
@@ -335,17 +341,18 @@ const OrderManagement = () => {
                   </TableCell>
                   <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      order.status === "Đã hủy"
+                    <span className={`px-2 py-1 rounded-full text-xs ${order.status === "Đã hủy"
                         ? "bg-red-100 text-red-800"
-                        : order.status === "Đã đặt hàng"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : order.status === "Đã thanh toán"
-                        ? "bg-blue-100 text-blue-800"
-                        : order.status === "Đã hoàn thành"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}>
+                        : order.status === "Trong giỏ hàng"
+                          ? "bg-gray-200 text-gray-800"
+                          : order.status === "Đã đặt hàng"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : order.status === "Đã thanh toán"
+                              ? "bg-blue-100 text-blue-800"
+                              : order.status === "Đã hoàn thành"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                      }`}>
                       {order.status}
                     </span>
                   </TableCell>
@@ -359,6 +366,7 @@ const OrderManagement = () => {
                       className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-800"
                       onClick={() => setViewOrder(order)}
                       title="Xem chi tiết"
+                      disabled={order.status === "Trong giỏ hàng"}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -368,7 +376,7 @@ const OrderManagement = () => {
                       className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
                       onClick={() => handleEditClick(order)}
                       title="Chỉnh sửa trạng thái"
-                      disabled={isCancelled}
+                      disabled={isDisabled}
                     >
                       <Pen className="h-4 w-4" />
                     </Button>
@@ -377,7 +385,7 @@ const OrderManagement = () => {
                       size="sm"
                       className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
                       onClick={() => handleDeleteClick(order)}
-                      disabled={isCancelled}
+                      disabled={isDisabled}
                       title="Xóa đơn hàng"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -552,14 +560,14 @@ const OrderManagement = () => {
               />
             </div>
             <DialogFooter>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="text-black border-pink-100 hover:bg-pink-100"
                 onClick={() => setIsAddOpen(false)}
               >
                 Hủy
               </Button>
-              <Button 
+              <Button
                 className="bg-blue-100 hover:bg-blue-100 text-black"
                 onClick={handleAddOrder}
               >

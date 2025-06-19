@@ -35,7 +35,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
     try {
       // 1. Lấy danh sách order của account (status = 0 là giỏ hàng)
       const orders = await OrderService.get();
-      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => (o.accountId === accountId || o.account_id === accountId) && o.status === 0) : null;
+      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => o.accountId === accountId && o.status === 1) : null;
       // 2. Nếu chưa có order, tạo mới
       if (!cartOrder) {
         const now = new Date().toISOString();
@@ -45,7 +45,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
           accountId: accountId,
           voucherId: "0", // truyền string "0" thay vì null
           totalPrice: 0,
-          status: 0,
+          status: 1,
           lastEdited: now,
           createDate: now
         });
@@ -58,7 +58,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
         quantity: quantity,
         price: product.price,
         promotionId: "0", // truyền string nếu interface mới yêu cầu string
-        status: 0,
+        status: 1,
         lastEdited: new Date().toISOString(),
         createDate: new Date().toISOString()
       });
