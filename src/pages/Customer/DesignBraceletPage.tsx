@@ -717,14 +717,15 @@ const DesignBraceletPage: React.FC = () => {
                                         (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
                                         (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
                                     }}
-                                >
-                                    <div style={{ 
+                                >                                    <div style={{ 
                                         background: '#333', 
                                         padding: '10px',
                                         display: 'flex',
-                                        justifyContent: 'center'
+                                        justifyContent: 'center',
+                                        height: '140px',
+                                        overflow: 'hidden'
                                     }}>
-                                        <PartPreview modelPath={part.modelPath} size={150} />
+                                        <PartPreview modelPath={part.modelPath} size={120} />
                                     </div>
                                     <div style={{ padding: '15px' }}>
                                         <div style={{ 
