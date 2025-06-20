@@ -56,17 +56,17 @@ const MainLayout = () => {
   const handleLogout = () => {
     // Clear all localStorage items
     localStorage.clear();
-    
+
     // Clear all cookies
     document.cookie.split(";").forEach(cookie => {
       const eqPos = cookie.indexOf("=");
       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     });
-    
+
     // Update state
     setAccount(null);
-    
+
     // Navigate to home page
     navigate("/");
   };
@@ -127,8 +127,8 @@ const MainLayout = () => {
 
             {/* Search Box */}
             {showSearch && (
-              <form 
-                onSubmit={handleSearchSubmit} 
+              <form
+                onSubmit={handleSearchSubmit}
                 className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-xl p-2 w-64 z-50 animate-fade-in"
               >
                 <div className="relative">
@@ -139,8 +139,8 @@ const MainLayout = () => {
                     onChange={(e) => setSearchValue(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                   />
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
                   >
                     <Search className="h-4 w-4" />
@@ -158,7 +158,8 @@ const MainLayout = () => {
             >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                3
+                {localStorage.getItem("amount") || "0"}
+
               </span>
             </Button>
 
@@ -229,15 +230,15 @@ const MainLayout = () => {
             >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
+                {localStorage.getItem("amount") || "0"}
               </span>
             </Button>
 
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                 >
                   <Menu className="h-5 w-5" />
@@ -246,15 +247,15 @@ const MainLayout = () => {
               <SheetContent side="left" className="w-[280px] sm:w-[350px] bg-white/95 backdrop-blur-sm">
                 <SheetHeader className="flex flex-row justify-between items-center mb-6">
                   <SheetTitle>
-                    <Link 
-                      to="/" 
-                      className="flex items-center gap-2" 
+                    <Link
+                      to="/"
+                      className="flex items-center gap-2"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <img 
-                        src={Logo} 
-                        alt="Pulsera logo" 
-                        className="h-10 w-auto transition-transform hover:scale-105" 
+                      <img
+                        src={Logo}
+                        alt="Pulsera logo"
+                        className="h-10 w-auto transition-transform hover:scale-105"
                       />
                     </Link>
                   </SheetTitle>
@@ -364,10 +365,10 @@ const MainLayout = () => {
           {/* Column 1: Logo & Slogan */}
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-2 mb-4">
-              <img 
-                src={Logo} 
-                alt="Pulsera logo" 
-                className="h-14 w-auto opacity-90 hover:opacity-100 transition-opacity" 
+              <img
+                src={Logo}
+                alt="Pulsera logo"
+                className="h-14 w-auto opacity-90 hover:opacity-100 transition-opacity"
               />
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
@@ -375,30 +376,30 @@ const MainLayout = () => {
             </p>
             <div className="flex gap-2">
               {['facebook', 'twitter', 'instagram', 'youtube'].map((social) => (
-                <a 
+                <a
                   key={social}
-                  href="#" 
+                  href="#"
                   className="text-gray-500 hover:text-white p-2 rounded-full hover:bg-blue-500 transition-all duration-300 hover:scale-110"
                 >
                   <div className="h-5 w-5 flex items-center justify-center">
                     {social === 'facebook' && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.877V14.89h-2.54V12h2.54V9.795c0-2.502 1.492-3.87 3.766-3.87 1.096 0 2.24.195 2.24.195V8.16h-1.29c-1.24 0-1.62.772-1.62 1.567V12h2.89l-.468 2.89h-2.422v6.987C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/>
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.877V14.89h-2.54V12h2.54V9.795c0-2.502 1.492-3.87 3.766-3.87 1.096 0 2.24.195 2.24.195V8.16h-1.29c-1.24 0-1.62.772-1.62 1.567V12h2.89l-.468 2.89h-2.422v6.987C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" />
                       </svg>
                     )}
                     {social === 'twitter' && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M22.46 6c-.85.38-1.77.63-2.73.74.98-.59 1.75-1.54 2.1-2.67-.91.54-1.92.93-2.99 1.14C18.36 3.96 17.06 3 15.6 3c-2.67 0-4.85 2.18-4.85 4.85 0 .38.04.75.12 1.1C7.6 9.27 4.14 7.31 1.8 4.23c-.4.69-.63 1.49-.63 2.34 0 1.68.85 3.16 2.15 4.02-.79-.02-1.53-.24-2.17-.6v.06c0 2.36 1.68 4.33 3.92 4.77-.41.11-.85.17-1.3.17-.32 0-.63-.03-.93-.09.62 1.95 2.42 3.37 4.56 3.41-1.67 1.31-3.79 2.09-6.09 2.09-.4 0-.79-.02-1.18-.07C2.26 20.35 4.8 21 7.42 21c8.95 0 13.84-7.41 13.84-13.84 0-.21-.01-.43-.02-.64.95-.69 1.77-1.56 2.42-2.54z"/>
+                        <path d="M22.46 6c-.85.38-1.77.63-2.73.74.98-.59 1.75-1.54 2.1-2.67-.91.54-1.92.93-2.99 1.14C18.36 3.96 17.06 3 15.6 3c-2.67 0-4.85 2.18-4.85 4.85 0 .38.04.75.12 1.1C7.6 9.27 4.14 7.31 1.8 4.23c-.4.69-.63 1.49-.63 2.34 0 1.68.85 3.16 2.15 4.02-.79-.02-1.53-.24-2.17-.6v.06c0 2.36 1.68 4.33 3.92 4.77-.41.11-.85.17-1.3.17-.32 0-.63-.03-.93-.09.62 1.95 2.42 3.37 4.56 3.41-1.67 1.31-3.79 2.09-6.09 2.09-.4 0-.79-.02-1.18-.07C2.26 20.35 4.8 21 7.42 21c8.95 0 13.84-7.41 13.84-13.84 0-.21-.01-.43-.02-.64.95-.69 1.77-1.56 2.42-2.54z" />
                       </svg>
                     )}
                     {social === 'instagram' && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                       </svg>
                     )}
                     {social === 'youtube' && (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
                       </svg>
                     )}
                   </div>
@@ -415,8 +416,8 @@ const MainLayout = () => {
             <ul className="space-y-3">
               {['/about', '/contact', '/faq', '/blog'].map((link) => (
                 <li key={link}>
-                  <Link 
-                    to={link} 
+                  <Link
+                    to={link}
                     className="text-sm text-gray-600 hover:text-blue-500 transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 bg-gray-300 rounded-full group-hover:bg-blue-500 transition-all"></span>
@@ -438,8 +439,8 @@ const MainLayout = () => {
             <ul className="space-y-3">
               {['/shipping', '/returns', '/terms', '/privacy'].map((link) => (
                 <li key={link}>
-                  <Link 
-                    to={link} 
+                  <Link
+                    to={link}
                     className="text-sm text-gray-600 hover:text-blue-500 transition-colors flex items-center gap-2 group"
                   >
                     <span className="w-1.5 h-1.5 bg-gray-300 rounded-full group-hover:bg-blue-500 transition-all"></span>
