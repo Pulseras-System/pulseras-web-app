@@ -1199,3 +1199,4 @@ const DesignBraceletPage: React.FC = () => {
 };
 
 export default DesignBraceletPage;
+                                
