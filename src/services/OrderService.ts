@@ -31,6 +31,10 @@ const OrderService = {
     const response = await api.put<Order>(`${ORDER_URL}/${id}`, data);
     return response.data;
   },
+  getByAccountId: async (accountId: string): Promise<Order[]> => {
+    const response = await api.get<Order[]>(`${ORDER_URL}/account/${accountId}`);
+    return response.data;
+  }
 };
 
 export default OrderService;

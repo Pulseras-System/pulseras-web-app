@@ -8,6 +8,8 @@ import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
 import AuthService from "@/services/AuthService";
+import OrderService from "@/services/OrderService";
+import OrderDetailService from "@/services/OrderDetailService";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +27,16 @@ const LoginPage = () => {
       const user = result.user;
       const token = await user.getIdToken();
       await AuthService.googleLogin(token); // Gọi service để lưu token và account
+
+      const accountStr = localStorage.getItem('account');
+      if (accountStr) {
+        const account = JSON.parse(accountStr);
+        const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
+        if (orderId){
+          const amount = await OrderDetailService.countAmount(orderId.id);
+          localStorage.setItem('amount', amount.toString());
+        }
+      }
       navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
       window.location.reload();
     } catch (error) {
@@ -53,6 +65,18 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await AuthService.login({ username, password });
+
+      const accountStr = localStorage.getItem('account');
+      if (accountStr) {
+        const account = JSON.parse(accountStr);
+        const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
+        if (orderId){
+          const amount = await OrderDetailService.countAmount(orderId.id);
+          localStorage.setItem('amount', amount.toString());
+        }
+      }
+
+      
       navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
       window.location.reload();
 

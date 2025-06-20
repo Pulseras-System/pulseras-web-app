@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react";
 import ProductService, { Product } from "@/services/ProductService";
+import { AddToCartButton } from "@/components/AddToCartButton";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -59,7 +60,7 @@ const ProductDetailPage = () => {
         <nav className="flex mb-6" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2">
             <li>
-              <button 
+              <button
                 onClick={() => navigate('/')}
                 className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
               >
@@ -69,7 +70,7 @@ const ProductDetailPage = () => {
             <li>
               <div className="flex items-center">
                 <ChevronRight className="w-4 h-4 text-blue-400" />
-                <button 
+                <button
                   onClick={() => navigate('/shop')}
                   className="ml-1 text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline md:ml-2"
                 >
@@ -178,15 +179,21 @@ const ProductDetailPage = () => {
             {/* Action Buttons */}
             <div className="mt-8 pt-6 border-t border-blue-100">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
+                <AddToCartButton
+                  product={{
+                    id: product.productId,
+                    name: product.productName,
+                    image: product.productImage,
+                    price: product.price,
+                    type: product.type,
+                    material: product.productMaterial
+                  }}
+                  variant="outline"
                   className="flex-1 h-12 bg-pink-400 hover:bg-pink-500 text-white shadow-md gap-2 transition-all duration-300"
-                  disabled={product.quantity <= 0}
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Thêm vào giỏ hàng
-                </Button>
-                <Button 
-                  variant="outline" 
+                  // disabled={product.quantity <= 0}
+                />
+                <Button
+                  variant="outline"
                   className="flex-1 h-12 border-blue-300 text-blue-700 hover:bg-blue-50 gap-2"
                   onClick={() => navigate(-1)}
                 >
@@ -210,7 +217,7 @@ const ProductDetailPage = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map((item) => (
-              <div 
+              <div
                 key={item.productId}
                 className="group relative bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100 cursor-pointer hover:shadow-lg transition-all hover:border-blue-200"
                 onClick={() => navigate(`/shop/${item.productId}`)}

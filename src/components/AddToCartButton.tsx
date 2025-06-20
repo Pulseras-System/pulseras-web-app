@@ -34,8 +34,8 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
     setIsAdding(true);
     try {
       // 1. Lấy danh sách order của account (status = 0 là giỏ hàng)
-      const orders = await OrderService.get();
-      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => o.accountId === accountId && o.status === 1) : null;
+      const orders = await OrderService.getByAccountId(accountId);
+      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => o.status === 1) : null;
       // 2. Nếu chưa có order, tạo mới
       if (!cartOrder) {
         const now = new Date().toISOString();
@@ -52,17 +52,56 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
         cartOrder = newOrder;
       }
       // 3. Thêm sản phẩm vào order-detail
-      await OrderDetailService.create({
-        orderId: String(cartOrder.id),
-        productId: String(product.id),
-        quantity: quantity,
-        price: product.price,
-        promotionId: "0", // truyền string nếu interface mới yêu cầu string
-        status: 1,
-        lastEdited: new Date().toISOString(),
-        createDate: new Date().toISOString()
-      });
-      setShowNotification(true);
+      const existedOrderDetails = await (await OrderDetailService.getByOrderId(String(cartOrder.id)))
+        .find((od: any) => od.productId === product.id);
+      if (existedOrderDetails && existedOrderDetails.status === 1) {
+        // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng
+        await OrderDetailService.update(
+          existedOrderDetails.id,
+          {
+            orderId: String(cartOrder.id),
+            productId: String(product.id),
+            quantity: existedOrderDetails.quantity + 1,
+            price: product.price,
+            promotionId: "0",
+            status: 1,
+            lastEdited: new Date().toISOString()
+          }
+        );
+        setShowNotification(true);
+        return;
+      } else if (existedOrderDetails && existedOrderDetails.status === 0) {
+        // Nếu sản phẩm đã tồn tại nhưng đã bị xóa, cập nhật lại trạng thái
+        await OrderDetailService.update(
+          existedOrderDetails.id,
+          {
+            orderId: String(cartOrder.id),
+            productId: String(product.id),
+            quantity: 1,
+            price: product.price,
+            promotionId: "0",
+            status: 1,
+            lastEdited: new Date().toISOString()
+          }
+        );
+        localStorage.setItem('amount', (Number(localStorage.getItem('amount')) + 1).toString());
+        setShowNotification(true);
+        return;
+      } else if (!existedOrderDetails) {
+        // Nếu sản phẩm chưa có trong giỏ hàng, tạo mới
+        await OrderDetailService.create({
+          orderId: String(cartOrder.id),
+          productId: String(product.id),
+          quantity: quantity,
+          price: product.price,
+          promotionId: "0", // truyền string nếu interface mới yêu cầu string
+          status: 1,
+          lastEdited: new Date().toISOString(),
+          createDate: new Date().toISOString()
+        });
+        localStorage.setItem('amount', (Number(localStorage.getItem('amount')) + 1).toString());
+        setShowNotification(true);
+      }
     } catch (error) {
       alert('Có lỗi khi thêm vào giỏ hàng!');
     } finally {
@@ -74,7 +113,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
   // Notification component using portal to render at the top of the page
   const Notification = () => {
     if (!showNotification) return null;
-    
+
     return createPortal(
       <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-auto max-w-md">
         <div className="bg-green-100 border border-green-200 text-green-800 rounded-lg shadow-lg px-4 py-3 animate-fade-in">
@@ -95,8 +134,8 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
 
   return (
     <>
-      <Button 
-        variant={variant} 
+      <Button
+        variant={variant}
         className={`transition-all ${className}`}
         onClick={handleAddToCart}
         disabled={isAdding}
@@ -113,7 +152,7 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
           </>
         )}
       </Button>
-      
+
       <Notification />
     </>
   );

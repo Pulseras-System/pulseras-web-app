@@ -58,7 +58,7 @@ const CartItemCard = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-blue-700"
-            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+            onClick={() => updateQuantity(item.id, item.quantity - 1)}
           >
             <Minus className="h-4 w-4" />
           </Button>
@@ -171,8 +171,8 @@ const CartPage = () => {
     const fetchCart = async () => {
       setLoading(true);
       try {
-        const orders = await OrderService.get();
-        const cartOrder = orders.find((o: any) => o.accountId === accountId && o.status === 1);
+        const orders = await OrderService.getByAccountId(accountId);
+        const cartOrder = orders.find((o: any) => o.status === 1);
         if (!cartOrder) {
           setCartItems([]);
           setSubtotal(0);
@@ -181,8 +181,8 @@ const CartPage = () => {
           return;
         }
         // Lấy order-details theo orderId
-        const details = await OrderDetailService.get();
-        const items = details.filter((d: any) => d.orderId === cartOrder.id);
+        const allOrderDetails = await OrderDetailService.getByOrderId(String(cartOrder.id));
+        const items = allOrderDetails ? allOrderDetails.filter((od: any) => od.status === 1) : [];
         // Lấy thông tin sản phẩm cho từng item
         const productPromises = items.map((item: any) => ProductService.getById(item.productId));
         const products = await Promise.all(productPromises);
@@ -238,7 +238,30 @@ const CartPage = () => {
     try {
       const item = cartItems.find(i => i.id === id);
       if (!item) return;
-      await OrderDetailService.update(id, { quantity });
+      await OrderDetailService.update(
+        id, 
+        { orderId: item.orderId,
+          productId: item.productId, 
+          quantity: quantity, 
+          price: item.price,
+          promotionId: item.promotionId || "0",
+          status: 1,  // Giữ nguyên trạng thái là đang trong giỏ hàng
+          lastEdited: new Date().toISOString()
+        }
+      );
+      if (quantity === 0) {
+        await OrderDetailService.update(
+        id, 
+        { orderId: item.orderId,
+          productId: item.productId, 
+          quantity: item.quantity, 
+          price: item.price,
+          promotionId: item.promotionId || "0",
+          status: 0,
+          lastEdited: new Date().toISOString()
+        }
+      );
+      }
       setCartItems(prev => prev.map(i => i.id === id ? { ...i, quantity } : i));
       // Cập nhật lại tổng tiền và số lượng
       let sub = 0, count = 0;
@@ -261,7 +284,19 @@ const CartPage = () => {
   // Xóa sản phẩm khỏi giỏ hàng
   const removeItem = async (id: number) => {
     try {
-      await OrderDetailService.update(id, { status: 0 }); 
+      const item = cartItems.find(i => i.id === id);
+      if (!item) return;
+      await OrderDetailService.update(
+        id, 
+        { orderId: item.orderId,
+          productId: item.productId, 
+          quantity: item.quantity, 
+          price: item.price,
+          promotionId: item.promotionId || "0",
+          status: 0,
+          lastEdited: new Date().toISOString()
+        }
+      ); 
       setCartItems(prev => prev.filter(i => i.id !== id));
       // Cập nhật lại tổng tiền và số lượng
       let sub = 0, count = 0;
@@ -269,6 +304,7 @@ const CartPage = () => {
         sub += i.price * i.quantity;
         count += i.quantity;
       });
+      localStorage.setItem('amount', (Number(localStorage.getItem('amount')) - 1).toString());
       setSubtotal(sub);
       setItemCount(count);
     } catch (e) {

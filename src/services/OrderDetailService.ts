@@ -31,6 +31,14 @@ const OrderDetailService = {
     const response = await api.put<OrderDetail>(`${ORDER_DETAIL_URL}/${id}`, data);
     return response.data;
   },
+  getByOrderId: async (orderId: string): Promise<OrderDetail[]> => {
+    const response = await api.get<OrderDetail[]>(`${ORDER_DETAIL_URL}/order/${orderId}`);
+    return response.data;
+  },
+  countAmount: async (orderId: string): Promise<number> => {
+    const response = await api.get<number>(`${ORDER_DETAIL_URL}/amount/${orderId}`);
+    return response.data;
+  }
 };
 
 export default OrderDetailService;
