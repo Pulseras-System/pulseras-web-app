@@ -94,13 +94,17 @@ const OrderSummary = ({
   subtotal,
   shipping,
   total,
-  itemCount
+  itemCount,
+  cartOrderId
 }: { 
   subtotal: number;
   shipping: number;
   total: number;
   itemCount: number;
+  cartOrderId: string | null;
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white p-6 rounded-lg border border-blue-100 shadow-sm sticky top-24">
       <h2 className="text-xl font-bold text-blue-900 mb-4">Tóm tắt đơn hàng</h2>
@@ -124,7 +128,12 @@ const OrderSummary = ({
         </div>
       </div>
       
-      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3 py-6">
+      <Button
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3 py-6"
+        onClick={() => {
+          if (cartOrderId) navigate(`/checkout/${cartOrderId}`);
+        }}
+      >
         Tiến hành thanh toán
         <ArrowRight className="ml-2 h-5 w-5" />
       </Button>
@@ -150,6 +159,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [subtotal, setSubtotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
+  const [cartOrderId, setCartOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     // Lấy accountId từ account.id trong localStorage (key mới: 'account')
@@ -174,12 +184,14 @@ const CartPage = () => {
         const orders = await OrderService.getByAccountId(accountId);
         const cartOrder = orders.find((o: any) => o.status === 1);
         if (!cartOrder) {
+          setCartOrderId(null);
           setCartItems([]);
           setSubtotal(0);
           setItemCount(0);
           setLoading(false);
           return;
         }
+        setCartOrderId(cartOrder.id); // <-- Lưu id đơn hàng giỏ hàng
         // Lấy order-details theo orderId
         const allOrderDetails = await OrderDetailService.getByOrderId(String(cartOrder.id));
         const items = allOrderDetails ? allOrderDetails.filter((od: any) => od.status === 1) : [];
@@ -223,6 +235,7 @@ const CartPage = () => {
         setSubtotal(sub);
         setItemCount(count);
       } catch (e) {
+        setCartOrderId(null);
         setCartItems([]);
         setSubtotal(0);
         setItemCount(0);
@@ -391,6 +404,7 @@ const CartPage = () => {
                   shipping={shipping}
                   total={total}
                   itemCount={itemCount}
+                  cartOrderId={cartOrderId}
                 />
               </AnimatedSection>
             </div>
