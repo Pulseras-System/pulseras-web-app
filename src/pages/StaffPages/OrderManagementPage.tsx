@@ -22,7 +22,7 @@ import Pagination from "@/components/pagination";
 import OrderService, { Order as ApiOrder } from "@/services/OrderService";
 import AccountService from "@/services/AccountService";
 
-const itemsPerPage = 5;
+const itemsPerPage = 10;
 
 interface OrderRow {
   id: string | number;
@@ -159,17 +159,78 @@ const OrderManagement = () => {
     setIsEditOpen(true);
   };
 
+  const statusTextToNumber = (status: string) => {
+    switch (status) {
+      case "Đã hủy": return 0;
+      case "Trong giỏ hàng": return 1;
+      case "Đã đặt hàng": return 2;
+      case "Đã thanh toán": return 3;
+      case "Đã hoàn thành": return 4;
+      default: return 1;
+    }
+  };
+
+  const statusNumberToText = (status: number) => {
+    switch (status) {
+      case 0: return "Đã hủy";
+      case 1: return "Trong giỏ hàng";
+      case 2: return "Đã đặt hàng";
+      case 3: return "Đã thanh toán";
+      case 4: return "Đã hoàn thành";
+      default: return "Không xác định";
+    }
+  };
+
   const handleEditSave = async () => {
     if (editingOrder) {
-      if (editingOrder.status === "Đã hủy" && !showCancelModal) {
+      // Nếu chuyển sang "Đã hủy" và chưa nhập lý do thì mở modal nhập lý do
+      if (
+        editingOrder.status === "Đã hủy" &&
+        !showCancelModal &&
+        (!editingOrder.orderInfor || !editingOrder.orderInfor.includes("Lý do hủy"))
+      ) {
         setPendingAction({ type: "cancel", order: editingOrder });
         setShowCancelModal(true);
         return;
       }
-      setOrders((prev) =>
-        prev.map((o) => (o.id === editingOrder.id ? editingOrder : o))
-      );
+      try {
+        // Nếu trạng thái là "Đã hủy" và có lý do hủy, chỉ lưu lý do hủy, xóa toàn bộ orderInfor trước đó
+        let newOrderInfor = editingOrder.orderInfor || "";
+        if (
+          editingOrder.status === "Đã hủy" &&
+          cancelReason.trim()
+        ) {
+          newOrderInfor = `Lý do hủy: ${cancelReason.trim()}`;
+        }
+        await OrderService.update(editingOrder.id, {
+          orderInfor: newOrderInfor,
+          amount: editingOrder.amount || 1,
+          accountId: editingOrder.raw.accountId,
+          voucherId: editingOrder.raw.voucherId || "0",
+          totalPrice: editingOrder.totalAmount || 0,
+          status: statusTextToNumber(editingOrder.status),
+          lastEdited: new Date().toISOString(),
+        });
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === editingOrder.id
+              ? {
+                ...editingOrder,
+                orderInfor: newOrderInfor,
+                raw: {
+                  ...editingOrder.raw,
+                  status: statusTextToNumber(editingOrder.status),
+                  orderInfor: newOrderInfor,
+                },
+              }
+              : o
+          )
+        );
+      } catch (e) {
+        alert("Có lỗi khi cập nhật trạng thái đơn hàng!");
+      }
       setIsEditOpen(false);
+      setCancelReason("");
     }
   };
 
@@ -205,20 +266,41 @@ const OrderManagement = () => {
   };
 
   // Xác nhận lý do hủy/xóa
-  const handleConfirmCancel = () => {
-    if (pendingAction) {
-      if (pendingAction.type === "cancel") {
+  const handleConfirmCancel = async () => {
+    if (pendingAction && (pendingAction.type === "cancel" || pendingAction.type === "delete")) {
+      const order = pendingAction.order;
+      // Khi hủy hoặc xóa, chỉ lưu lý do hủy, xóa toàn bộ orderInfor trước đó
+      const newOrderInfor = `Lý do hủy: ${cancelReason.trim()}`;
+      try {
+        await OrderService.update(order.id, {
+          orderInfor: newOrderInfor,
+          amount: order.amount || 1,
+          accountId: order.raw.accountId,
+          voucherId: order.raw.voucherId || "0",
+          totalPrice: order.totalAmount || 0,
+          status: 0, // Đã hủy
+          lastEdited: new Date().toISOString(),
+        });
         setOrders((prev) =>
           prev.map((o) =>
-            o.id === pendingAction.order.id
-              ? { ...o, status: "Đã hủy", cancelReason }
+            o.id === order.id
+              ? {
+                ...o,
+                status: "Đã hủy",
+                orderInfor: newOrderInfor,
+                raw: {
+                  ...o.raw,
+                  status: 0,
+                  orderInfor: newOrderInfor,
+                },
+              }
               : o
           )
         );
-        setIsEditOpen(false);
-      } else if (pendingAction.type === "delete") {
-        setOrders((prev) => prev.filter((o) => o.id !== pendingAction.order.id));
+      } catch (e) {
+        alert("Có lỗi khi cập nhật trạng thái đơn hàng!");
       }
+      setIsEditOpen(false);
     }
     setShowCancelModal(false);
     setCancelReason("");
@@ -342,16 +424,16 @@ const OrderManagement = () => {
                   <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${order.status === "Đã hủy"
-                        ? "bg-red-100 text-red-800"
-                        : order.status === "Trong giỏ hàng"
-                          ? "bg-gray-200 text-gray-800"
-                          : order.status === "Đã đặt hàng"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : order.status === "Đã thanh toán"
-                              ? "bg-blue-100 text-blue-800"
-                              : order.status === "Đã hoàn thành"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                      ? "bg-red-100 text-red-800"
+                      : order.status === "Trong giỏ hàng"
+                        ? "bg-gray-200 text-gray-800"
+                        : order.status === "Đã đặt hàng"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : order.status === "Đã thanh toán"
+                            ? "bg-blue-100 text-blue-800"
+                            : order.status === "Đã hoàn thành"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
                       }`}>
                       {order.status}
                     </span>
