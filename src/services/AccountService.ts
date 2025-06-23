@@ -16,6 +16,14 @@ export interface Account {
   status: number; // 0 (inactive) hoặc 1 (active)
 }
 
+export interface TotalCustomersResponse {
+  percentChange: number;
+  lastWeekCustomers: number;
+  isIncrease: boolean;
+  totalCustomers: number;
+  thisWeekCustomers: number;
+}
+
 const AccountService = {
   // Lấy danh sách tài khoản
   get: async (): Promise<Account[]> => {
@@ -55,6 +63,11 @@ const AccountService = {
       }
     }
     
+    return response.data;
+  },
+
+  getTotalCustomers: async (): Promise<TotalCustomersResponse> => {
+    const response = await api.get<TotalCustomersResponse>("/accounts/total-customers");
     return response.data;
   },
 

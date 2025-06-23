@@ -14,6 +14,36 @@ export interface Order {
   lastEdited: string;
 }
 
+export interface RevenueResponse {
+  percentChange: number;
+  lastWeekRevenue: number;
+  isIncrease: boolean;
+  totalRevenue: number;
+  thisWeekRevenue: number;
+}
+
+export interface TotalOrdersResponse {
+  percentChange: number;
+  lastWeekOrders: number;
+  isIncrease: boolean;
+  totalOrders: number;
+  thisWeekOrders: number;
+}
+
+export interface GrowthResponse {
+  growthRate: number;
+  customerChange: number;
+  revenueChange: number;
+  isIncrease: boolean;
+  orderChange: number;
+}
+
+export interface WeeklyOverviewItem {
+  day: string;
+  revenue: number;
+  orderCount: number;
+}
+
 const OrderService = {
   get: async (): Promise<Order[]> => {
     const response = await api.get<Order[]>(`${ORDER_URL}`);
@@ -34,7 +64,26 @@ const OrderService = {
   getByAccountId: async (accountId: string): Promise<Order[]> => {
     const response = await api.get<Order[]>(`${ORDER_URL}/account/${accountId}`);
     return response.data;
-  }
+  },
+  getRevenue: async (): Promise<RevenueResponse> => {
+    const response = await api.get<RevenueResponse>(`${ORDER_URL}/revenue`);
+    return response.data;
+  },
+  
+  getTotalOrders: async (): Promise<TotalOrdersResponse> => {
+    const response = await api.get<TotalOrdersResponse>(`${ORDER_URL}/total-orders`);
+    return response.data;
+  },
+
+  getGrowth: async (): Promise<GrowthResponse> => {
+    const response = await api.get<GrowthResponse>(`${ORDER_URL}/growth`);
+    return response.data;
+  },
+
+  getWeeklyOverview: async (): Promise<WeeklyOverviewItem[]> => {
+    const response = await api.get<WeeklyOverviewItem[]>(`${ORDER_URL}/weekly-overview`);
+    return response.data;
+  },
 };
 
 export default OrderService;

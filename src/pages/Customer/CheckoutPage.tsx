@@ -338,10 +338,10 @@ const CheckoutPage = () => {
 
     OrderService.update(String(orderId), {
       orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
-      amount: order.amount,
+      amount: itemCount,
       accountId: order.accountId,
       voucherId: order.voucherId,
-      totalPrice: order.totalPrice,
+      totalPrice: total,
       status: 2,
       lastEdited: new Date().toISOString(),
     })

@@ -22,7 +22,7 @@ import ProductService, { Product } from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
 import Pagination from "@/components/pagination";
 
-const itemsPerPage = 8;
+const itemsPerPage = 7;
 
 const BraceletManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -67,7 +67,7 @@ const BraceletManagement = () => {
       // Có thể truyền thêm filter nếu backend hỗ trợ
     })
       .then((res) => {
-        setProducts(res.items.filter((p) => p.type.toLowerCase().includes("bracelet")));
+        setProducts(res.items);
         setTotalPages(res.totalPages);
       })
       .catch((error) => {

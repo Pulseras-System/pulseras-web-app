@@ -17,6 +17,11 @@ export interface Product {
   status: number;
 }
 
+export interface TypeDistributionItem {
+  label: string;
+  value: number;
+}
+
 const ProductService = {
   get: async (params?: {
     keyword?: string;
@@ -68,9 +73,12 @@ const ProductService = {
     const response = await api.put<Product>(`${PRODUCT_URL}/${id}`, payload);
     return response.data;
   },
-
   delete: async (id: string): Promise<void> => {
     await api.delete(`${PRODUCT_URL}/${id}`);
+  },
+  getTypeDistribution: async (): Promise<TypeDistributionItem[]> => {
+    const response = await api.get<TypeDistributionItem[]>("/products/type-distribution");
+    return response.data;
   },
 };
 
