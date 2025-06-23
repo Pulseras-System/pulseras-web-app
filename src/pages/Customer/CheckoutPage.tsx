@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
+import { set } from "lodash";
 
 // AnimatedSection và CheckoutItemCard giữ nguyên
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -58,11 +59,10 @@ const PaymentMethodCard = ({
   description?: string;
 }) => (
   <div
-    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-      selected
+    className={`p-4 border rounded-lg cursor-pointer transition-all ${selected
         ? "border-blue-500 bg-blue-50"
         : "border-gray-200 hover:border-blue-300"
-    }`}
+      }`}
     onClick={() => onChange(value)}
   >
     <div className="flex items-center gap-3">
@@ -76,9 +76,8 @@ const PaymentMethodCard = ({
         )}
       </div>
       <div
-        className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-          selected ? "border-blue-500 bg-blue-500" : "border-gray-300"
-        }`}
+        className={`w-5 h-5 rounded-full border flex items-center justify-center ${selected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+          }`}
       >
         {selected && (
           <div className="w-2 h-2 rounded-full bg-white"></div>
@@ -251,6 +250,7 @@ const CheckoutPage = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [order, setOrder] = useState<any>({});
   const [shippingInfo, setShippingInfo] = useState({
     fullName: "",
     phone: "",
@@ -283,6 +283,7 @@ const CheckoutPage = () => {
       setLoading(true);
       try {
         const order = await OrderService.getById(orderId);
+        setOrder(order);
         const allOrderDetails = await OrderDetailService.getByOrderId(String(orderId));
         const items = allOrderDetails ? allOrderDetails.filter((od: any) => od.status === 1) : [];
         const productPromises = items.map((item: any) => ProductService.getById(item.productId));
@@ -334,9 +335,21 @@ const CheckoutPage = () => {
 
   const handleOrder = (e: React.FormEvent) => {
     e.preventDefault();
+
+    OrderService.update(String(orderId), {
+      orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
+      amount: order.amount,
+      accountId: order.accountId,
+      voucherId: order.voucherId,
+      totalPrice: order.totalPrice,
+      status: 2,
+      lastEdited: new Date().toISOString(),
+    })
     alert(
-      `Đặt hàng thành công!\nTên: ${shippingInfo.fullName}\nSĐT: ${shippingInfo.phone}\nĐịa chỉ: ${shippingInfo.address}\nPTTT: ${paymentMethod}`
+      `Đặt hàng thành công!\nTên: ${shippingInfo.fullName}\nSĐT: ${shippingInfo.phone}\nĐịa chỉ: ${shippingInfo.address}\nPTTT: ${paymentMethod}\nGhi chú: ${shippingInfo.note}\nTổng tiền: ${total.toLocaleString('vi-VN')}₫`
     );
+    navigate('/');
+    localStorage.setItem('amount', (Number(0).toString()));
   };
 
   return (
@@ -402,7 +415,7 @@ const CheckoutPage = () => {
                   </div>
                 </AnimatedSection>
               </div>
-              
+
               <div>
                 <AnimatedSection>
                   <OrderSummary
