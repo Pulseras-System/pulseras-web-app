@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { DragControls } from 'three/examples/jsm/controls/DragControls';
@@ -36,18 +36,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     setError,
     toggleDragMode,
     toggleRotationMode,
-    isCapturing,
-    isAutoRotating
+    isCapturing,    isAutoRotating
 }) => {
     // Basic references
     const mountRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
-    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);    const animationRef = useRef<number | null>(null);    const dragControlsRef = useRef<DragControls | null>(null);
-    const isDraggingRef = useRef<boolean>(false);
-    const isRotatingRef = useRef<boolean>(false);
-    const previousMousePositionRef = useRef<{x: number, y: number}>({x: 0, y: 0});
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);    const animationRef = useRef<number | null>(null);    const dragControlsRef = useRef<DragControls | null>(null);    const isDraggingRef = useRef<boolean>(false);
+    const braceletStringRef = useRef<THREE.Mesh | null>(null);
+    const snapPointsRef = useRef<THREE.Vector3[]>([]);
 
     // Initialize Three.js scene
     useEffect(() => {
@@ -102,11 +100,13 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
         backLight.position.set(0, 0, -10);
         scene.add(backLight);
-        
-        // Grid helper for reference - with brighter colors for better visibility
+          // Grid helper for reference - with brighter colors for better visibility
         const gridHelper = new THREE.GridHelper(10, 10, 0xaaaaaa, 0x666666);
         gridHelper.position.y = -0.01; // Slightly below objects to avoid z-fighting
         scene.add(gridHelper);
+        
+        // Create the bracelet string that will always be present
+        createBraceletString();
         
         // Handle window resize
         const handleResize = debounce(() => {
@@ -161,7 +161,93 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 dragControlsRef.current.dispose();
             }
         };
-    }, []);
+    }, []);    // Create bracelet string (cylinder base) that always exists in the workspace
+    const createBraceletString = () => {
+        if (!sceneRef.current) return;
+        
+        // Create cylinder geometry for the bracelet string
+        const geometry = new THREE.CylinderGeometry(0.1, 0.1, 6, 16); // radius top, radius bottom, height, segments
+        const material = new THREE.MeshLambertMaterial({ 
+            color: 0xCD853F, // Sandy brown color for rope/string look
+            transparent: true,
+            opacity: 0.9
+        });
+        
+        const braceletString = new THREE.Mesh(geometry, material);
+        
+        // Position the bracelet string horizontally (rotate 90 degrees around Z axis)
+        braceletString.rotation.z = Math.PI / 2;
+        braceletString.position.set(0, 0, 0); // Center position
+        
+        // Add name to identify this object
+        braceletString.name = 'braceletString';
+        braceletString.userData = { isBraceletString: true };
+        
+        // Enable shadows
+        braceletString.castShadow = true;
+        braceletString.receiveShadow = true;
+        
+        sceneRef.current.add(braceletString);
+        braceletStringRef.current = braceletString;        // Create snap points after adding the string to scene
+        createSnapPoints();
+        
+        console.log('Bracelet string created and added to scene');
+    };    // Helper function to create snap points along the bracelet string
+    const createSnapPoints = useCallback(() => {
+        const snapPoints: THREE.Vector3[] = [];
+        const numPoints = 120; // Tăng lên 120 điểm để có mật độ snap cực dày
+        const stringLength = 5.5; // Chiều dài dây
+        
+        for (let i = 0; i < numPoints; i++) {
+            const x = (i - (numPoints - 1) / 2) * (stringLength / (numPoints - 1));
+            snapPoints.push(new THREE.Vector3(x, 0, 0)); // Dây nằm dọc theo trục X
+        }
+        
+        snapPointsRef.current = snapPoints;
+        console.log(`Created ${numPoints} snap points on bracelet string with spacing ~${(stringLength / (numPoints - 1)).toFixed(3)} units`);
+    }, []);    // Helper function to find the nearest snap point
+    const findNearestSnapPoint = useCallback((position: THREE.Vector3): THREE.Vector3 | null => {
+        if (snapPointsRef.current.length === 0) return null;
+
+        let nearestPoint: THREE.Vector3 | null = null;
+        let minDistance = Infinity;
+        const snapRadius = 2.5; // Tăng bán kính snap để dễ hút vào
+        
+        // Get positions of all currently rendered objects to avoid overlapping
+        const occupiedPositions = renderedObjects.map(obj => obj.object.position);
+        
+        for (const snapPoint of snapPointsRef.current) {
+            const distance = position.distanceTo(snapPoint);
+            
+            // Chỉ xét các điểm trong bán kính snap và gần hơn điểm hiện tại
+            if (distance < snapRadius && distance < minDistance) {
+                // Check if this snap point is already occupied by another object
+                const isOccupied = occupiedPositions.some(occupiedPos => {
+                    const testPoint = snapPoint.clone();
+                    testPoint.y = 0; // Same Y level as where objects will be placed
+                    return occupiedPos.distanceTo(testPoint) < 0.08; // Khoảng cách tối thiểu rất nhỏ để cho phép gắn sát nhau
+                });
+                
+                if (!isOccupied) {
+                    nearestPoint = snapPoint.clone();
+                    minDistance = distance;
+                }
+            }
+        }
+        
+        return nearestPoint;
+    }, [renderedObjects]);// Helper function to snap object to bracelet string
+    const snapToString = useCallback((object: THREE.Object3D) => {
+        const nearestSnapPoint = findNearestSnapPoint(object.position);
+        if (nearestSnapPoint) {
+            // Đặt object vào chính giữa dây (Y = 0) như khi gắn charm thật vào vòng tay
+            nearestSnapPoint.y = 0; // Giữa dây, không phải trên dây
+            object.position.copy(nearestSnapPoint);
+            console.log('Object snapped to bracelet string at position:', nearestSnapPoint);
+            return true;
+        }
+        return false;
+    }, [findNearestSnapPoint, renderedObjects]);
 
     // Load model function
     const loadModel = async (part: BraceletPart) => {
@@ -296,8 +382,20 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     );
                 }
             });
-            
-            dragControls.addEventListener('dragend', () => {
+              dragControls.addEventListener('dragend', (event) => {
+                // Try to snap the object to the bracelet string
+                const snapped = snapToString(event.object);
+                
+                // Update the position in our data model after potential snapping
+                const draggedObject = renderedObjects.find(obj => obj.object === event.object);
+                if (draggedObject) {
+                    draggedObject.partData.position = new THREE.Vector3(
+                        event.object.position.x,
+                        event.object.position.y,
+                        event.object.position.z
+                    );
+                }
+                
                 // Re-enable orbit controls after drag
                 if (controlsRef.current) {
                     controlsRef.current.enabled = true;
@@ -308,6 +406,10 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 
                 // Reset cursor
                 document.body.style.cursor = 'auto';
+                
+                if (snapped) {
+                    console.log('Object snapped to bracelet string');
+                }
             });
             
             // Also add hover events for better UX
@@ -441,14 +543,14 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         
         // Find objects to remove
         const objectsToRemove: THREE.Object3D[] = [];
-        
-        // Go through all children in the scene that are top-level objects (not lights, camera, etc.)
+          // Go through all children in the scene that are top-level objects (not lights, camera, etc.)
         sceneRef.current.children.forEach(child => {
-            // Skip built-in scene elements
+            // Skip built-in scene elements and bracelet string
             if (child.type === 'GridHelper' || 
                 child.type === 'DirectionalLight' || 
                 child.type === 'AmbientLight' ||
-                child instanceof THREE.Camera) {
+                child instanceof THREE.Camera ||
+                child.userData?.isBraceletString) {
                 return;
             }
             
@@ -503,10 +605,12 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
             // Get drop coordinates relative to the container
             const containerRect = mountRef.current?.getBoundingClientRect();
             if (!containerRect) return;
+              // Calculate normalized coordinates (-1 to 1) for positioning
+            const x = ((e.clientX - containerRect.left) / containerRect.width) * 8 - 4; // Reduced range for closer placement
+            const y = -((e.clientY - containerRect.top) / containerRect.height) * 6 + 3; // Adjusted for better placement near bracelet string
             
-            // Calculate normalized coordinates (-1 to 1) for positioning
-            const x = ((e.clientX - containerRect.left) / containerRect.width) * 10 - 5;
-            const y = -((e.clientY - containerRect.top) / containerRect.height) * 10 + 5;
+            // Clamp Y position to be close to the bracelet string (around Y=0)
+            const clampedY = Math.max(-1, Math.min(1, y));
             
             // Generate a unique ID for this specific instance
             const instanceId = `${partData.id}-${Date.now()}`;
@@ -515,16 +619,25 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
             const newPartInstance = {
                 ...partData,
                 id: instanceId,
-                // Use the calculated drop position
-                position: new THREE.Vector3(x, y, 0)
+                // Use the calculated drop position, keep parts close to bracelet string
+                position: new THREE.Vector3(x, clampedY, 0)
             };
-            
-            // Load the model
+              // Load the model
             const modelObject = await loadModel(newPartInstance);
             
             if (modelObject && sceneRef.current) {
                 // Add to scene
                 sceneRef.current.add(modelObject);
+                
+                // Try to snap the new object to the bracelet string
+                const snapped = snapToString(modelObject);
+                
+                // Update the part data with the final position (after potential snapping)
+                newPartInstance.position = new THREE.Vector3(
+                    modelObject.position.x,
+                    modelObject.position.y,
+                    modelObject.position.z
+                );
                 
                 // Update state with the new object
                 setRenderedObjects(prev => [
@@ -538,8 +651,11 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 
                 // Set as selected object
                 setSelectedObject(instanceId);
-            }
-        } catch (err) {
+                
+                if (snapped) {
+                    console.log('New part automatically snapped to bracelet string');
+                }
+            }        } catch (err) {
             console.error('Error handling drop:', err);
             setError('Failed to add part to the workspace');
         }
@@ -604,6 +720,33 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     <span style={{ fontWeight: '500' }}>{error}</span>
                 </div>
             )}
+            
+            {/* Helper text for bracelet string */}
+            {renderedObjects.length === 0 && (
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    padding: '20px 25px',
+                    borderRadius: '10px',
+                    zIndex: 10,
+                    textAlign: 'center',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    backdropFilter: 'blur(5px)'
+                }}>
+                    <div style={{ fontSize: '18px', marginBottom: '10px', color: '#CD853F' }}>
+                        🔗 Bracelet Base Ready
+                    </div>
+                    <div style={{ fontSize: '14px', lineHeight: '1.5', color: '#ccc' }}>
+                        Drag and drop charms from the library to create your bracelet!<br/>
+                        The brown string is your bracelet base.
+                    </div>
+                </div>
+            )}
+
               {/* Control Buttons */}
             <div style={{
                 position: 'absolute',
