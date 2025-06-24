@@ -50,23 +50,43 @@ const DesignBraceletPage: React.FC = () => {
             modelPath: '/scene.glb',
             category: 'gems'
         }
-    ]);
-
-    // Basic UI state
+    ]);    // Basic UI state
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedObject, setSelectedObject] = useState<string | null>(null);
     const [dragMode, setDragMode] = useState<boolean>(true); // Default to drag mode enabled
+    const [rotationMode, setRotationMode] = useState<boolean>(false); // Rotation mode for manual rotation
     const [isCapturing, setIsCapturing] = useState(false); // State for image capture
-    
+    const [isAutoRotating, setIsAutoRotating] = useState(false); // Auto-rotation state (disabled by default)
+
     // Function to save workspace as image
     const saveWorkspaceImage = () => {
         setIsCapturing(true);
         // This will be handled by the ThreeJsWorkspace component
         setTimeout(() => setIsCapturing(false), 1000); // Reset after capture
-    };    // Toggle drag mode
+    };
+    
+    // Toggle drag mode
     const toggleDragMode = () => {
         setDragMode(prev => !prev);
+        // Disable rotation mode when enabling drag mode
+        if (!dragMode) {
+            setRotationMode(false);
+        }
+    };
+
+    // Toggle rotation mode
+    const toggleRotationMode = () => {
+        setRotationMode(prev => !prev);
+        // Disable drag mode when enabling rotation mode
+        if (!rotationMode) {
+            setDragMode(false);
+        }
+    };
+
+    // Toggle auto-rotation
+    const toggleAutoRotation = () => {
+        setIsAutoRotating(prev => !prev);
     };
 
     // Handle part drag start
@@ -79,11 +99,11 @@ const DesignBraceletPage: React.FC = () => {
             // Filter out the object with the matching id
             return prev.filter(obj => obj.id !== id);
         });
-        
-        // If we're removing the currently selected object, deselect it
+          // If we're removing the currently selected object, deselect it
         if (selectedObject === id) {
-            setSelectedObject(null);        }
-    };
+            setSelectedObject(null);
+        }
+    };;
 
     return (
         <div style={{ display: 'flex', height: 'calc(100vh - 150px)', overflow: 'hidden', background: '#1e1e1e' }}>
@@ -99,21 +119,25 @@ const DesignBraceletPage: React.FC = () => {
                 selectedObject={selectedObject}
                 setSelectedObject={setSelectedObject}
                 dragMode={dragMode}
+                rotationMode={rotationMode}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
                 error={error}
                 setError={setError}
                 toggleDragMode={toggleDragMode}
+                toggleRotationMode={toggleRotationMode}
                 isCapturing={isCapturing}
+                isAutoRotating={isAutoRotating}
             />
             
-            {/* Parts list/controls panel */}
-            <PartsPanel
+            {/* Parts list/controls panel */}            <PartsPanel
                 renderedObjects={renderedObjects}
                 selectedObject={selectedObject}
                 setSelectedObject={setSelectedObject}
                 removeObject={removeObject}
                 onSaveImage={saveWorkspaceImage}
+                onToggleAutoRotation={toggleAutoRotation}
+                isAutoRotating={isAutoRotating}
             />
         </div>
     );

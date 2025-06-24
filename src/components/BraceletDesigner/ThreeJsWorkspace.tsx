@@ -12,12 +12,15 @@ interface ThreeJsWorkspaceProps {
     selectedObject: string | null;
     setSelectedObject: (id: string | null) => void;
     dragMode: boolean;
+    rotationMode: boolean;
     isLoading: boolean;
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
     error: string | null;
     setError: React.Dispatch<React.SetStateAction<string | null>>;
     toggleDragMode: () => void;
+    toggleRotationMode: () => void;
     isCapturing: boolean;
+    isAutoRotating: boolean;
 }
 
 const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
@@ -26,22 +29,25 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     selectedObject,
     setSelectedObject,
     dragMode,
+    rotationMode,
     isLoading,
     setIsLoading,
     error,
     setError,
     toggleDragMode,
-    isCapturing
+    toggleRotationMode,
+    isCapturing,
+    isAutoRotating
 }) => {
     // Basic references
     const mountRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
-    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-    const animationRef = useRef<number | null>(null);
-    const dragControlsRef = useRef<DragControls | null>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);    const animationRef = useRef<number | null>(null);    const dragControlsRef = useRef<DragControls | null>(null);
     const isDraggingRef = useRef<boolean>(false);
+    const isRotatingRef = useRef<boolean>(false);
+    const previousMousePositionRef = useRef<{x: number, y: number}>({x: 0, y: 0});
 
     // Initialize Three.js scene
     useEffect(() => {
@@ -114,11 +120,18 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
             }
         }, 200);
         
-        window.addEventListener('resize', handleResize);
-        
-        // Animation loop
+        window.addEventListener('resize', handleResize);        // Animation loop
         const animate = () => {
-            animationRef.current = requestAnimationFrame(animate);
+            animationRef.current = requestAnimationFrame(animate);              // Auto-rotate selected object
+            if (isAutoRotating && selectedObject && renderedObjects.length > 0) {
+                const selectedObj = renderedObjects.find(obj => obj.id === selectedObject);
+                if (selectedObj && selectedObj.object && !isDraggingRef.current) {
+                    // Rotate around multiple axes for better 360-degree viewing (much faster)
+                    selectedObj.object.rotation.y += 0.08; // Much faster Y-axis rotation
+                    selectedObj.object.rotation.x += 0.04; // Faster X-axis rotation
+                    selectedObj.object.rotation.z += 0.02; // Faster Z-axis rotation
+                }
+            }
             
             if (controlsRef.current) {
                 controlsRef.current.update();
@@ -591,14 +604,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     <span style={{ fontWeight: '500' }}>{error}</span>
                 </div>
             )}
-            
-            {/* Drag Mode Toggle Button */}
+              {/* Control Buttons */}
             <div style={{
                 position: 'absolute',
                 bottom: '20px',
                 left: '20px',
-                zIndex: 10
+                zIndex: 10,
+                display: 'flex',
+                gap: '10px'
             }}>
+                {/* Drag Mode Toggle Button */}
                 <button 
                     onClick={toggleDragMode}
                     style={{
@@ -628,7 +643,40 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     <span style={{ fontSize: '16px' }}>
                         {dragMode ? '✓' : '✗'}
                     </span>
-                    {dragMode ? 'Drag Mode: ON' : 'Drag Mode: OFF'}
+                    {dragMode ? 'Drag: ON' : 'Drag: OFF'}
+                </button>
+
+                {/* Rotation Mode Toggle Button */}
+                <button 
+                    onClick={toggleRotationMode}
+                    style={{
+                        background: rotationMode ? '#FF9800' : 'rgba(85, 85, 85, 0.7)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontWeight: '500',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+                        backdropFilter: 'blur(5px)',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
+                    }}
+                    onMouseOut={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 6px rgba(0,0,0,0.2)';
+                    }}
+                >
+                    <span style={{ fontSize: '16px' }}>
+                        {rotationMode ? '↻' : '↺'}
+                    </span>
+                    {rotationMode ? 'Rotate: ON' : 'Rotate: OFF'}
                 </button>
             </div>
             

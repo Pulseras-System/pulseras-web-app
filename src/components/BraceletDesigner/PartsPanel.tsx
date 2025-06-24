@@ -7,6 +7,8 @@ interface PartsPanelProps {
     setSelectedObject: (id: string | null) => void;
     removeObject: (id: string) => void;
     onSaveImage: () => void;
+    onToggleAutoRotation?: () => void;
+    isAutoRotating?: boolean;
 }
 
 const PartsPanel: React.FC<PartsPanelProps> = ({ 
@@ -14,7 +16,9 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
     selectedObject, 
     setSelectedObject, 
     removeObject,
-    onSaveImage
+    onSaveImage,
+    onToggleAutoRotation,
+    isAutoRotating
 }) => {
     return (
         <div style={{
@@ -74,6 +78,40 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                 >
                     📸 Save Image
                 </button>
+                
+                {/* Auto Rotation Toggle Button */}
+                {onToggleAutoRotation && (
+                    <button
+                        onClick={onToggleAutoRotation}
+                        style={{
+                            marginTop: '10px',
+                            width: '100%',
+                            padding: '12px',
+                            backgroundColor: isAutoRotating ? '#10b981' : '#6b7280',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isAutoRotating ? '#059669' : '#4b5563';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = isAutoRotating ? '#10b981' : '#6b7280';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        {isAutoRotating ? '🔄 Auto Rotate ON' : '⏸️ Auto Rotate OFF'}
+                    </button>
+                )}
             </div>
             
             <div style={{ padding: '15px' }}>
@@ -171,9 +209,7 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                                     >
                                         ✕
                                     </button>
-                                </div>
-                                
-                                {selectedObject === obj.id && (
+                                </div>                                  {selectedObject === obj.id && (
                                     <div style={{ 
                                         padding: '0 15px 15px 15px',
                                         borderTop: '1px solid #444',
@@ -182,11 +218,10 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                                         <p style={{ 
                                             fontSize: '12px', 
                                             color: '#aaa', 
-                                            margin: '10px 0 15px 0'
+                                            margin: '10px 0 5px 0'
                                         }}>
-                                            Click and drag in the workspace to position
+                                            Click and drag in the workspace to position. Object rotates automatically for better viewing.
                                         </p>
-                                        {/* Could add more controls here for rotation, scaling, etc. */}
                                     </div>
                                 )}
                             </div>
