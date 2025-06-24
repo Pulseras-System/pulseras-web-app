@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import * as THREE from 'three';
 import PartLibrary from '../../components/BraceletDesigner/PartLibrary';
 import ThreeJsWorkspace from '../../components/BraceletDesigner/ThreeJsWorkspace';
 import PartsPanel from '../../components/BraceletDesigner/PartsPanel';
@@ -30,19 +29,19 @@ const DesignBraceletPage: React.FC = () => {
         {
             id: 'base-bracelet',
             name: 'Base Bracelet',
-            modelPath: '/models/base-bracelet.glb',
+            modelPath: '/diamond.glb',
             category: 'bases'
         },
         {
-            id: 'charm-heart',
-            name: 'Heart Charm',
-            modelPath: '/models/heart-charm.glb',
+            id: 'charm-cube',
+            name: 'Cube Charm',
+            modelPath: '/cube.glb',
             category: 'charms'
         },
         {
-            id: 'charm-star',
-            name: 'Star Charm',
-            modelPath: '/models/star-charm.glb',
+            id: 'charm-sphere',
+            name: 'Sphere Charm',
+            modelPath: '/sphere.glb',
             category: 'charms'
         },
         {
@@ -58,8 +57,14 @@ const DesignBraceletPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedObject, setSelectedObject] = useState<string | null>(null);
     const [dragMode, setDragMode] = useState<boolean>(true); // Default to drag mode enabled
+    const [isCapturing, setIsCapturing] = useState(false); // State for image capture
     
-    // Toggle drag mode
+    // Function to save workspace as image
+    const saveWorkspaceImage = () => {
+        setIsCapturing(true);
+        // This will be handled by the ThreeJsWorkspace component
+        setTimeout(() => setIsCapturing(false), 1000); // Reset after capture
+    };    // Toggle drag mode
     const toggleDragMode = () => {
         setDragMode(prev => !prev);
     };
@@ -77,8 +82,7 @@ const DesignBraceletPage: React.FC = () => {
         
         // If we're removing the currently selected object, deselect it
         if (selectedObject === id) {
-            setSelectedObject(null);
-        }
+            setSelectedObject(null);        }
     };
 
     return (
@@ -89,8 +93,7 @@ const DesignBraceletPage: React.FC = () => {
                 onDragStart={handlePartDragStart}
             />
 
-            {/* Workspace - 3D Canvas */}
-            <ThreeJsWorkspace
+            {/* Workspace - 3D Canvas */}            <ThreeJsWorkspace
                 renderedObjects={renderedObjects}
                 setRenderedObjects={setRenderedObjects}
                 selectedObject={selectedObject}
@@ -101,6 +104,7 @@ const DesignBraceletPage: React.FC = () => {
                 error={error}
                 setError={setError}
                 toggleDragMode={toggleDragMode}
+                isCapturing={isCapturing}
             />
             
             {/* Parts list/controls panel */}
@@ -109,6 +113,7 @@ const DesignBraceletPage: React.FC = () => {
                 selectedObject={selectedObject}
                 setSelectedObject={setSelectedObject}
                 removeObject={removeObject}
+                onSaveImage={saveWorkspaceImage}
             />
         </div>
     );

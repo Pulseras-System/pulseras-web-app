@@ -17,6 +17,7 @@ interface ThreeJsWorkspaceProps {
     error: string | null;
     setError: React.Dispatch<React.SetStateAction<string | null>>;
     toggleDragMode: () => void;
+    isCapturing: boolean;
 }
 
 const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
@@ -29,7 +30,8 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     setIsLoading,
     error,
     setError,
-    toggleDragMode
+    toggleDragMode,
+    isCapturing
 }) => {
     // Basic references
     const mountRef = useRef<HTMLDivElement>(null);
@@ -373,7 +375,47 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     // Effect to update the highlighted object when selection changes
     useEffect(() => {
         highlightSelectedObject(selectedObject);
-    }, [selectedObject]);    // Track objects removal
+    }, [selectedObject]);
+    
+    // Function to capture and save the workspace as an image
+    const captureWorkspaceImage = () => {
+        if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+            console.error('Renderer, scene, or camera not initialized');
+            return;
+        }
+
+        try {
+            // Force render to ensure the latest state is captured
+            rendererRef.current.render(sceneRef.current, cameraRef.current);
+            
+            // Get the canvas element
+            const canvas = rendererRef.current.domElement;
+            
+            // Convert canvas to blob
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    // Create a download link
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `bracelet-design-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }
+            }, 'image/png');
+        } catch (error) {
+            console.error('Error capturing workspace image:', error);
+        }
+    };    // Effect to handle image capture when isCapturing changes
+    useEffect(() => {
+        if (isCapturing) {
+            captureWorkspaceImage();
+        }
+    }, [isCapturing]);
+    
+    // Track objects removal
     useEffect(() => {
         // If there's no scene yet, do nothing
         if (!sceneRef.current) return;

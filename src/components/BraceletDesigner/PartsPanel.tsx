@@ -6,13 +6,15 @@ interface PartsPanelProps {
     selectedObject: string | null;
     setSelectedObject: (id: string | null) => void;
     removeObject: (id: string) => void;
+    onSaveImage: () => void;
 }
 
 const PartsPanel: React.FC<PartsPanelProps> = ({ 
     renderedObjects, 
     selectedObject, 
     setSelectedObject, 
-    removeObject 
+    removeObject,
+    onSaveImage
 }) => {
     return (
         <div style={{
@@ -40,6 +42,38 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                 }}>
                     {renderedObjects.length} {renderedObjects.length === 1 ? 'part' : 'parts'} in your design
                 </p>
+                
+                {/* Save Image Button */}
+                <button
+                    onClick={onSaveImage}
+                    style={{
+                        marginTop: '15px',
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#4f46e5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4338ca';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4f46e5';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                >
+                    📸 Save Image
+                </button>
             </div>
             
             <div style={{ padding: '15px' }}>
