@@ -33,7 +33,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import OrderService, { Order } from "@/services/OrderService";
+import OrderService, { Order } from "../../services/OrderService";
 import AccountService from "@/services/AccountService";
 import ProductService, { Product } from "@/services/ProductService";
 
@@ -99,7 +99,9 @@ const AdminDashboard = () => {
   // State cho đơn hàng gần đây
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [typeDistribution, setTypeDistribution] = useState<{ label: string; value: number }[]>([]);
-  const [lineChartData, setLineChartData] = useState<{ day: string; sales: number; orders: number }[]>([]);
+  const [salesFilter, setSalesFilter] = useState<"week" | "month" | "year">("week");
+  const [lineChartData, setLineChartData] = useState<any[]>([]);
+  const [loadingChart, setLoadingChart] = useState(false);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -215,6 +217,48 @@ const AdminDashboard = () => {
     };
     fetchWeeklyOverview();
   }, []);
+
+  // Fetch chart data based on filter
+  useEffect(() => {
+    const fetchChartData = async () => {
+      setLoadingChart(true);
+      try {
+        let data: any[] = [];
+        if (salesFilter === "week") {
+          data = await OrderService.getWeeklyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: item.day,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        } else if (salesFilter === "month") {
+          data = await OrderService.getMonthlyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: item.day,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        } else if (salesFilter === "year") {
+          data = await OrderService.getYearlyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: `Th${item.month}`,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        }
+      } catch (e) {
+        setLineChartData([]);
+      }
+      setLoadingChart(false);
+    };
+    fetchChartData();
+  }, [salesFilter]);
 
   return (
     <ScrollArea className="p-6 space-y-8 min-h-screen">
@@ -376,73 +420,72 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500 mt-1">Biểu đồ thể hiện doanh số và đơn hàng theo tuần</p>
                 </div>
                 <div className="flex space-x-2">
-                  <Select>
+                  <Select
+                    value={salesFilter}
+                    onValueChange={val => setSalesFilter(val as "week" | "month" | "year")}
+                  >
                     <SelectTrigger className="w-28 bg-gray-50 border-gray-200">
                       <SelectValue placeholder="Tuần này" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="week">Tuần này</SelectItem>
-                      <SelectItem value="last-week">Tuần trước</SelectItem>
-                      <SelectItem value="month">Tháng này</SelectItem>
+                      <SelectItem value="week">Tuần</SelectItem>
+                      <SelectItem value="month">Tháng</SelectItem>
+                      <SelectItem value="year">Năm</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select>
-                    <SelectTrigger className="w-24 bg-gray-50 border-gray-200">
-                      <SelectValue placeholder="2024" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2023">2023</SelectItem>
-                      <SelectItem value="2024">2024</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {/* Year select if needed */}
                 </div>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={lineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <XAxis
-                        dataKey="day"
-                        tick={{ fill: '#6B7280', fontSize: 12 }}
-                        axisLine={{ stroke: '#E5E7EB' }}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        tick={{ fill: '#6B7280', fontSize: 12 }}
-                        axisLine={{ stroke: '#E5E7EB' }}
-                        tickLine={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#FFFFFF',
-                          border: '1px solid #E5E7EB',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px'
-                        }}
-                        itemStyle={{ color: '#6B7280' }}
-                        labelStyle={{ fontWeight: 'bold', color: '#111827' }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="sales"
-                        stroke="#8B5CF6"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#8B5CF6', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#8B5CF6', strokeWidth: 0 }}
-                        name="Doanh số"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="orders"
-                        stroke="#EC4899"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#EC4899', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#EC4899', strokeWidth: 0 }}
-                        name="Đơn hàng"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {loadingChart ? (
+                    <div className="flex items-center justify-center h-full text-gray-400">Đang tải biểu đồ...</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={lineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <XAxis
+                          dataKey="day"
+                          tick={{ fill: '#6B7280', fontSize: 12 }}
+                          axisLine={{ stroke: '#E5E7EB' }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fill: '#6B7280', fontSize: 12 }}
+                          axisLine={{ stroke: '#E5E7EB' }}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#FFFFFF',
+                            border: '1px solid #E5E7EB',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            fontSize: '14px'
+                          }}
+                          itemStyle={{ color: '#6B7280' }}
+                          labelStyle={{ fontWeight: 'bold', color: '#111827' }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="sales"
+                          stroke="#8B5CF6"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: '#8B5CF6', strokeWidth: 0 }}
+                          activeDot={{ r: 6, fill: '#8B5CF6', strokeWidth: 0 }}
+                          name="Doanh số"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="orders"
+                          stroke="#EC4899"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: '#EC4899', strokeWidth: 0 }}
+                          activeDot={{ r: 6, fill: '#EC4899', strokeWidth: 0 }}
+                          name="Đơn hàng"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <div className="flex justify-center gap-6 mt-4">
                   <div className="flex items-center">
