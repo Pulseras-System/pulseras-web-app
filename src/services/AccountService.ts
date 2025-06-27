@@ -51,7 +51,7 @@ const AccountService = {
       Object.entries(data).filter(([_, value]) => value !== undefined)
     );
 
-    const response = await api.patch<Account>(`${ACCOUNT_URL}/${id}`, filteredData);
+    const response = await api.put<Account>(`${ACCOUNT_URL}/${id}`, filteredData);
 
     // Update the localStorage account data if it exists
     const storedAccount = localStorage.getItem('account');

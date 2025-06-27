@@ -52,6 +52,17 @@ const statusTransitions: Record<string, string[]> = {
   "Đã hủy": [],
 };
 
+// Thứ tự ưu tiên trạng thái
+const statusPriority: Record<string, number> = {
+  "Đã đặt hàng": 1,
+  "Đã thanh toán": 2,
+  "Đã hoàn thành": 3,
+  "Đã hủy": 4,
+  "Trong giỏ hàng": 5,
+};
+
+const getStatusPriority = (status: string) => statusPriority[status] ?? 99;
+
 const OrderManagement = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -134,7 +145,9 @@ const OrderManagement = () => {
       (priceFilter === "over400" && order.totalAmount > 400000);
 
     return matchesSearch && matchesStatus && matchesPrice;
-  });
+  })
+  // Sắp xếp theo trạng thái ưu tiên
+  .sort((a, b) => getStatusPriority(a.status) - getStatusPriority(b.status));
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;

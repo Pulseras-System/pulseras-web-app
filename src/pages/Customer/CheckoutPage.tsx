@@ -309,6 +309,24 @@ const CheckoutPage = () => {
     fetchOrder();
   }, [orderId]);
 
+  useEffect(() => {
+    // Lấy thông tin account từ localStorage và điền vào shippingInfo nếu có
+    const accountStr = localStorage.getItem("account");
+    if (accountStr) {
+      try {
+        const account = JSON.parse(accountStr);
+        setShippingInfo((prev) => ({
+          ...prev,
+          fullName: account.fullName || "",
+          phone: account.phone || "",
+          address: account.address || "",
+        }));
+      } catch (e) {
+        // Nếu parse lỗi thì bỏ qua
+      }
+    }
+  }, []);
+
   const shipping = subtotal > 0 ? 30000 : 0;
   const total = subtotal + shipping;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AccountService, { Account } from "@/services/AccountService";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { 
   Pen, 
   Trash2, 
-  Plus, 
   Search, 
   Filter, 
   User, 
@@ -32,7 +31,7 @@ const itemsPerPage = 5;
 
 const CustomerManagementPage = () => {
   const [customers, setCustomers] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -40,6 +39,7 @@ const CustomerManagementPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Account | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean, customer: Account | null }>({ open: false, customer: null });
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -143,6 +143,28 @@ const CustomerManagementPage = () => {
     );
     setModalOpen(false);
     setSelectedCustomer(null);
+  };
+
+  // Handler for delete button
+  const handleDeleteCustomer = (customer: Account) => {
+    setConfirmDelete({ open: true, customer });
+  };
+
+  // Handler for confirming delete
+  const handleConfirmDelete = async () => {
+    if (confirmDelete.customer) {
+      const updatedCustomer = { ...confirmDelete.customer, status: 0 as 0 | 1 };
+      setCustomers(customers.map(c => (c.id === updatedCustomer.id ? updatedCustomer : c)));
+      await AccountService.update(updatedCustomer.id, {
+        fullName: updatedCustomer.fullName,
+        username: updatedCustomer.username,
+        email: updatedCustomer.email,
+        phone: updatedCustomer.phone,
+        roleId: updatedCustomer.roleId,
+        status: 0,
+      });
+    }
+    setConfirmDelete({ open: false, customer: null });
   };
 
   return (
@@ -294,6 +316,7 @@ const CustomerManagementPage = () => {
                     variant="outline" 
                     size="sm"
                     className="text-red-700 border-red-200 hover:bg-red-50"
+                    onClick={() => handleDeleteCustomer(customer)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -394,6 +417,34 @@ const CustomerManagementPage = () => {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirm Delete Dialog */}
+      {confirmDelete.open && (
+        <Dialog open={confirmDelete.open} onOpenChange={(open) => setConfirmDelete({ open, customer: open ? confirmDelete.customer : null })}>
+          <DialogContent className="sm:max-w-[400px] bg-white text-black rounded-2xl shadow-xl border border-pink-100">
+            <DialogHeader>
+              <DialogTitle className="text-black">
+                Xác nhận vô hiệu hóa khách hàng
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              Bạn có chắc chắn muốn vô hiệu hóa khách hàng <b>{confirmDelete.customer?.fullName}</b> không? Khách hàng sẽ không thể đăng nhập hoặc sử dụng tài khoản này nữa.
+            </div>
+            <div className="flex justify-end gap-2 mt-2">
+              <Button type="button" variant="outline" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => setConfirmDelete({ open: false, customer: null })}>
+                Hủy
+              </Button>
+              <Button 
+                type="button" 
+                className="bg-red-100 hover:bg-red-100 text-black"
+                onClick={handleConfirmDelete}
+              >
+                Xác nhận
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
