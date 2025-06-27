@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
-import { set } from "lodash";
 
 // AnimatedSection và CheckoutItemCard giữ nguyên
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -244,7 +243,6 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const { id: orderId } = useParams();
 
-  const [accountId, setAccountId] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [subtotal, setSubtotal] = useState(0);
@@ -257,25 +255,6 @@ const CheckoutPage = () => {
     address: "",
     note: "",
   });
-
-  useEffect(() => {
-    const accountStr = localStorage.getItem('account');
-    if (accountStr) {
-      try {
-        const account = JSON.parse(accountStr);
-        setAccountId(account.id || null);
-        setShippingInfo((prev) => ({
-          ...prev,
-          fullName: account.fullName || "",
-          phone: account.phone || "",
-        }));
-      } catch {
-        setAccountId(null);
-      }
-    } else {
-      setAccountId(null);
-    }
-  }, []);
 
   useEffect(() => {
     if (!orderId) return;
@@ -329,6 +308,24 @@ const CheckoutPage = () => {
     };
     fetchOrder();
   }, [orderId]);
+
+  useEffect(() => {
+    // Lấy thông tin account từ localStorage và điền vào shippingInfo nếu có
+    const accountStr = localStorage.getItem("account");
+    if (accountStr) {
+      try {
+        const account = JSON.parse(accountStr);
+        setShippingInfo((prev) => ({
+          ...prev,
+          fullName: account.fullName || "",
+          phone: account.phone || "",
+          address: account.address || "",
+        }));
+      } catch (e) {
+        // Nếu parse lỗi thì bỏ qua
+      }
+    }
+  }, []);
 
   const shipping = subtotal > 0 ? 30000 : 0;
   const total = subtotal + shipping;

@@ -33,9 +33,9 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import OrderService, { Order } from "@/services/OrderService";
+import OrderService, { Order } from "../../services/OrderService";
 import AccountService from "@/services/AccountService";
-import ProductService from "@/services/ProductService";
+import ProductService, { Product } from "@/services/ProductService";
 
 const COLORS = ["#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 
@@ -44,13 +44,6 @@ const topProducts = [
   { name: "Vòng tay hoàng hôn vàng", sales: 1822, price: "1.199.000đ" },
   { name: "Vòng tay bohemian", sales: 1458, price: "699.000đ" },
   { name: "Vòng tay hơi thở biển", sales: 1203, price: "849.000đ" },
-];
-
-const recentOrders = [
-  { name: "Nguyễn Thị An", time: "2 phút trước", price: "1.799.000đ" },
-  { name: "Trần Văn Bình", time: "15 phút trước", price: "849.000đ" },
-  { name: "Lê Minh Châu", time: "45 phút trước", price: "699.000đ" },
-  { name: "Phạm Đức Duy", time: "1 giờ trước", price: "1.299.000đ" },
 ];
 
 const AnimatedSection = ({
@@ -106,7 +99,10 @@ const AdminDashboard = () => {
   // State cho đơn hàng gần đây
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [typeDistribution, setTypeDistribution] = useState<{ label: string; value: number }[]>([]);
-  const [lineChartData, setLineChartData] = useState<{ day: string; sales: number; orders: number }[]>([]);
+  const [salesFilter, setSalesFilter] = useState<"week" | "month" | "year">("week");
+  const [lineChartData, setLineChartData] = useState<any[]>([]);
+  const [loadingChart, setLoadingChart] = useState(false);
+  const [topProducts, setTopProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     // Gọi API lấy tổng doanh thu qua OrderService
@@ -181,6 +177,17 @@ const AdminDashboard = () => {
     };
     fetchRecentOrders();
 
+    // Gọi API lấy top sản phẩm bán chạy
+    const fetchTopProducts = async () => {
+      try {
+        const data = await ProductService.getTopBuyProducts();
+        setTopProducts(data);
+      } catch {
+        setTopProducts([]);
+      }
+    };
+    fetchTopProducts();
+
     // Gọi API lấy phân loại sản phẩm qua ProductService
     const fetchTypeDistribution = async () => {
       try {
@@ -210,6 +217,48 @@ const AdminDashboard = () => {
     };
     fetchWeeklyOverview();
   }, []);
+
+  // Fetch chart data based on filter
+  useEffect(() => {
+    const fetchChartData = async () => {
+      setLoadingChart(true);
+      try {
+        let data: any[] = [];
+        if (salesFilter === "week") {
+          data = await OrderService.getWeeklyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: item.day,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        } else if (salesFilter === "month") {
+          data = await OrderService.getMonthlyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: item.day,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        } else if (salesFilter === "year") {
+          data = await OrderService.getYearlyOverview();
+          setLineChartData(
+            data.map(item => ({
+              day: `Th${item.month}`,
+              sales: item.revenue,
+              orders: item.orderCount,
+            }))
+          );
+        }
+      } catch (e) {
+        setLineChartData([]);
+      }
+      setLoadingChart(false);
+    };
+    fetchChartData();
+  }, [salesFilter]);
 
   return (
     <ScrollArea className="p-6 space-y-8 min-h-screen">
@@ -339,10 +388,10 @@ const AdminDashboard = () => {
                     {growth ? `${growth.growthRate.toFixed(1)}%` : <span className="text-gray-400">Đang tải...</span>}
                   </p>
                   <div className={`flex items-center text-sm font-medium mt-1 ${growth
-                      ? growth.isIncrease
-                        ? "text-green-500"
-                        : "text-red-500"
-                      : "text-gray-400"
+                    ? growth.isIncrease
+                      ? "text-green-500"
+                      : "text-red-500"
+                    : "text-gray-400"
                     }`}>
                     <ArrowUp
                       className={`h-4 w-4 mr-1 transition-transform ${growth && !growth.isIncrease ? "rotate-180" : ""
@@ -371,73 +420,72 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500 mt-1">Biểu đồ thể hiện doanh số và đơn hàng theo tuần</p>
                 </div>
                 <div className="flex space-x-2">
-                  <Select>
+                  <Select
+                    value={salesFilter}
+                    onValueChange={val => setSalesFilter(val as "week" | "month" | "year")}
+                  >
                     <SelectTrigger className="w-28 bg-gray-50 border-gray-200">
                       <SelectValue placeholder="Tuần này" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="week">Tuần này</SelectItem>
-                      <SelectItem value="last-week">Tuần trước</SelectItem>
-                      <SelectItem value="month">Tháng này</SelectItem>
+                      <SelectItem value="week">Tuần</SelectItem>
+                      <SelectItem value="month">Tháng</SelectItem>
+                      <SelectItem value="year">Năm</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select>
-                    <SelectTrigger className="w-24 bg-gray-50 border-gray-200">
-                      <SelectValue placeholder="2024" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2023">2023</SelectItem>
-                      <SelectItem value="2024">2024</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {/* Year select if needed */}
                 </div>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={lineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <XAxis
-                        dataKey="day"
-                        tick={{ fill: '#6B7280', fontSize: 12 }}
-                        axisLine={{ stroke: '#E5E7EB' }}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        tick={{ fill: '#6B7280', fontSize: 12 }}
-                        axisLine={{ stroke: '#E5E7EB' }}
-                        tickLine={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#FFFFFF',
-                          border: '1px solid #E5E7EB',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px'
-                        }}
-                        itemStyle={{ color: '#6B7280' }}
-                        labelStyle={{ fontWeight: 'bold', color: '#111827' }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="sales"
-                        stroke="#8B5CF6"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#8B5CF6', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#8B5CF6', strokeWidth: 0 }}
-                        name="Doanh số"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="orders"
-                        stroke="#EC4899"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#EC4899', strokeWidth: 0 }}
-                        activeDot={{ r: 6, fill: '#EC4899', strokeWidth: 0 }}
-                        name="Đơn hàng"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {loadingChart ? (
+                    <div className="flex items-center justify-center h-full text-gray-400">Đang tải biểu đồ...</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={lineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <XAxis
+                          dataKey="day"
+                          tick={{ fill: '#6B7280', fontSize: 12 }}
+                          axisLine={{ stroke: '#E5E7EB' }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fill: '#6B7280', fontSize: 12 }}
+                          axisLine={{ stroke: '#E5E7EB' }}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#FFFFFF',
+                            border: '1px solid #E5E7EB',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            fontSize: '14px'
+                          }}
+                          itemStyle={{ color: '#6B7280' }}
+                          labelStyle={{ fontWeight: 'bold', color: '#111827' }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="sales"
+                          stroke="#8B5CF6"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: '#8B5CF6', strokeWidth: 0 }}
+                          activeDot={{ r: 6, fill: '#8B5CF6', strokeWidth: 0 }}
+                          name="Doanh số"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="orders"
+                          stroke="#EC4899"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: '#EC4899', strokeWidth: 0 }}
+                          activeDot={{ r: 6, fill: '#EC4899', strokeWidth: 0 }}
+                          name="Đơn hàng"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <div className="flex justify-center gap-6 mt-4">
                   <div className="flex items-center">
@@ -460,24 +508,35 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <ul className="divide-y divide-gray-100">
-                  {topProducts.map((item, index) => (
-                    <li key={index} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
-                      <div className="flex items-center">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
-                          ${index === 0 ? 'bg-purple-100 text-purple-600' :
-                            index === 1 ? 'bg-indigo-100 text-indigo-600' :
-                              index === 2 ? 'bg-emerald-100 text-emerald-600' :
-                                'bg-amber-100 text-amber-600'}`}>
-                          {index + 1}
+                  {topProducts.length === 0 ? (
+                    <li className="p-6 text-center text-gray-500">Đang tải...</li>
+                  ) : (
+                    topProducts.slice(0, 4).map((item, index) => (
+                      <li key={item.productId} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
+                        <div className="flex items-center">
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
+                    ${index === 0 ? 'bg-purple-100 text-purple-600' :
+                              index === 1 ? 'bg-indigo-100 text-indigo-600' :
+                                index === 2 ? 'bg-emerald-100 text-emerald-600' :
+                                  'bg-amber-100 text-amber-600'}`}>
+                            {index + 1}
+                          </div>
+                          <img
+                            src={item.productImage}
+                            alt={item.productName}
+                            className="w-10 h-10 object-cover rounded-lg mr-4 border"
+                          />
+                          <div>
+                            <p className="font-semibold text-gray-800">{item.productName}</p>
+                            <p className="text-sm text-gray-500">{item.quantity.toLocaleString()} lượt bán</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">{item.name}</p>
-                          <p className="text-sm text-gray-500">{item.sales.toLocaleString()} lượt bán</p>
-                        </div>
-                      </div>
-                      <span className="font-bold text-indigo-600">{item.price}</span>
-                    </li>
-                  ))}
+                        <span className="font-bold text-indigo-600">
+                          {item.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                        </span>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </CardContent>
             </Card>
@@ -498,7 +557,7 @@ const AdminDashboard = () => {
                   {recentOrders.length === 0 ? (
                     <li className="p-6 text-center text-gray-500">Không có đơn hàng gần đây</li>
                   ) : (
-                    recentOrders.map((order, index) => (
+                    recentOrders.map((order) => (
                       <li key={order.id} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
                         <div className="flex items-center">
                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mr-4 overflow-hidden">
