@@ -35,7 +35,7 @@ import {
 import { useEffect, useState } from "react";
 import OrderService, { Order } from "@/services/OrderService";
 import AccountService from "@/services/AccountService";
-import ProductService from "@/services/ProductService";
+import ProductService, { Product } from "@/services/ProductService";
 
 const COLORS = ["#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 
@@ -100,6 +100,7 @@ const AdminDashboard = () => {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [typeDistribution, setTypeDistribution] = useState<{ label: string; value: number }[]>([]);
   const [lineChartData, setLineChartData] = useState<{ day: string; sales: number; orders: number }[]>([]);
+  const [topProducts, setTopProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     // Gọi API lấy tổng doanh thu qua OrderService
@@ -173,6 +174,17 @@ const AdminDashboard = () => {
       }
     };
     fetchRecentOrders();
+
+    // Gọi API lấy top sản phẩm bán chạy
+    const fetchTopProducts = async () => {
+      try {
+        const data = await ProductService.getTopBuyProducts();
+        setTopProducts(data);
+      } catch {
+        setTopProducts([]);
+      }
+    };
+    fetchTopProducts();
 
     // Gọi API lấy phân loại sản phẩm qua ProductService
     const fetchTypeDistribution = async () => {
@@ -453,24 +465,35 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <ul className="divide-y divide-gray-100">
-                  {topProducts.map((item, index) => (
-                    <li key={index} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
-                      <div className="flex items-center">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
-                          ${index === 0 ? 'bg-purple-100 text-purple-600' :
-                            index === 1 ? 'bg-indigo-100 text-indigo-600' :
-                              index === 2 ? 'bg-emerald-100 text-emerald-600' :
-                                'bg-amber-100 text-amber-600'}`}>
-                          {index + 1}
+                  {topProducts.length === 0 ? (
+                    <li className="p-6 text-center text-gray-500">Đang tải...</li>
+                  ) : (
+                    topProducts.slice(0, 4).map((item, index) => (
+                      <li key={item.productId} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
+                        <div className="flex items-center">
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
+                    ${index === 0 ? 'bg-purple-100 text-purple-600' :
+                              index === 1 ? 'bg-indigo-100 text-indigo-600' :
+                                index === 2 ? 'bg-emerald-100 text-emerald-600' :
+                                  'bg-amber-100 text-amber-600'}`}>
+                            {index + 1}
+                          </div>
+                          <img
+                            src={item.productImage}
+                            alt={item.productName}
+                            className="w-10 h-10 object-cover rounded-lg mr-4 border"
+                          />
+                          <div>
+                            <p className="font-semibold text-gray-800">{item.productName}</p>
+                            <p className="text-sm text-gray-500">{item.quantity.toLocaleString()} lượt bán</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">{item.name}</p>
-                          <p className="text-sm text-gray-500">{item.sales.toLocaleString()} lượt bán</p>
-                        </div>
-                      </div>
-                      <span className="font-bold text-indigo-600">{item.price}</span>
-                    </li>
-                  ))}
+                        <span className="font-bold text-indigo-600">
+                          {item.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                        </span>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </CardContent>
             </Card>

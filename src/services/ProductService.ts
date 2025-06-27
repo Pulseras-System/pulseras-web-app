@@ -80,6 +80,16 @@ const ProductService = {
     const response = await api.get<TypeDistributionItem[]>("/products/type-distribution");
     return response.data;
   },
+
+  getTopBuyProducts: async (): Promise<Product[]> => {
+    const response = await api.get<Product[]>("/products/top-buy-products");
+    return response.data;
+  },
+
+  getLatestProducts: async (): Promise<Product[]> => {
+  const response = await api.get<Product[]>("/products/latest-products");
+  return response.data;
+},
 };
 
 export default ProductService;
