@@ -9,6 +9,8 @@ interface PartsPanelProps {
     onSaveImage: () => void;
     onToggleAutoRotation?: () => void;
     isAutoRotating?: boolean;
+    onOrder?: () => Promise<void>;
+    isProcessingOrder?: boolean;
 }
 
 const PartsPanel: React.FC<PartsPanelProps> = ({ 
@@ -18,7 +20,9 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
     removeObject,
     onSaveImage,
     onToggleAutoRotation,
-    isAutoRotating
+    isAutoRotating,
+    onOrder,
+    isProcessingOrder
 }) => {
     return (
         <div style={{
@@ -68,15 +72,15 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                         gap: '8px'
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#4338ca';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.backgroundColor = '#3c37c7';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = '#4f46e5';
-                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.transform = 'none';
                     }}
                 >
-                    📸 Save Image
+                    <span>📷</span> Save as Image
                 </button>
                 
                 {/* Auto Rotation Toggle Button */}
@@ -229,6 +233,68 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Order Button */}
+            {onOrder && (
+                <div style={{ padding: '15px' }}>
+                    <button
+                        onClick={onOrder}
+                        disabled={isProcessingOrder || renderedObjects.length === 0}
+                        style={{
+                            marginTop: '10px',
+                            width: '100%',
+                            padding: '12px',
+                            backgroundColor: renderedObjects.length === 0 ? '#888' : '#22c55e',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: renderedObjects.length === 0 ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            opacity: renderedObjects.length === 0 ? 0.7 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                            if (renderedObjects.length > 0 && !isProcessingOrder) {
+                                e.currentTarget.style.backgroundColor = '#16a34a';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (renderedObjects.length > 0 && !isProcessingOrder) {
+                                e.currentTarget.style.backgroundColor = '#22c55e';
+                                e.currentTarget.style.transform = 'none';
+                            }
+                        }}
+                    >
+                        {isProcessingOrder ? (
+                            <>
+                                <div 
+                                    style={{ 
+                                        width: '16px', 
+                                        height: '16px', 
+                                        border: '2px solid white', 
+                                        borderTopColor: 'transparent', 
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite'
+                                    }} 
+                                /> 
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                <span>🛒</span> Order Bracelet ({renderedObjects.length > 0 ? 
+                                    `${(renderedObjects.length * 50000).toLocaleString()}₫` : 
+                                    "Add parts first"})
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

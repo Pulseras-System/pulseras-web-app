@@ -1,14 +1,50 @@
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import Logo from '@/assets/images/logo.png';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { User, LogOut, Package, Heart, Settings, ShoppingCart } from 'lucide-react';
 
 const BlankLayout: React.FC = () => {
+    const [account, setAccount] = useState<any>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Get account information from localStorage if available
+        const accountStr = localStorage.getItem("account");
+        if (accountStr) {
+            setAccount(JSON.parse(accountStr));
+        }
+    }, []);
+
+    const handleLogout = () => {
+        // Clear all localStorage items
+        localStorage.clear();
+
+        // Clear all cookies
+        document.cookie.split(";").forEach(cookie => {
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        });
+
+        // Update state
+        setAccount(null);
+
+        // Navigate to home page
+        navigate("/");
+    };
     return (
-        <div className="flex flex-col min-h-screen bg-gradient-to-b from-sky-50 to-blue-50">
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-100 to-pink-100 font-sans text-gray-800 antialiased">
             {/* Header with Navigation */}
-            <header className="sticky top-0 z-50 backdrop-blur-md border-b border-sky-200 shadow-sm bg-sky-600/90 text-white h-[75px]">
+            <header className="sticky top-0 z-50 backdrop-blur-md border-b border-sky-200 shadow-sm bg-sky-600/90 text-white transition-all duration-300 hover:shadow-md h-20">
                 <div className="container flex items-center justify-between h-full px-4 mx-auto">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
@@ -37,12 +73,75 @@ const BlankLayout: React.FC = () => {
                     {/* Actions */}
                     <div className="flex items-center gap-3">
                         <ThemeToggle />
-                        <Button variant="outline" asChild className="bg-transparent text-white hover:text-sky-600">
-                            <Link to="/login">Đăng nhập</Link>
+                        
+                        {/* Cart Icon */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:bg-sky-500 rounded-full relative transition-all hover:scale-110"
+                            onClick={() => navigate("/cart")}
+                        >
+                            <ShoppingCart className="h-5 w-5" />
+                            <span className="absolute -top-1 -right-1 bg-white text-sky-600 text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                {localStorage.getItem("amount") || "0"}
+                            </span>
                         </Button>
-                        <Button asChild className="bg-white text-sky-600 hover:bg-sky-50">
-                            <Link to="/register">Đăng ký</Link>
-                        </Button>
+
+                        {/* User Authentication */}
+                        {account ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="text-white hover:bg-sky-500 rounded-full transition-all hover:scale-110 gap-2"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-sky-600 font-medium">
+                                                {account.fullName.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="font-medium">{account.fullName.split(' ')[0]}</span>
+                                        </div>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl shadow-lg border-0 bg-white/95">
+                                    <div className="px-3 py-2 mb-2">
+                                        <div className="font-medium">{account.fullName}</div>
+                                        <div className="text-xs text-gray-500">{account.email}</div>
+                                    </div>
+                                    <DropdownMenuSeparator className="my-1" />
+                                    <DropdownMenuItem onClick={() => navigate("/profile")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                                        <User className="h-4 w-4 text-blue-500" />
+                                        <span>Trang cá nhân</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigate("/orders")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                                        <Package className="h-4 w-4 text-blue-500" />
+                                        <span>Đơn hàng của tôi</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                                        <Heart className="h-4 w-4 text-blue-500" />
+                                        <span>Danh sách yêu thích</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigate("/settings")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
+                                        <Settings className="h-4 w-4 text-blue-500" />
+                                        <span>Cài đặt tài khoản</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="my-1" />
+                                    <DropdownMenuItem onClick={handleLogout} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-red-50 focus:bg-red-50 text-red-500">
+                                        <LogOut className="h-4 w-4" />
+                                        <span>Đăng xuất</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <>
+                                <Button variant="outline" asChild className="bg-transparent text-white hover:text-sky-600">
+                                    <Link to="/login">Đăng nhập</Link>
+                                </Button>
+                                <Button asChild className="bg-white text-sky-600 hover:bg-sky-50">
+                                    <Link to="/register">Đăng ký</Link>
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>
@@ -53,17 +152,25 @@ const BlankLayout: React.FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-sky-200 h-[75px] backdrop-blur-sm bg-sky-600/80 text-white">
-                <div className="container mx-auto px-4 h-full flex items-center justify-between">
-                    <p className="text-sm">
-                        © {new Date().getFullYear()} Pulsera. All rights reserved.
-                    </p>
+            <footer className="border-t border-sky-200 shadow-inner backdrop-blur-sm bg-sky-600/80 text-white py-4">
+                <div className="container mx-auto px-4 flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <p className="font-medium text-white/90">
+                            © {new Date().getFullYear()} Pulsera. All rights reserved.
+                        </p>
+                        <p className="text-sm text-white/70 mt-1">
+                            Designed with ❤️ for bracelet lovers
+                        </p>
+                    </div>
                     <div className="flex gap-6">
                         <Link to="/privacy" className="text-sm hover:text-sky-100 transition-colors">
                             Chính sách bảo mật
                         </Link>
                         <Link to="/terms" className="text-sm hover:text-sky-100 transition-colors">
                             Điều khoản sử dụng
+                        </Link>
+                        <Link to="/faq" className="text-sm hover:text-sky-100 transition-colors">
+                            FAQ
                         </Link>
                     </div>
                 </div>

@@ -21,6 +21,7 @@ interface ThreeJsWorkspaceProps {
     toggleRotationMode: () => void;
     isCapturing: boolean;
     isAutoRotating: boolean;
+    onImageCaptured?: (imageData: string) => void; // Add callback for image captured
 }
 
 const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
@@ -36,7 +37,9 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     setError,
     toggleDragMode,
     toggleRotationMode,
-    isCapturing,    isAutoRotating
+    isCapturing,
+    isAutoRotating,
+    onImageCaptured
 }) => {
     // Basic references
     const mountRef = useRef<HTMLDivElement>(null);
@@ -523,13 +526,59 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         } catch (error) {
             console.error('Error capturing workspace image:', error);
         }
-    };    // Effect to handle image capture when isCapturing changes
+    };    // Convert the workspace image to a base64 string
+    const convertImageToBase64 = () => {
+        return new Promise<string>((resolve, reject) => {
+            if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+                return reject('Renderer, scene, or camera not initialized');
+            }
+
+            try {
+                // Force render to ensure the latest state is captured
+                rendererRef.current.render(sceneRef.current, cameraRef.current);
+                
+                // Get the canvas element
+                const canvas = rendererRef.current.domElement;
+                
+                // Convert canvas to base64 string
+                const imageData = canvas.toDataURL('image/png');
+                
+                resolve(imageData);
+            } catch (error) {
+                console.error('Error converting image to base64:', error);
+                reject('Failed to convert image to base64');
+            }
+        });
+    };    // Effect to handle image capture when isCapturing flag changes
     useEffect(() => {
-        if (isCapturing) {
-            captureWorkspaceImage();
+        if (isCapturing && rendererRef.current && sceneRef.current && cameraRef.current) {
+            console.log("Capturing image from ThreeJsWorkspace");
+            
+            // Take a snapshot of the current scene
+            rendererRef.current.render(sceneRef.current, cameraRef.current);
+            
+            try {
+                // Convert the renderer's canvas to a data URL (base64 image)
+                const imageData = rendererRef.current.domElement.toDataURL('image/png');
+                console.log("Image captured successfully, length:", imageData.length);
+                
+                // First check for our temporary global callback (used for promise-based capturing)
+                if ((window as any).tempImageCaptureCallback) {
+                    console.log("Using temporary global callback for image capture");
+                    (window as any).tempImageCaptureCallback(imageData);
+                }
+                
+                // If a regular callback was provided, pass the image data to it
+                if (onImageCaptured) {
+                    console.log("Using standard callback for image capture");
+                    onImageCaptured(imageData);
+                }
+            } catch (error) {
+                console.error("Error capturing image:", error);
+            }
         }
-    }, [isCapturing]);
-    
+    }, [isCapturing, onImageCaptured]);
+
     // Track objects removal
     useEffect(() => {
         // If there's no scene yet, do nothing
