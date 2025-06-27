@@ -46,13 +46,6 @@ const topProducts = [
   { name: "Vòng tay hơi thở biển", sales: 1203, price: "849.000đ" },
 ];
 
-const recentOrders = [
-  { name: "Nguyễn Thị An", time: "2 phút trước", price: "1.799.000đ" },
-  { name: "Trần Văn Bình", time: "15 phút trước", price: "849.000đ" },
-  { name: "Lê Minh Châu", time: "45 phút trước", price: "699.000đ" },
-  { name: "Phạm Đức Duy", time: "1 giờ trước", price: "1.299.000đ" },
-];
-
 const AnimatedSection = ({
   children,
   className,
@@ -339,10 +332,10 @@ const AdminDashboard = () => {
                     {growth ? `${growth.growthRate.toFixed(1)}%` : <span className="text-gray-400">Đang tải...</span>}
                   </p>
                   <div className={`flex items-center text-sm font-medium mt-1 ${growth
-                      ? growth.isIncrease
-                        ? "text-green-500"
-                        : "text-red-500"
-                      : "text-gray-400"
+                    ? growth.isIncrease
+                      ? "text-green-500"
+                      : "text-red-500"
+                    : "text-gray-400"
                     }`}>
                     <ArrowUp
                       className={`h-4 w-4 mr-1 transition-transform ${growth && !growth.isIncrease ? "rotate-180" : ""
@@ -498,7 +491,7 @@ const AdminDashboard = () => {
                   {recentOrders.length === 0 ? (
                     <li className="p-6 text-center text-gray-500">Không có đơn hàng gần đây</li>
                   ) : (
-                    recentOrders.map((order, index) => (
+                    recentOrders.map((order) => (
                       <li key={order.id} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
                         <div className="flex items-center">
                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mr-4 overflow-hidden">

@@ -170,17 +170,6 @@ const OrderManagement = () => {
     }
   };
 
-  const statusNumberToText = (status: number) => {
-    switch (status) {
-      case 0: return "Đã hủy";
-      case 1: return "Trong giỏ hàng";
-      case 2: return "Đã đặt hàng";
-      case 3: return "Đã thanh toán";
-      case 4: return "Đã hoàn thành";
-      default: return "Không xác định";
-    }
-  };
-
   const handleEditSave = async () => {
     if (editingOrder) {
       // Nếu chuyển sang "Đã hủy" và chưa nhập lý do thì mở modal nhập lý do

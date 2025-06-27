@@ -5,6 +5,7 @@ const ACCOUNT_URL = "/accounts";
 
 // Định nghĩa interface Account dựa trên bảng dữ liệu
 export interface Account {
+  [x: string]: any;
   id: string;
   fullName: string;
   username: string;
@@ -49,9 +50,9 @@ const AccountService = {
     const filteredData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined)
     );
-    
-    const response = await api.put<Account>(`${ACCOUNT_URL}/${id}`, filteredData);
-    
+
+    const response = await api.patch<Account>(`${ACCOUNT_URL}/${id}`, filteredData);
+
     // Update the localStorage account data if it exists
     const storedAccount = localStorage.getItem('account');
     if (storedAccount) {
@@ -62,7 +63,7 @@ const AccountService = {
         localStorage.setItem('account', JSON.stringify(updatedAccount));
       }
     }
-    
+
     return response.data;
   },
 
@@ -70,7 +71,20 @@ const AccountService = {
     const response = await api.get<TotalCustomersResponse>("/accounts/total-customers");
     return response.data;
   },
+  getCustomers: async (): Promise<Account[]> => {
+    const response = await api.get<Account[]>("/accounts/roles?role=Customer");
+    return response.data;
+  },
 
+  getTotalOrdersByCustomer: async (id: string): Promise<number> => {
+    const response = await api.get<number>(`/accounts/count/orders`, { params: { id } });
+    return response.data;
+  },
+
+  getTotalSpentByCustomer: async (id: string): Promise<number> => {
+    const response = await api.get<number>(`/accounts/count/total-spent`, { params: { id } });
+    return response.data;
+  },
 };
 
 export default AccountService;

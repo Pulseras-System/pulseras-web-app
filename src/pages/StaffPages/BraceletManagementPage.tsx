@@ -90,25 +90,25 @@ const BraceletManagement = () => {
       });
   }, []);
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.productMaterial.toLowerCase().includes(searchTerm.toLowerCase());
+  // const filteredProducts = products.filter((product) => {
+  //   const matchesSearch =
+  //     product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     product.productMaterial.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesPrice =
-      priceFilter === "all" ||
-      (priceFilter === "under300" && product.price < 300000) ||
-      (priceFilter === "300to400" &&
-        product.price >= 300000 &&
-        product.price <= 400000) ||
-      (priceFilter === "over400" && product.price > 400000);
+  //   const matchesPrice =
+  //     priceFilter === "all" ||
+  //     (priceFilter === "under300" && product.price < 300000) ||
+  //     (priceFilter === "300to400" &&
+  //       product.price >= 300000 &&
+  //       product.price <= 400000) ||
+  //     (priceFilter === "over400" && product.price > 400000);
 
-    const matchesMaterial =
-      materialFilter === "all" ||
-      product.productMaterial.toLowerCase().includes(materialFilter.toLowerCase());
+  //   const matchesMaterial =
+  //     materialFilter === "all" ||
+  //     product.productMaterial.toLowerCase().includes(materialFilter.toLowerCase());
 
-    return matchesSearch && matchesPrice && matchesMaterial;
-  });
+  //   return matchesSearch && matchesPrice && matchesMaterial;
+  // });
 
   const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
 

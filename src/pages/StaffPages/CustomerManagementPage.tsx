@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AccountService, { Account } from "@/services/AccountService";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -26,186 +27,78 @@ import { Badge } from "@/components/ui/badge";
 import Pagination from "@/components/pagination";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  totalOrders: number;
-  totalSpent: number;
-  joinDate: string;
-  status: "active" | "inactive";
-  avatar: string;
-}
-
-const emptyCustomer: Customer = {
-  id: -1,
-  name: "",
-  email: "",
-  phone: "",
-  address: "",
-  totalOrders: 0,
-  totalSpent: 0,
-  joinDate: new Date().toISOString().split("T")[0],
-  status: "active",
-  avatar: "/api/placeholder/100/100?text=?"
-};
-
-const mockCustomers: Customer[] = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@example.com",
-    phone: "0901234567",
-    address: "123 Lê Lợi, Quận 1, TP.HCM",
-    totalOrders: 12,
-    totalSpent: 5600000,
-    joinDate: "2023-05-15",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=NVA"
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    email: "tranthib@example.com",
-    phone: "0912345678",
-    address: "456 Nguyễn Huệ, Quận 1, TP.HCM",
-    totalOrders: 8,
-    totalSpent: 3200000,
-    joinDate: "2023-06-20",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=TTB"
-  },
-  {
-    id: 3,
-    name: "Lê Văn C",
-    email: "levanc@example.com",
-    phone: "0923456789",
-    address: "789 Điện Biên Phủ, Quận 3, TP.HCM",
-    totalOrders: 5,
-    totalSpent: 1800000,
-    joinDate: "2023-07-10",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=LVC"
-  },
-  {
-    id: 4,
-    name: "Phạm Thị D",
-    email: "phamthid@example.com",
-    phone: "0934567890",
-    address: "101 Cách Mạng Tháng 8, Quận 3, TP.HCM",
-    totalOrders: 15,
-    totalSpent: 7500000,
-    joinDate: "2023-04-05",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=PTD"
-  },
-  {
-    id: 5,
-    name: "Võ Thị E",
-    email: "vothie@example.com",
-    phone: "0945678901",
-    address: "202 Trần Hưng Đạo, Quận 5, TP.HCM",
-    totalOrders: 3,
-    totalSpent: 1200000,
-    joinDate: "2023-08-12",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=VTE"
-  },
-  {
-    id: 6,
-    name: "Đặng Văn F",
-    email: "dangvanf@example.com",
-    phone: "0956789012",
-    address: "303 Nguyễn Đình Chiểu, Quận 3, TP.HCM",
-    totalOrders: 9,
-    totalSpent: 4200000,
-    joinDate: "2023-03-25",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=DVF"
-  },
-  {
-    id: 7,
-    name: "Hoàng Thị G",
-    email: "hoangthig@example.com",
-    phone: "0967890123",
-    address: "404 Lý Tự Trọng, Quận 1, TP.HCM",
-    totalOrders: 7,
-    totalSpent: 2800000,
-    joinDate: "2023-09-08",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=HTG"
-  },
-  {
-    id: 8,
-    name: "Ngô Văn H",
-    email: "ngovanh@example.com",
-    phone: "0978901234",
-    address: "505 Nam Kỳ Khởi Nghĩa, Quận 3, TP.HCM",
-    totalOrders: 11,
-    totalSpent: 5100000,
-    joinDate: "2023-02-18",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=NVH"
-  },
-  {
-    id: 9,
-    name: "Trương Văn I",
-    email: "truongvani@example.com",
-    phone: "0989012345",
-    address: "606 Hai Bà Trưng, Quận 1, TP.HCM",
-    totalOrders: 6,
-    totalSpent: 2400000,
-    joinDate: "2023-10-05",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=TVI"
-  },
-  {
-    id: 10,
-    name: "Lý Thị K",
-    email: "lythik@example.com",
-    phone: "0990123456",
-    address: "707 Phan Xích Long, Phú Nhuận, TP.HCM",
-    totalOrders: 4,
-    totalSpent: 1600000,
-    joinDate: "2023-11-15",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=LTK"
-  }
-];
 
 const itemsPerPage = 5;
 
 const CustomerManagementPage = () => {
-  const [customers, setCustomers] = useState(mockCustomers);
+  const [customers, setCustomers] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [spendingFilter, setSpendingFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Account | null>(null);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setLoading(true);
+      try {
+        const data = await AccountService.getCustomers();
+        // Fetch totalOrders và totalSpent cho từng customer
+        const customersWithStats = await Promise.all(
+          data.map(async (customer) => {
+            let totalOrders = 0;
+            let totalSpent = 0;
+            try {
+              totalOrders = await AccountService.getTotalOrdersByCustomer(customer.id);
+            } catch {
+              totalOrders = 0;
+            }
+            try {
+              totalSpent = await AccountService.getTotalSpentByCustomer(customer.id);
+            } catch {
+              totalSpent = 0;
+            }
+            // Gán avatar mặc định nếu không có
+            const defaultAvatar = "/src/assets/icons/noavatar.png";
+            return { 
+              ...customer, 
+              totalOrders, 
+              totalSpent: typeof totalSpent === "number" && !isNaN(totalSpent) ? totalSpent : 0,
+              avatar: customer.avatar ? customer.avatar : defaultAvatar
+            };
+          })
+        );
+        setCustomers(customersWithStats);
+      } catch (e) {
+        setCustomers([]);
+      }
+      setLoading(false);
+    };
+    fetchCustomers();
+  }, []);
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      customer.phone.includes(searchTerm);
+
     const matchesStatus = 
-      statusFilter === "all" || 
-      customer.status === statusFilter;
-    
+      statusFilter === "all" ||
+      (statusFilter === "active" && customer.status === 1) ||
+      (statusFilter === "inactive" && customer.status === 0);
+
+    // Đảm bảo totalSpent là số
+    const spent = typeof customer.totalSpent === "number" && !isNaN(customer.totalSpent) ? customer.totalSpent : 0;
     const matchesSpending =
       spendingFilter === "all" ||
-      (spendingFilter === "under1m" && customer.totalSpent < 1000000) ||
-      (spendingFilter === "1mto5m" && customer.totalSpent >= 1000000 && customer.totalSpent <= 5000000) ||
-      (spendingFilter === "over5m" && customer.totalSpent > 5000000);
-    
+      (spendingFilter === "under1m" && spent < 1000000) ||
+      (spendingFilter === "1mto5m" && spent >= 1000000 && spent <= 5000000) ||
+      (spendingFilter === "over5m" && spent > 5000000);
+
     return matchesSearch && matchesStatus && matchesSpending;
   });
 
@@ -229,27 +122,25 @@ const CustomerManagementPage = () => {
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
-  const handleAddCustomer = () => {
-    setSelectedCustomer(emptyCustomer);
-    setModalOpen(true);
-  };
-
-  const handleEditCustomer = (customer: Customer) => {
+  const handleEditCustomer = (customer: Account) => {
     setSelectedCustomer(customer);
     setModalOpen(true);
   };
 
-  const handleSaveCustomer = (customer: Customer) => {
-    if (customer.id === -1) {
-      const newCustomer = {
-        ...customer,
-        id: Math.max(...customers.map(c => c.id)) + 1,
-        avatar: `/api/placeholder/100/100?text=${customer.name.split(" ").map(s => s[0]).join("")}`
-      };
-      setCustomers([...customers, newCustomer]);
-    } else {
-      setCustomers(customers.map(c => (c.id === customer.id ? customer : c)));
-    }
+  const handleSaveCustomer = async (customer: Account) => {
+    // Chỉ cho phép cập nhật, không cho phép tạo mới
+    setCustomers(customers.map(c => (c.id === customer.id ? customer : c)));
+    await AccountService.update(customer.id, 
+      {
+        fullName: customer.fullName,
+        password: customer.password, 
+        username: customer.username,
+        email: customer.email,
+        phone: customer.phone,
+        roleId: customer.roleId,
+        status: customer.status,
+      }
+    );
     setModalOpen(false);
     setSelectedCustomer(null);
   };
@@ -281,13 +172,6 @@ const CustomerManagementPage = () => {
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
-          </Button>
-          <Button 
-            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
-            onClick={handleAddCustomer}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm khách hàng
           </Button>
         </div>
       </div>
@@ -351,13 +235,13 @@ const CustomerManagementPage = () => {
                   <div className="w-12 h-12 rounded-full overflow-hidden border border-pink-100 bg-pink-100">
                     <img 
                       src={customer.avatar}
-                      alt={customer.name}
+                      alt={customer.fullName}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 </TableCell>
                 <TableCell className="font-medium text-black whitespace-nowrap">
-                  <div className="font-semibold">{customer.name}</div>
+                  <div className="font-semibold">{customer.fullName}</div>
                   <div className="text-xs text-black">ID: {customer.id}</div>
                 </TableCell>
                 <TableCell>
@@ -385,16 +269,16 @@ const CustomerManagementPage = () => {
                 <TableCell>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1 text-blue-100" />
-                    {formatDate(customer.joinDate)}
+                    {formatDate(customer.createDate)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Badge className={`${
-                    customer.status === "active" 
-                      ? "bg-green-100 text-green-800" 
+                    customer.status === 1
+                      ? "bg-green-100 text-green-800"
                       : "bg-red-100 text-red-800"
                   }`}>
-                    {customer.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
+                    {customer.status === 1 ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
@@ -448,7 +332,7 @@ const CustomerManagementPage = () => {
           <DialogContent className="sm:max-w-[600px] bg-white text-black rounded-2xl shadow-xl border border-pink-100">
             <DialogHeader>
               <DialogTitle className="text-black">
-                {selectedCustomer.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
+                Chỉnh sửa khách hàng
               </DialogTitle>
             </DialogHeader>
             <form
@@ -462,9 +346,8 @@ const CustomerManagementPage = () => {
                 <div>
                   <Label className="text-black">Tên</Label>
                   <Input
-                    value={selectedCustomer.name}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, name: e.target.value })}
-                    required
+                    value={selectedCustomer.fullName}
+                    disabled
                   />
                 </div>
                 <div>
@@ -472,8 +355,7 @@ const CustomerManagementPage = () => {
                   <Input
                     type="email"
                     value={selectedCustomer.email}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, email: e.target.value })}
-                    required
+                    disabled
                   />
                 </div>
               </div>
@@ -482,8 +364,7 @@ const CustomerManagementPage = () => {
                   <Label className="text-black">Số điện thoại</Label>
                   <Input
                     value={selectedCustomer.phone}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, phone: e.target.value })}
-                    required
+                    disabled
                   />
                 </div>
                 <div>
@@ -491,20 +372,19 @@ const CustomerManagementPage = () => {
                   <select
                     className="w-full p-2 border border-pink-100 rounded-md bg-white text-black"
                     value={selectedCustomer.status}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, status: e.target.value as "active" | "inactive" })}
+                    onChange={(e) =>
+                      setSelectedCustomer({
+                        ...selectedCustomer,
+                        status: Number(e.target.value) as 0 | 1,
+                      })
+                    }
                   >
-                    <option value="active">Đang hoạt động</option>
-                    <option value="inactive">Không hoạt động</option>
+                    <option value={1}>Đang hoạt động</option>
+                    <option value={0}>Không hoạt động</option>
                   </select>
                 </div>
               </div>
-              <div>
-                <Label className="text-black">Địa chỉ</Label>
-                <Textarea
-                  value={selectedCustomer.address}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, address: e.target.value })}
-                />
-              </div>
+              {/* Đã xóa trường địa chỉ */}
               <div className="flex justify-end gap-2 mt-2">
                 <Button type="button" variant="outline" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => setModalOpen(false)}>
                   Hủy
