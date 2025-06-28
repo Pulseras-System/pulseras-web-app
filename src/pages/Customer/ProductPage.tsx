@@ -111,7 +111,6 @@ const ProductPage = () => {
       keyword: searchTerm,
       page: currentPage - 1,
       size: BraceletsPerPage,
-      // Có thể thêm filter theo category nếu backend hỗ trợ
     })
       .then((data) => {
         setProducts(
