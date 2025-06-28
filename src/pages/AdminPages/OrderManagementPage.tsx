@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Plus, Search, Filter, Package, Eye, ShoppingBag, User, CreditCard } from "lucide-react";
+import { Pen, Plus, Search, Filter, Package, Eye, ShoppingBag, User, CreditCard, Trash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -528,6 +528,16 @@ const OrderManagement = () => {
                       disabled={isDisabled}
                     >
                       <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-500 border-pink-100 hover:bg-pink-100 hover:text-red-600"
+                      onClick={() => handleDeleteClick(order)}
+                      title="Xóa đơn hàng"
+                      disabled={order.status === "Trong giỏ hàng"}
+                    >
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
