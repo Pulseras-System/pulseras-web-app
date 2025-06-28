@@ -6,13 +6,23 @@ interface PartsPanelProps {
     selectedObject: string | null;
     setSelectedObject: (id: string | null) => void;
     removeObject: (id: string) => void;
+    onSaveImage: () => void;
+    onToggleAutoRotation?: () => void;
+    isAutoRotating?: boolean;
+    onOrder?: () => Promise<void>;
+    isProcessingOrder?: boolean;
 }
 
 const PartsPanel: React.FC<PartsPanelProps> = ({ 
     renderedObjects, 
     selectedObject, 
     setSelectedObject, 
-    removeObject 
+    removeObject,
+    onSaveImage,
+    onToggleAutoRotation,
+    isAutoRotating,
+    onOrder,
+    isProcessingOrder
 }) => {
     return (
         <div style={{
@@ -40,6 +50,72 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                 }}>
                     {renderedObjects.length} {renderedObjects.length === 1 ? 'part' : 'parts'} in your design
                 </p>
+                
+                {/* Save Image Button */}
+                <button
+                    onClick={onSaveImage}
+                    style={{
+                        marginTop: '15px',
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#4f46e5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#3c37c7';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4f46e5';
+                        e.currentTarget.style.transform = 'none';
+                    }}
+                >
+                    <span>📷</span> Save as Image
+                </button>
+                
+                {/* Auto Rotation Toggle Button */}
+                {onToggleAutoRotation && (
+                    <button
+                        onClick={onToggleAutoRotation}
+                        style={{
+                            marginTop: '10px',
+                            width: '100%',
+                            padding: '12px',
+                            backgroundColor: isAutoRotating ? '#10b981' : '#6b7280',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isAutoRotating ? '#059669' : '#4b5563';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = isAutoRotating ? '#10b981' : '#6b7280';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        {isAutoRotating ? '🔄 Auto Rotate ON' : '⏸️ Auto Rotate OFF'}
+                    </button>
+                )}
             </div>
             
             <div style={{ padding: '15px' }}>
@@ -137,9 +213,7 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                                     >
                                         ✕
                                     </button>
-                                </div>
-                                
-                                {selectedObject === obj.id && (
+                                </div>                                  {selectedObject === obj.id && (
                                     <div style={{ 
                                         padding: '0 15px 15px 15px',
                                         borderTop: '1px solid #444',
@@ -148,11 +222,10 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                                         <p style={{ 
                                             fontSize: '12px', 
                                             color: '#aaa', 
-                                            margin: '10px 0 15px 0'
+                                            margin: '10px 0 5px 0'
                                         }}>
-                                            Click and drag in the workspace to position
+                                            Click and drag in the workspace to position. Object rotates automatically for better viewing.
                                         </p>
-                                        {/* Could add more controls here for rotation, scaling, etc. */}
                                     </div>
                                 )}
                             </div>
@@ -160,6 +233,68 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Order Button */}
+            {onOrder && (
+                <div style={{ padding: '15px' }}>
+                    <button
+                        onClick={onOrder}
+                        disabled={isProcessingOrder || renderedObjects.length === 0}
+                        style={{
+                            marginTop: '10px',
+                            width: '100%',
+                            padding: '12px',
+                            backgroundColor: renderedObjects.length === 0 ? '#888' : '#22c55e',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: renderedObjects.length === 0 ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            opacity: renderedObjects.length === 0 ? 0.7 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                            if (renderedObjects.length > 0 && !isProcessingOrder) {
+                                e.currentTarget.style.backgroundColor = '#16a34a';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (renderedObjects.length > 0 && !isProcessingOrder) {
+                                e.currentTarget.style.backgroundColor = '#22c55e';
+                                e.currentTarget.style.transform = 'none';
+                            }
+                        }}
+                    >
+                        {isProcessingOrder ? (
+                            <>
+                                <div 
+                                    style={{ 
+                                        width: '16px', 
+                                        height: '16px', 
+                                        border: '2px solid white', 
+                                        borderTopColor: 'transparent', 
+                                        borderRadius: '50%',
+                                        animation: 'spin 1s linear infinite'
+                                    }} 
+                                /> 
+                                Processing...
+                            </>
+                        ) : (
+                            <>
+                                <span>🛒</span> Order Bracelet ({renderedObjects.length > 0 ? 
+                                    `${(renderedObjects.length * 50000).toLocaleString()}₫` : 
+                                    "Add parts first"})
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
