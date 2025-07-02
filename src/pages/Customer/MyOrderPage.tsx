@@ -322,22 +322,22 @@ function MyOrderPage() {
                   break;
                 case 2: 
                   statusText = "Đã đặt hàng"; 
-                  statusColor = "text-pink-600";
-                  statusBg = "bg-pink-50 border-pink-200";
+                  statusColor = "text-blue-600";
+                  statusBg = "bg-blue-50 border-blue-200";
                   break;
                 case 3: 
                   statusText = "Đã thanh toán"; 
-                  statusColor = "text-purple-600";
-                  statusBg = "bg-purple-50 border-purple-200";
+                  statusColor = "text-orange-600";
+                  statusBg = "bg-orange-50 border-orange-200";
                   break;
                 case 4: 
                   statusText = "Đã hoàn thành"; 
-                  statusColor = "text-pink-800";
-                  statusBg = "bg-pink-50 border-pink-300";
+                  statusColor = "text-green-600";
+                  statusBg = "bg-green-50 border-green-200";
                   break;
                 default: 
                   statusText = "Không xác định";
-                  statusColor = "text-gray-700";
+                  statusColor = "text-gray-600";
                   statusBg = "bg-gray-50 border-gray-200";
               }
               
@@ -466,8 +466,8 @@ function MyOrderPage() {
                     <span className="text-black">Trạng thái:</span>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       selectedOrder?.status === 0 ? 'bg-red-100 text-red-800 border border-red-200' : 
-                      selectedOrder?.status === 2 ? 'bg-pink-100 text-pink-800 border border-pink-200' : 
-                      selectedOrder?.status === 3 ? 'bg-blue-100 text-blue-800 border border-blue-200' : 
+                      selectedOrder?.status === 2 ? 'bg-blue-100 text-blue-800 border border-blue-200' : 
+                      selectedOrder?.status === 3 ? 'bg-orange-100 text-orange-800 border border-orange-200' : 
                       selectedOrder?.status === 4 ? 'bg-green-100 text-green-800 border border-green-200' : 
                       'bg-gray-100 text-gray-700 border border-gray-200'
                     }`}>

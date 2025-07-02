@@ -454,7 +454,7 @@ const OrderManagement = () => {
         <Table className="min-w-[700px]">
           <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-black">Mã đơn</TableHead>
+              <TableHead className="text-black">Thứ tự</TableHead>
               <TableHead className="text-black">Khách hàng</TableHead>
               <TableHead className="text-black">Ngày đặt</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
@@ -472,7 +472,7 @@ const OrderManagement = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : currentOrders.map((order) => {
+            ) : currentOrders.map((order, index) => {
               const isDisabled =
                 order.status === "Đã hủy" ||
                 order.status === "Đã hoàn thành" ||
@@ -481,8 +481,8 @@ const OrderManagement = () => {
               return (
                 <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
                   <TableCell className="font-medium text-black whitespace-nowrap">
-                    <div className="font-semibold">#{order.id}</div>
-                    <div className="text-xs text-black mt-0.5">ID: {order.id}</div>
+                    <div className="font-semibold">{startIndex + index + 1}</div>
+                    {/* <div className="text-xs text-black mt-0.5">#{order.id}</div> */}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium text-black">{order.customerName}</div>
