@@ -191,6 +191,7 @@ function ProfilePage() {
         };
         
         localStorage.setItem('account', JSON.stringify(updatedStoredAccount));
+        window.location.reload(); // Reload to reflect changes in local storage
       }
       
       // Update the state with complete account data
