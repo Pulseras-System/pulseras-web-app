@@ -17,7 +17,6 @@ export interface Account {
 }
 
 const AuthService = {
-
   // Đăng ký tài khoản mới
   signup: async (data: {
     fullName: string;
@@ -44,7 +43,7 @@ const AuthService = {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     return response.data;
   },
-  
+
   // Đăng nhập bằng Google
   googleLogin: async (idToken: string) => {
     const response = await api.post(`${AUTH_URL}/google`, { idToken });
@@ -55,6 +54,24 @@ const AuthService = {
     localStorage.setItem("account", JSON.stringify(account));
     // 3. Cập nhật header Authorization cho axios instance
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post(`${AUTH_URL}/forgot-password`, { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    console.log("Request URL:", `${AUTH_URL}/reset-password`);
+    console.log("Request Payload:", { token, password });
+    if (!password) {
+      throw new Error("Password is empty or undefined");
+    }
+    const response = await api.put(`${AUTH_URL}/reset-password`, {
+      token,
+      newPassword: password,
+    });
     return response.data;
   },
 

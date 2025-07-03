@@ -21,6 +21,8 @@ import CartPage from '@/pages/Customer/CartPage';
 import ProfilePage from '@/pages/Customer/ProfilePage';
 import MyOrderPage from '@/pages/Customer/MyOrderPage';
 import CheckoutPage from '@/pages/Customer/CheckoutPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
+import ResetPasswordConfirmPage from '@/pages/ResetPasswordConfirmPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
@@ -51,6 +53,11 @@ const routes = [
         path: '/login',
         element: <LoginPage />,
       },
+      {
+      path: '/forgot-password', 
+      element: <ResetPasswordPage />,
+    },
+    { path: '/reset-password', element: <ResetPasswordConfirmPage /> },
       {
         path: '/register',
         element: <RegisterPage />,
