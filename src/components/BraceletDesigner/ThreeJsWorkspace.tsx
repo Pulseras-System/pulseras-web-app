@@ -271,12 +271,27 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         }
 
         return nearestPoint;
-    }, [renderedObjects]);// Helper function to snap object to bracelet string
+    }, [renderedObjects]);    // Helper function to snap object to bracelet string
     const snapToString = useCallback((object: THREE.Object3D) => {
         const nearestSnapPoint = findNearestSnapPoint(object.position);
         if (nearestSnapPoint) {
             // Đặt object vào chính giữa dây (Y = 0) như khi gắn charm thật vào vòng tay
             nearestSnapPoint.y = 0; // Giữa dây, không phải trên dây
+            
+            // Check if this is a star model and needs special positioning adjustment
+            const isStarModel = object.name && object.name.includes('star');
+            if (isStarModel) {
+                // For star models, ensure they are perfectly centered on the string
+                // Calculate the bounding box to get the actual center
+                const box = new THREE.Box3().setFromObject(object);
+                const center = box.getCenter(new THREE.Vector3());
+                
+                // Adjust the position so the visual center aligns with the bracelet string
+                nearestSnapPoint.y = -center.y; // Offset by the model's center offset
+                
+                console.log('Star charm snapped with center adjustment:', nearestSnapPoint, 'Model center offset:', center.y);
+            }
+            
             object.position.copy(nearestSnapPoint);
             console.log('Object snapped to bracelet string at position:', nearestSnapPoint);
             return true;
@@ -334,6 +349,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                     if (Array.isArray(child.material)) {
                                         child.material.forEach((mat) => {
                                             if (mat instanceof THREE.MeshStandardMaterial) {
+                                                // Special handling for star models - fix transparency issues
+                                                if (part.modelPath.includes('star')) {
+                                                    mat.transparent = false;
+                                                    mat.opacity = 1.0;
+                                                    // Ensure star has a visible color
+                                                    if (mat.color.getHex() === 0x000000 || mat.color.getHex() === 0xffffff) {
+                                                        mat.color.setHex(0xffd700); // Gold color for stars
+                                                    }
+                                                }
+                                                
                                                 // Enhance the existing material properties for better lighting
                                                 mat.metalness = mat.metalness || 0.3;
                                                 mat.roughness = mat.roughness || 0.4;
@@ -342,6 +367,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                                     mat.emissive = new THREE.Color(mat.color).multiplyScalar(0.05);
                                                 }
                                             } else if (mat instanceof THREE.MeshPhongMaterial) {
+                                                // Special handling for star models - fix transparency issues
+                                                if (part.modelPath.includes('star')) {
+                                                    mat.transparent = false;
+                                                    mat.opacity = 1.0;
+                                                    // Ensure star has a visible color
+                                                    if (mat.color.getHex() === 0x000000 || mat.color.getHex() === 0xffffff) {
+                                                        mat.color.setHex(0xffd700); // Gold color for stars
+                                                    }
+                                                }
+                                                
                                                 // For Phong materials, enhance shininess
                                                 mat.shininess = mat.shininess || 30;
                                                 // Add slight emissive for visibility without changing base color
@@ -353,6 +388,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                     } else {
                                         // Single material enhancement
                                         if (child.material instanceof THREE.MeshStandardMaterial) {
+                                            // Special handling for star models - fix transparency issues
+                                            if (part.modelPath.includes('star')) {
+                                                child.material.transparent = false;
+                                                child.material.opacity = 1.0;
+                                                // Ensure star has a visible color
+                                                if (child.material.color.getHex() === 0x000000 || child.material.color.getHex() === 0xffffff) {
+                                                    child.material.color.setHex(0xffd700); // Gold color for stars
+                                                }
+                                            }
+                                            
                                             // Enhance the existing material properties for better lighting
                                             child.material.metalness = child.material.metalness || 0.3;
                                             child.material.roughness = child.material.roughness || 0.4;
@@ -361,6 +406,16 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                                 child.material.emissive = new THREE.Color(child.material.color).multiplyScalar(0.05);
                                             }
                                         } else if (child.material instanceof THREE.MeshPhongMaterial) {
+                                            // Special handling for star models - fix transparency issues
+                                            if (part.modelPath.includes('star')) {
+                                                child.material.transparent = false;
+                                                child.material.opacity = 1.0;
+                                                // Ensure star has a visible color
+                                                if (child.material.color.getHex() === 0x000000 || child.material.color.getHex() === 0xffffff) {
+                                                    child.material.color.setHex(0xffd700); // Gold color for stars
+                                                }
+                                            }
+                                            
                                             // For Phong materials, enhance shininess
                                             child.material.shininess = child.material.shininess || 30;
                                             // Add slight emissive for visibility without changing base color
@@ -371,11 +426,21 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                     }
                                 } else {
                                     // Fallback: if no material exists, create a basic one
-                                    child.material = new THREE.MeshStandardMaterial({
-                                        color: 0xcccccc, // Light gray fallback
-                                        metalness: 0.3,
-                                        roughness: 0.4
-                                    });
+                                    if (part.modelPath.includes('star')) {
+                                        child.material = new THREE.MeshStandardMaterial({
+                                            color: 0xffd700, // Gold color for stars
+                                            metalness: 0.5,
+                                            roughness: 0.3,
+                                            transparent: false,
+                                            opacity: 1.0
+                                        });
+                                    } else {
+                                        child.material = new THREE.MeshStandardMaterial({
+                                            color: 0xcccccc, // Light gray fallback
+                                            metalness: 0.3,
+                                            roughness: 0.4
+                                        });
+                                    }
                                 }
                             }
                         });
