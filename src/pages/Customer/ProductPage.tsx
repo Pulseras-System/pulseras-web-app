@@ -6,18 +6,13 @@ import { motion } from "framer-motion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import ProductService, { Product } from "@/services/ProductService";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { Category } from "@/services/CategoryService";
 
-const categories = [
-  { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-blue-300 to-blue-400", icon: "✨" },
-  { name: "Bohemian", value: "Bohemian", bg: "bg-gradient-to-br from-green-200 to-green-300", icon: "🌿" },
-  { name: "Tinh Thể", value: "Tinh Thể", bg: "bg-gradient-to-br from-pink-200 to-pink-300", icon: "🔮" },
-  { name: "Vàng", value: "Vàng", bg: "bg-gradient-to-br from-yellow-200 to-yellow-300", icon: "🌟" },
-];
 
 const BraceletsPerPage = 12;
 
 const BraceletCard = ({ product }: { product: Product }) => (
-    <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
+  <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
     <div className="flex flex-col h-full">
       <div className="relative overflow-hidden aspect-square">
         <img
@@ -77,12 +72,12 @@ const BraceletCard = ({ product }: { product: Product }) => (
         </div>
       </div>
     </div>
-    </div>
+  </div>
 );
 
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   const { ref, isInView } = useScrollAnimation();
-  
+
   return (
     <motion.div
       ref={ref}
@@ -103,26 +98,27 @@ const ProductPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   // Lấy dữ liệu sản phẩm từ API khi trang load hoặc filter/pagination thay đổi
   useEffect(() => {
     ProductService.get({
       keyword: searchTerm,
+      categoryId: selectedCategoryId || undefined,
       page: currentPage - 1,
       size: BraceletsPerPage,
     })
-      .then((data) => {
-        setProducts(
-          selectedCategory === "Tất cả"
-            ? data.items
-            : data.items.filter((p) => p.type === selectedCategory)
-        );
+      .then(data => {
+        setProducts(data.items);
         setTotalPages(data.totalPages);
         setTotalItems(data.totalItems);
       })
-      .catch((err) => console.error("Error fetching products:", err));
-  }, [searchTerm, currentPage, selectedCategory]);
+      .catch(err => console.error("Error fetching products:", err));
+  }, [searchTerm, currentPage, selectedCategoryId]);
+
 
   const changePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -199,33 +195,35 @@ const ProductPage = () => {
             </AnimatedSection>
 
             <AnimatedSection>
-              <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6 relative inline-block">
-                <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
-                <span className="absolute bottom-3 left-0 right-0 h-1 bg-blue-100 z-0"></span>
+              <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6">
+                Danh mục vòng tay
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                {categories.map((cat, index) => (
-                  <motion.button
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    onClick={() => {
-                      setSelectedCategory(cat.value);
-                      setCurrentPage(1);
-                    }}
-                    className={`${cat.bg} rounded-xl p-4 text-center text-white font-medium hover:shadow-lg transition-all hover:scale-[1.03] relative overflow-hidden group ${
-                      selectedCategory === cat.value ? "ring-2 ring-white ring-opacity-70" : ""
-                    }`}
+
+              {/* Nút “Tất cả” */}
+              <div className="flex flex-wrap gap-3 justify-center mb-4">
+                <button
+                  onClick={() => { setSelectedCategoryId(null); setCurrentPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium
+                 ${selectedCategoryId === null ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-700"}
+                 hover:shadow`}
+                >
+                  Tất cả
+                </button>
+
+                {categories.map(cat => (
+                  <button
+                    key={cat.categoryId}
+                    onClick={() => { setSelectedCategoryId(cat.categoryId); setCurrentPage(1); }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium
+                   ${selectedCategoryId === cat.categoryId ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-700"}
+                   hover:shadow`}
                   >
-                    <span className="absolute opacity-20 group-hover:opacity-30 transition-opacity text-5xl right-2 top-2">
-                      {cat.icon}
-                    </span>
-                    <span className="relative z-10 drop-shadow-md">{cat.name}</span>
-                  </motion.button>
+                    {cat.categoryName}
+                  </button>
                 ))}
               </div>
             </AnimatedSection>
+
           </div>
         </AnimatedSection>
 
@@ -315,11 +313,10 @@ const ProductPage = () => {
                       key={pageNum}
                       variant={pageNum === currentPage ? "default" : "outline"}
                       onClick={() => changePage(pageNum)}
-                      className={`min-w-[40px] ${
-                        pageNum === currentPage
+                      className={`min-w-[40px] ${pageNum === currentPage
                           ? "bg-blue-500 hover:bg-blue-600"
                           : "border-blue-300 hover:bg-blue-50 text-blue-600"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </Button>

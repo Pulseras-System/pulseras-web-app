@@ -33,76 +33,13 @@ export const AddToCartButton = ({ product, quantity = 1, className = '', variant
     }
     setIsAdding(true);
     try {
-      // 1. Lấy danh sách order của account (status = 0 là giỏ hàng)
-      const orders = await OrderService.getByAccountId(accountId);
-      let cartOrder = Array.isArray(orders) ? orders.find((o: any) => o.status === 1) : null;
-      // 2. Nếu chưa có order, tạo mới
-      if (!cartOrder) {
-        const now = new Date().toISOString();
-        const newOrder = await OrderService.create({
-          orderInfor: 'Giỏ hàng',
-          amount: 0,
-          accountId: accountId,
-          voucherId: "0", // truyền string "0" thay vì null
-          totalPrice: 0,
-          status: 1,
-          lastEdited: now,
-          createDate: now
-        });
-        cartOrder = newOrder;
-      }
-      // 3. Thêm sản phẩm vào order-detail
-      const existedOrderDetails = await (await OrderDetailService.getByOrderId(String(cartOrder.id)))
-        .find((od: any) => od.productId === product.id);
-      if (existedOrderDetails && existedOrderDetails.status === 1) {
-        // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng
-        await OrderDetailService.update(
-          existedOrderDetails.id,
-          {
-            orderId: String(cartOrder.id),
-            productId: String(product.id),
-            quantity: existedOrderDetails.quantity + 1,
-            price: product.price,
-            promotionId: "0",
-            status: 1,
-            lastEdited: new Date().toISOString()
-          }
-        );
-        setShowNotification(true);
-        return;
-      } else if (existedOrderDetails && existedOrderDetails.status === 0) {
-        // Nếu sản phẩm đã tồn tại nhưng đã bị xóa, cập nhật lại trạng thái
-        await OrderDetailService.update(
-          existedOrderDetails.id,
-          {
-            orderId: String(cartOrder.id),
-            productId: String(product.id),
-            quantity: 1,
-            price: product.price,
-            promotionId: "0",
-            status: 1,
-            lastEdited: new Date().toISOString()
-          }
-        );
-        localStorage.setItem('amount', (Number(localStorage.getItem('amount')) + 1).toString());
-        setShowNotification(true);
-        return;
-      } else if (!existedOrderDetails) {
-        // Nếu sản phẩm chưa có trong giỏ hàng, tạo mới
-        await OrderDetailService.create({
-          orderId: String(cartOrder.id),
-          productId: String(product.id),
-          quantity: quantity,
-          price: product.price,
-          promotionId: "0", // truyền string nếu interface mới yêu cầu string
-          status: 1,
-          lastEdited: new Date().toISOString(),
-          createDate: new Date().toISOString()
-        });
-        localStorage.setItem('amount', (Number(localStorage.getItem('amount')) + 1).toString());
-        setShowNotification(true);
-      }
-    } catch (error) {
+      const order = await OrderService.addToCart(accountId, product.id);
+
+      const itemCount = order.orderDetails.filter(detail => detail.status !== 0).length;
+      localStorage.setItem('amount', itemCount.toString());
+      setShowNotification(true);
+    }
+    catch (error) {
       alert('Có lỗi khi thêm vào giỏ hàng!');
     } finally {
       setIsAdding(false);

@@ -51,6 +51,32 @@ export interface OverviewResponse {
   yearly: { label: string; orderCount: number; revenue: number }[];
 }
 
+export interface OrderDetailDTO {
+  id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  promotionId: number;
+  status: number;
+  createDate: string;    // ISO date string
+  lastEdited: string;    // ISO date string
+}
+
+export interface OrderDTO {
+  id: string;
+  orderInfor: string;
+  amount: number;
+  accountId: string;
+  voucherId: string;
+  totalPrice: number;
+  status: number;
+  lastEdited: string;     // ISO date string
+  createDate: string;     // ISO date string
+  orderDetails: OrderDetailDTO[];
+}
+
+
 const OrderService = {
   get: async (): Promise<Order[]> => {
     const response = await api.get<Order[]>(`${ORDER_URL}`);
@@ -76,7 +102,7 @@ const OrderService = {
     const response = await api.get<RevenueResponse>(`${ORDER_URL}/revenue`);
     return response.data;
   },
-  
+
   getTotalOrders: async (): Promise<TotalOrdersResponse> => {
     const response = await api.get<TotalOrdersResponse>(`${ORDER_URL}/total-orders`);
     return response.data;
@@ -102,6 +128,13 @@ const OrderService = {
   },
   getOverview: async (): Promise<OverviewResponse> => {
     const response = await api.get<OverviewResponse>(`${ORDER_URL}/overview`);
+    return response.data;
+  },
+  addToCart: async (accountId: string, productId: string): Promise<OrderDTO> => {
+    const response = await api.post(`${ORDER_URL}/add-to-cart`, {
+      accountId,
+      productId,
+    });
     return response.data;
   },
 };

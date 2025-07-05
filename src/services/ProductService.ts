@@ -23,6 +23,18 @@ export interface TypeDistributionItem {
   value: number;
 }
 
+export interface CreateProductInput {
+  categoryIds: string[];
+  productName: string;
+  productDescription: string;
+  productMaterial: string;
+  quantity: number;
+  type: string;
+  price: number;
+  status: number;
+  image: File; // image file (png/jpeg)
+}
+
 const ProductService = {
   get: async (params?: {
     keyword?: string;
@@ -42,21 +54,29 @@ const ProductService = {
     const response = await api.get<Product>(`${PRODUCT_URL}/${id}`);
     return response.data;
   },
-  create: async (data: Partial<Product>): Promise<Product> => {
-    const payload = {
-      categoryIds: data.categoryIds || [],
-      productName: data.productName || "",
-      productDescription: data.productDescription || "",
-      productMaterial: data.productMaterial || "",
-      productImage: data.productImage || "",
-      quantity: data.quantity || 0,
-      type: data.type || "",
-      price: data.price || 0,
-      status: data.status || 0,
-    };
+  create: async (input: CreateProductInput): Promise<Product> => {
+    const form = new FormData();
 
-    const response = await api.post<Product>(PRODUCT_URL, payload);
-    return response.data;
+    // image first (field name must match backend parameter)
+    form.append("image", input.image);
+
+    // append scalar fields
+    form.append("productName", input.productName);
+    form.append("productDescription", input.productDescription);
+    form.append("productMaterial", input.productMaterial);
+    form.append("quantity", String(input.quantity));
+    form.append("type", input.type);
+    form.append("price", String(input.price));
+    form.append("status", String(input.status));
+
+    // categoryIds (backend expects repeated param "categoryIds")
+    input.categoryIds.forEach((id) => form.append("categoryIds", id));
+
+    const { data } = await api.post<Product>(PRODUCT_URL, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return data;
   },
   update: async (id: string, data: Partial<Product>): Promise<Product> => {
     const payload = {

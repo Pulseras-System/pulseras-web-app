@@ -18,11 +18,32 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import ProductService, { Product } from "@/services/ProductService";
+import ProductService, {
+  Product,
+  CreateProductInput,
+} from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
 import Pagination from "@/components/pagination";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 
 const itemsPerPage = 7;
+
+const emptyProduct: Omit<Product, "productId" | "createDate" | "lastEdited"> = {
+  categoryIds: [],
+  productName: "",
+  productDescription: "",
+  productMaterial: "",
+  productImage: "",
+  quantity: 0,
+  type: "bracelet",
+  price: 0,
+  status: 1,
+};
 
 const BraceletManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -33,21 +54,10 @@ const BraceletManagement = () => {
   const [materialFilter, setMaterialFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingImageFile, setEditingImageFile] = useState<File | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [newProduct, setNewProduct] = useState<Product>({
-    productId: "",
-    categoryIds: [],
-    productName: "",
-    productDescription: "",
-    productMaterial: "",
-    productImage: "",
-    quantity: 0,
-    type: "bracelet",
-    price: 0,
-    createDate: "",
-    lastEdited: null,
-    status: 1,
-  });
+  const [newProduct, setNewProduct] = useState<typeof emptyProduct>(emptyProduct);
+  const [newProductImageFile, setNewProductImageFile] = useState<File | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   // state cho modal confirm delete
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -56,7 +66,11 @@ const BraceletManagement = () => {
   const [notification, setNotification] = useState<string | null>(null);
   // mapping category id -> categoryName
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
-  const [newProductCategoryInput, setNewProductCategoryInput] = useState(""); // dùng cho danh mục (tên danh mục)
+  const [newProductCategoryInput, setNewProductCategoryInput] = useState("");
+  const [editingProductCategoryInput, setEditingProductCategoryInput] = useState("");
+  const [editingCategorySuggestions, setEditingCategorySuggestions] = useState<string[]>([]);
+  const [categorySuggestions, setCategorySuggestions] = useState<string[]>([]);
+
 
   // Load products từ API, không lọc trên client nữa
   useEffect(() => {
@@ -64,7 +78,6 @@ const BraceletManagement = () => {
       keyword: searchTerm,
       page: currentPage - 1,
       size: itemsPerPage,
-      // Có thể truyền thêm filter nếu backend hỗ trợ
     })
       .then((res) => {
         setProducts(res.items);
@@ -75,121 +88,125 @@ const BraceletManagement = () => {
       });
   }, [searchTerm, currentPage, priceFilter, materialFilter]);
 
-  // Load categories and build mapping
   useEffect(() => {
     CategoryService.get()
-      .then(() => {
+      .then((cats) => {
         const map: Record<string, string> = {};
-        // cats.forEach((cat) => {
-        //   map[String(cat.categoryId)] = cat.categoryName;
-        // });
+        cats.forEach((c) => {
+          map[String(c.categoryId)] = c.categoryName;
+        });
         setCategoriesMap(map);
       })
-      .catch((error) => {
-        console.error("Failed to fetch categories:", error);
-      });
+      .catch((err) => console.error("Failed to fetch categories:", err));
   }, []);
 
-  // const filteredProducts = products.filter((product) => {
-  //   const matchesSearch =
-  //     product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     product.productMaterial.toLowerCase().includes(searchTerm.toLowerCase());
 
-  //   const matchesPrice =
-  //     priceFilter === "all" ||
-  //     (priceFilter === "under300" && product.price < 300000) ||
-  //     (priceFilter === "300to400" &&
-  //       product.price >= 300000 &&
-  //       product.price <= 400000) ||
-  //     (priceFilter === "over400" && product.price > 400000);
+  const handleCategoryInputChange = (value: string) => {
+    setNewProductCategoryInput(value);
+    const typed = value.toLowerCase();
+    const parts = typed.split(",");
+    const last = parts[parts.length - 1].trim();
+    if (last.length === 0) {
+      setCategorySuggestions([]);
+      return;
+    }
+    const suggestions = Object.values(categoriesMap).filter((name) =>
+      name.toLowerCase().includes(last)
+    );
+    setCategorySuggestions(suggestions);
+  };
 
-  //   const matchesMaterial =
-  //     materialFilter === "all" ||
-  //     product.productMaterial.toLowerCase().includes(materialFilter.toLowerCase());
+  const selectCategorySuggestion = (suggestion: string) => {
+    const parts = newProductCategoryInput.split(",");
+    parts[parts.length - 1] = suggestion;
+    setNewProductCategoryInput(parts.join(", "));
+    setCategorySuggestions([]);
+  };
 
-  //   return matchesSearch && matchesPrice && matchesMaterial;
-  // });
+
 
   const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
 
-  const handleEditSave = () => {
-    if (editingProduct) {
-      const updatedData = {
-        categoryIds: editingProduct.categoryIds,
+  const handleEditSave = async () => {
+    if (!editingProduct) return;
+
+    try {
+      const categoryIds = editingProductCategoryInput
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n)
+        .map((name) => {
+          const found = Object.entries(categoriesMap).find(([, v]) => v.toLowerCase() === name.toLowerCase());
+          return found ? found[0] : name;
+        });
+
+      const payload: Partial<CreateProductInput> & { productImage?: string } = {
+        categoryIds: categoryIds,
         productName: editingProduct.productName,
         productMaterial: editingProduct.productMaterial,
         productDescription: editingProduct.productDescription,
-        productImage: editingProduct.productImage,
         price: editingProduct.price,
         quantity: editingProduct.quantity,
         type: editingProduct.type,
         status: editingProduct.status,
       };
-      ProductService.update(editingProduct.productId, updatedData)
-        .then((updated: Product) => {
-          setProducts((prev) =>
-            prev.map((p) =>
-              p.productId === updated.productId ? updated : p
-            )
-          );
-          setIsEditOpen(false);
-        })
-        .catch((error) => {
-          console.error("Update failed:", error);
-        });
+
+      if (editingImageFile) {
+        payload.image = editingImageFile; // multipart upload
+      }
+
+      const updated = await ProductService.update(editingProduct.productId, payload);
+      setProducts((prev) => prev.map((p) => (p.productId === updated.productId ? updated : p)));
+      setIsEditOpen(false);
+      setEditingImageFile(null);
+    } catch (err) {
+      console.error("Update failed:", err);
     }
   };
 
-  const handleAddProduct = () => {
-    if (newProduct.productName.trim() && newProduct.productMaterial.trim()) {
-      // Tách chuỗi tên danh mục đã nhập
-      const categoryNames = newProductCategoryInput
-        .split(',')
-        .map((name) => name.trim())
-        .filter((name) => name !== "");
+  const handleAddProduct = async () => {
+    if (!newProduct.productName.trim() || !newProduct.productMaterial.trim()) {
+      alert("Tên & chất liệu bắt buộc");
+      return;
+    }
+    if (!newProductImageFile) {
+      alert("Vui lòng chọn ảnh");
+      return;
+    }
 
-      // Chuyển từ tên danh mục sang cate id dựa trên mapping (không phân biệt hoa thường)
-      const categoryIds = categoryNames.map((name) => {
-        const found = Object.entries(categoriesMap).find(
-          ([, catName]) => catName.toLowerCase() === name.toLowerCase()
-        );
+    const categoryIds = newProductCategoryInput
+      .split(",")
+      .map((n) => n.trim())
+      .filter((n) => n)
+      .map((name) => {
+        const found = Object.entries(categoriesMap).find(([, v]) => v.toLowerCase() === name.toLowerCase());
         return found ? found[0] : name;
       });
 
-      const newData = {
-        categoryIds,
-        productName: newProduct.productName,
-        productDescription: newProduct.productDescription,
-        productMaterial: newProduct.productMaterial,
-        productImage: newProduct.productImage,
-        price: newProduct.price,
-        quantity: newProduct.quantity,
-        type: newProduct.type,
-        status: newProduct.status,
-      };
-      ProductService.create(newData)
-        .then((created: Product) => {
-          setProducts((prev) => [...prev, created]);
-          setNewProduct({
-            productId: "",
-            categoryIds: [],
-            productName: "",
-            productDescription: "",
-            productMaterial: "",
-            productImage: "",
-            quantity: 0,
-            type: "bracelet",
-            price: 0,
-            createDate: "",
-            lastEdited: null,
-            status: 1,
-          });
-          setNewProductCategoryInput("");
-          setIsAddOpen(false);
-        })
-        .catch((error) => {
-          console.error("Create failed:", error);
-        });
+    const payload: CreateProductInput = {
+      categoryIds,
+      productName: newProduct.productName,
+      productDescription: newProduct.productDescription,
+      productMaterial: newProduct.productMaterial,
+      quantity: newProduct.quantity,
+      type: newProduct.type,
+      price: newProduct.price,
+      status: newProduct.status,
+      image: newProductImageFile,
+    };
+
+    try {
+      const created = await ProductService.create(payload);
+      setProducts((prev) => [...prev, created]);
+      // reset
+      setNewProduct(emptyProduct);
+      setNewProductImageFile(null);
+      setNewProductCategoryInput("");
+      setIsAddOpen(false);
+      setNotification("Thêm sản phẩm thành công!");
+      setTimeout(() => setNotification(null), 3000);
+    } catch (err) {
+      console.error("Create failed:", err);
     }
   };
 
@@ -203,22 +220,17 @@ const BraceletManagement = () => {
     setIsDeleteOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (deletingProduct) {
-      // Giả sử ProductService có hàm delete, căn cứ API của bạn
-      ProductService.delete(deletingProduct.productId)
-        .then(() => {
-          setProducts((prev) =>
-            prev.filter((p) => p.productId !== deletingProduct.productId)
-          );
-          setDeletingProduct(null);
-          setIsDeleteOpen(false);
-          setNotification("Xoá sản phẩm thành công!");
-          setTimeout(() => setNotification(null), 3000);
-        })
-        .catch((error) => {
-          console.error("Delete failed:", error);
-        });
+  const handleDeleteConfirm = async () => {
+    if (!deletingProduct) return;
+    try {
+      await ProductService.delete(deletingProduct.productId);
+      setProducts((prev) => prev.filter((p) => p.productId !== deletingProduct.productId));
+      setDeletingProduct(null);
+      setIsDeleteOpen(false);
+      setNotification("Xoá sản phẩm thành công!");
+      setTimeout(() => setNotification(null), 3000);
+    } catch (err) {
+      console.error("Delete failed:", err);
     }
   };
 
@@ -357,13 +369,12 @@ const BraceletManagement = () => {
                 </TableCell>
                 <TableCell>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      product.quantity > 10
-                        ? "bg-green-100 text-green-800"
-                        : product.quantity > 5
+                    className={`px-2 py-1 rounded-full text-xs ${product.quantity > 10
+                      ? "bg-green-100 text-green-800"
+                      : product.quantity > 5
                         ? "bg-pink-100 text-pink-800"
                         : "bg-red-100 text-red-800"
-                    }`}
+                      }`}
                   >
                     {product.quantity} {product.quantity > 5 ? "cái" : "sắp hết"}
                   </span>
@@ -507,16 +518,10 @@ const BraceletManagement = () => {
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files ? e.target.files[0] : null;
+                        const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.readAsDataURL(file);
-                          reader.onload = () => {
-                            setEditingProduct({
-                              ...editingProduct,
-                              productImage: reader.result as string,
-                            });
-                          };
+                          setNewProductImageFile(file);
+                          setNewProduct({ ...newProduct, productImage: URL.createObjectURL(file) });
                         }
                       }}
                     />
@@ -622,16 +627,26 @@ const BraceletManagement = () => {
             <div>
               <Label className="text-black">Danh mục (Tên danh mục)</Label>
               <Input
-                list="categoriesList"
                 placeholder="Nhập tên danh mục, cách nhau dấu phẩy"
                 value={newProductCategoryInput}
-                onChange={(e) => setNewProductCategoryInput(e.target.value)}
+                onChange={(e) => handleCategoryInputChange(e.target.value)}
               />
-              <datalist id="categoriesList">
-                {Object.values(categoriesMap).map((name, index) => (
-                  <option key={index} value={name} />
-                ))}
-              </datalist>
+              {categorySuggestions.length > 0 && (
+                <ul className="mt-2 border border-gray-300 rounded bg-white shadow text-sm z-10">
+                  {categorySuggestions.map((sug, idx) => (
+                    <li
+                      key={idx}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                      onClick={() => selectCategorySuggestion(sug)}
+                    >
+                      {sug}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+
+
             </div>
             <div>
               <Label className="text-black">Hình ảnh</Label>
@@ -643,13 +658,10 @@ const BraceletManagement = () => {
                     accept="image/*"
                     className="hidden"
                     onChange={(e) => {
-                      const file = e.target.files ? e.target.files[0] : null;
+                      const file = e.target.files?.[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => {
-                          setNewProduct({ ...newProduct, productImage: reader.result as string });
-                        };
+                        setNewProductImageFile(file);
+                        setNewProduct({ ...newProduct, productImage: URL.createObjectURL(file) });
                       }
                     }}
                   />

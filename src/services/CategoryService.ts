@@ -4,7 +4,7 @@ const CATEGORY_URL = "/categories";
 
 
 export interface Category {
-  categoryId: number;
+  categoryId: string;
   productId: number;
   categoryName: string;
   status: number;
@@ -35,7 +35,8 @@ const CategoryService = {
   getByName: async (name: string): Promise<Category> => {
     const response = await api.get<Category>(`${CATEGORY_URL}/name/${name}`);
     return response.data;
-  }
+  },
+
 };
 
 export default CategoryService;
