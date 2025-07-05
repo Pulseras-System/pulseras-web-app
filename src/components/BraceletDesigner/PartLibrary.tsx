@@ -33,38 +33,41 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
         <div
             style={{
                 width: '300px',
-                background: '#1e1e1e',
-                borderRight: '1px solid #333',
+                background: 'linear-gradient(180deg, #4b5563 0%, #374151 100%)',
+                borderRight: '1px solid rgba(107, 114, 128, 0.2)',
                 padding: '0',
                 overflowY: 'auto',
+                boxShadow: '2px 0 10px rgba(0,0,0,0.1)'
             }}
         >
             <div style={{ 
-                padding: '20px', 
-                borderBottom: '1px solid #333', 
-                background: 'linear-gradient(to right, #2a2a2a, #222222)'
+                padding: '25px 20px', 
+                borderBottom: '1px solid rgba(107, 114, 128, 0.3)',
+                background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.8))'
             }}>
                 <h3 style={{ 
                     color: '#ffffff', 
-                    marginBottom: '5px',
-                    fontSize: '18px',
-                    fontWeight: 'bold'
+                    marginBottom: '8px',
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                 }}>
-                    Bracelet Parts Library
+                    ✨ Bracelet Parts Library
                 </h3>
                 <p style={{ 
-                    color: '#888', 
-                    fontSize: '14px'
+                    color: '#ddd', 
+                    fontSize: '14px',
+                    margin: '0'
                 }}>
-                    Drag parts to the workspace
+                    Drag parts to create your perfect bracelet
                 </p>
             </div>
             
             {/* Search Bar */}
             <div style={{ 
-                padding: '15px',
-                borderBottom: '1px solid #333',
-                background: '#2a2a2a',
+                padding: '20px 15px',
+                borderBottom: '1px solid rgba(107, 114, 128, 0.2)',
+                background: 'linear-gradient(135deg, #4b5563, #374151)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px'
@@ -80,29 +83,32 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
                         placeholder="Search parts..."
                         style={{
                             width: '100%',
-                            padding: '10px 40px 10px 15px',
-                            border: '1px solid #444',
-                            borderRadius: '6px',
-                            background: '#333',
-                            color: '#fff',
+                            padding: '12px 40px 12px 18px',
+                            border: '1px solid rgba(107, 114, 128, 0.3)',
+                            borderRadius: '8px',
+                            background: 'rgba(55, 65, 81, 0.8)',
+                            color: '#ddd',
                             fontSize: '14px',
                             outline: 'none',
-                            transition: 'border 0.2s ease',
+                            transition: 'all 0.3s ease',
+                            backdropFilter: 'blur(5px)'
                         }}
                         onFocus={(e) => {
-                            e.target.style.border = '1px solid #4CAF50';
+                            e.target.style.border = '1px solid #6b7280';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(107, 114, 128, 0.1)';
                         }}
                         onBlur={(e) => {
-                            e.target.style.border = '1px solid #444';
+                            e.target.style.border = '1px solid rgba(107, 114, 128, 0.3)';
+                            e.target.style.boxShadow = 'none';
                         }}
                     />
                     <span style={{ 
                         position: 'absolute', 
                         top: '50%', 
-                        left: '10px', 
+                        left: '15px', 
                         transform: 'translateY(-50%)',
-                        color: '#888',
-                        fontSize: '14px'
+                        color: '#9ca3af',
+                        fontSize: '16px'
                     }}>
                         🔍
                     </span>
@@ -113,21 +119,28 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
                 {/* Category Tabs */}
                 <div style={{ 
                     display: 'flex', 
-                    backgroundColor: '#2a2a2a', 
-                    borderRadius: '6px',
-                    marginBottom: '15px',
-                    overflow: 'hidden'
+                    backgroundColor: 'rgba(75, 85, 99, 0.6)',
+                    borderRadius: '10px',
+                    marginBottom: '20px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(107, 114, 128, 0.2)',
+                    backdropFilter: 'blur(5px)'
                 }}>
                     <button 
                         style={{ 
                             flex: 1, 
-                            padding: '10px', 
+                            padding: '12px', 
                             border: 'none', 
-                            background: selectedCategory === null ? '#4CAF50' : '#333', 
+                            background: selectedCategory === null ? 
+                                'linear-gradient(135deg, #6b7280, #4b5563)' : 
+                                'rgba(55, 65, 81, 0.6)',
                             color: 'white',
                             cursor: 'pointer',
-                            fontWeight: selectedCategory === null ? 'bold' : 'normal',
-                            transition: 'all 0.2s ease'
+                            fontWeight: selectedCategory === null ? '700' : '500',
+                            transition: 'all 0.3s ease',
+                            fontSize: '14px',
+                            boxShadow: selectedCategory === null ? 
+                                '0 0 10px rgba(107, 114, 128, 0.3)' : 'none'
                         }}
                         onClick={() => setSelectedCategory(null)}
                     >
@@ -138,13 +151,18 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
                             key={category}
                             style={{ 
                                 flex: 1, 
-                                padding: '10px', 
+                                padding: '12px', 
                                 border: 'none', 
-                                background: selectedCategory === category ? '#4CAF50' : '#333', 
+                                background: selectedCategory === category ? 
+                                    'linear-gradient(135deg, #6b7280, #4b5563)' : 
+                                    'rgba(55, 65, 81, 0.6)',
                                 color: 'white',
                                 cursor: 'pointer',
-                                fontWeight: selectedCategory === category ? 'bold' : 'normal',
-                                transition: 'all 0.2s ease'
+                                fontWeight: selectedCategory === category ? '700' : '500',
+                                transition: 'all 0.3s ease',
+                                fontSize: '14px',
+                                boxShadow: selectedCategory === category ? 
+                                    '0 0 10px rgba(107, 114, 128, 0.3)' : 'none'
                             }}
                             onClick={() => setSelectedCategory(category)}
                         >
@@ -165,22 +183,21 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
                         <span>
                             Showing {filteredParts.length} {filteredParts.length === 1 ? 'result' : 'results'}
                         </span>
-                        {(searchQuery || selectedCategory) && (
-                            <button 
-                                onClick={() => {
-                                    setSearchQuery('');
-                                    setSelectedCategory(null);
-                                }}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#4CAF50',
-                                    cursor: 'pointer',
-                                    padding: '0',
-                                    fontSize: '14px',
-                                    textDecoration: 'underline'
-                                }}
-                            >
+                        {(searchQuery || selectedCategory) && (                                <button 
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setSelectedCategory(null);
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#9ca3af',
+                                        cursor: 'pointer',
+                                        padding: '0',
+                                        fontSize: '14px',
+                                        textDecoration: 'underline'
+                                    }}
+                                >
                                 Clear filters
                             </button>
                         )}
@@ -195,85 +212,92 @@ const PartLibrary: React.FC<PartLibraryProps> = ({ availableParts, onDragStart }
                                 draggable
                                 onDragStart={(e) => onDragStart(e, part)}
                                 style={{
-                                    borderRadius: '8px',
+                                    borderRadius: '12px',
                                     cursor: 'grab',
-                                    background: '#2a2a2a',
+                                    background: 'linear-gradient(135deg, rgba(75, 85, 99, 0.8), rgba(55, 65, 81, 0.9))',
                                     overflow: 'hidden',
-                                    border: '1px solid #444',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                    border: '1px solid rgba(107, 114, 128, 0.2)',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                                    backdropFilter: 'blur(5px)'
                                 }}
                                 onMouseOver={(e) => {
-                                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-                                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 12px rgba(0,0,0,0.15)';
+                                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px) scale(1.02)';
+                                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 25px rgba(107, 114, 128, 0.3)';
+                                    (e.currentTarget as HTMLDivElement).style.border = '1px solid rgba(107, 114, 128, 0.5)';
                                 }}
                                 onMouseOut={(e) => {
-                                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0) scale(1)';
+                                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                                    (e.currentTarget as HTMLDivElement).style.border = '1px solid rgba(107, 114, 128, 0.2)';
                                 }}
                             >
                                 <div style={{ 
-                                    background: '#333', 
-                                    padding: '10px',
+                                    background: 'linear-gradient(135deg, rgba(34, 43, 60, 0.9), rgba(42, 52, 71, 0.8))',
+                                    padding: '15px',
                                     display: 'flex',
                                     justifyContent: 'center',
-                                    height: '140px',
-                                    overflow: 'hidden'
+                                    height: '150px',
+                                    overflow: 'hidden',
+                                    position: 'relative'
                                 }}>
                                     <PartPreview modelPath={part.modelPath} size={120} />
                                 </div>
-                                <div style={{ padding: '15px' }}>
+                                <div style={{ padding: '18px' }}>
                                     <div style={{ 
                                         fontWeight: '600', 
-                                        color: '#f0f0f0',
+                                        color: '#ffffff',
                                         fontSize: '16px',
-                                        marginBottom: '5px'
+                                        marginBottom: '8px',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                                     }}>
                                         {part.name}
                                     </div>
                                     <div style={{ 
-                                        color: '#888', 
+                                        color: '#ddd', 
                                         fontSize: '12px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '5px'
+                                        gap: '8px'
                                     }}>
                                         <span style={{ 
                                             display: 'inline-block',
-                                            width: '16px',
-                                            height: '16px',
-                                            backgroundColor: '#4CAF50',
+                                            width: '18px',
+                                            height: '18px',
+                                            background: 'linear-gradient(135deg, #6C01F4, #8B5CF6)',
                                             borderRadius: '50%',
-                                            marginRight: '5px'
+                                            boxShadow: '0 0 10px rgba(108, 1, 244, 0.5)'
                                         }}></span>
-                                        Drag to add to your design
+                                        <span style={{ fontWeight: '500' }}>Drag to add to your design</span>
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : (
                         <div style={{
-                            padding: '30px 20px',
-                            background: '#2a2a2a',
-                            borderRadius: '8px',
+                            padding: '40px 20px',
+                            background: 'linear-gradient(135deg, rgba(56, 66, 86, 0.6), rgba(42, 52, 71, 0.8))',
+                            borderRadius: '12px',
                             textAlign: 'center',
-                            border: '1px dashed #444'
+                            border: '1px dashed rgba(108, 1, 244, 0.3)',
+                            backdropFilter: 'blur(5px)'
                         }}>
                             <div style={{ 
-                                fontSize: '24px', 
-                                marginBottom: '10px',
-                                color: '#666'
+                                fontSize: '32px', 
+                                marginBottom: '15px',
+                                color: '#6C01F4'
                             }}>
                                 😕
                             </div>
                             <div style={{ 
-                                color: '#f0f0f0', 
-                                fontWeight: '500', 
-                                marginBottom: '5px' 
+                                color: '#ffffff',
+                                fontWeight: '600', 
+                                marginBottom: '8px',
+                                fontSize: '16px'
                             }}>
                                 No parts found
                             </div>
-                            <div style={{ color: '#888', fontSize: '14px' }}>
+                            <div style={{ color: '#ddd', fontSize: '14px' }}>
                                 Try changing your search or filters
                             </div>
                         </div>

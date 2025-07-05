@@ -95,23 +95,27 @@ const DesignBraceletPage: React.FC = () => {
         }
     };
 
-    // Function to create product and order
-    const orderProduct = async () => {
+    // Function to add custom bracelet to cart
+    const addToCartProduct = async () => {
         try {
             setIsProcessingOrder(true);
 
-            // Check if user is authenticated
-            const accountStr = localStorage.getItem('account');
-            if (!accountStr) {
-                // User is not logged in, redirect to login page and alert
-                setError("Please login before placing an order");
-                alert("You need to login before placing an order");
-                navigate('/login', { state: { from: '/design' } }); // Redirect to login and remember where we came from
+            // Check if there are any parts in the design
+            if (renderedObjects.length === 0) {
+                setError("Please add some parts to your bracelet design before adding to cart");
+                alert("Please add some parts to your bracelet design before adding to cart");
                 return;
             }
 
-            // This will be set after product creation
-            let productId: string | null = null;
+            // Check if user is authenticated
+            const accountStr = localStorage.getItem('account');
+            const accountId = accountStr ? JSON.parse(accountStr).id : null;
+            if (!accountId) {
+                setError("Please login before adding to cart");
+                alert("You need to login before adding to cart");
+                navigate('/login', { state: { from: '/design' } });
+                return;
+            }
 
             // First capture the image if not already captured
             // Use a local variable to store the captured image data to avoid React state timing issues
@@ -236,83 +240,98 @@ const DesignBraceletPage: React.FC = () => {
                 // Create the product using ProductService
                 console.log("Creating product using ProductService.create");
 
+                const newProduct = await ProductService.create(productData);
+                console.log("Product created successfully:", newProduct);
 
-                try {
-                    const newProduct = await ProductService.create(productData);
-                    console.log("Product created successfully:", newProduct);
-
-                    // Extract productId directly from response
-                    if (newProduct && newProduct.productId) {
-                        productId = String(newProduct.productId);
-                        console.log("Using product ID from response:", productId);
-                    } else {
-                        throw new Error("Created product doesn't have a valid productId");
-                    }
-                } catch (error) {
-                    console.error("Error using ProductService.create:", error);
+                // Extract productId directly from response
+                let productId: string;
+                if (newProduct && newProduct.productId) {
+                    productId = String(newProduct.productId);
+                    console.log("Using product ID from response:", productId);
+                } else {
+                    throw new Error("Created product doesn't have a valid productId");
                 }
 
-
-
-                // Get current user's account ID from localStorage
-                let accountId: string | undefined = undefined;
-                try {
-                    const accountStr = localStorage.getItem('account');
-                    if (accountStr) {
-                        const account = JSON.parse(accountStr);
-                        if (account && account.id) {
-                            accountId = account.id;
-                            console.log("Found account ID:", accountId);
-                        } else {
-                            console.warn("Account found but no ID present");
-                        }
-                    } else {
-                        console.warn("No account found in localStorage");
-                    }
-                } catch (error) {
-                    console.error("Error parsing account from localStorage:", error);
-                }
-
-                // Create order data - don't include productId in the order
-                const orderData = {
-                    orderInfor: `Custom Bracelet with ${renderedObjects.length} parts`,
-                    amount: 1,
-                    totalPrice: productData.price,
-                    accountId, // Include the account ID (will be undefined if not found)
-                    status: 1  // Set order status to pending
-                };
-
-                // Create the order using the standard endpoint
-                console.log("Creating order with data:", JSON.stringify(orderData));
-
-                const newOrder = await OrderService.create(orderData);
-                console.log("Order created successfully:", newOrder);
-
+                // Now add to cart using the same logic as AddToCartButton
+                // 1. Get or create cart order (status = 1)
+                const orders = await OrderService.getByAccountId(accountId);
+                let cartOrder = Array.isArray(orders) ? orders.find((o: any) => o.status === 1) : null;
                 
-                // Create an OrderDetail connecting the order to the product
-                const orderDetailData = {
-                    orderId: newOrder.id, 
-                    productId: productId || "0", // Using the validated productId
-                    quantity: 1,
-                    price: productData.price,
-                    status: 1 // Active
-                };
-
-                // Create the OrderDetail
-                console.log("Creating order detail with data:", JSON.stringify(orderDetailData));
-                try {
-                    const orderDetail = await OrderDetailService.create(orderDetailData);
-                    console.log("Order detail created successfully:", orderDetail);
-
-                    // Only navigate to checkout after successful order detail creation
-                    navigate(`/checkout/${newOrder.id}`);
-                } catch (detailError: any) {
-                    console.error("Failed to create order detail:", detailError);
-
-                    navigate(`/checkout/${newOrder.id}`);
+                // 2. If no cart order exists, create one
+                if (!cartOrder) {
+                    const now = new Date().toISOString();
+                    const newOrder = await OrderService.create({
+                        orderInfor: 'Giỏ hàng',
+                        amount: 0,
+                        accountId: accountId,
+                        voucherId: "0",
+                        totalPrice: 0,
+                        status: 1,
+                        lastEdited: now,
+                        createDate: now
+                    });
+                    cartOrder = newOrder;
                 }
-            } catch {
-                throw new Error("Order was created but no ID was returned");
+
+                // 3. Add product to cart via OrderDetail
+                const existedOrderDetails = await (await OrderDetailService.getByOrderId(String(cartOrder.id)))
+                    .find((od: any) => od.productId === productId);
+                    
+                if (existedOrderDetails && existedOrderDetails.status === 1) {
+                    // If item already exists, update quantity
+                    await OrderDetailService.update(
+                        existedOrderDetails.id,
+                        {
+                            orderId: String(cartOrder.id),
+                            productId: String(productId),
+                            quantity: existedOrderDetails.quantity + 1,
+                            price: productData.price,
+                            promotionId: "0",
+                            status: 1,
+                            lastEdited: new Date().toISOString()
+                        }
+                    );
+                } else if (existedOrderDetails && existedOrderDetails.status === 0) {
+                    // If item exists but was deleted, reactivate it
+                    await OrderDetailService.update(
+                        existedOrderDetails.id,
+                        {
+                            orderId: String(cartOrder.id),
+                            productId: String(productId),
+                            quantity: 1,
+                            price: productData.price,
+                            promotionId: "0",
+                            status: 1,
+                            lastEdited: new Date().toISOString()
+                        }
+                    );
+                } else {
+                    // If item doesn't exist, create new OrderDetail
+                    await OrderDetailService.create({
+                        orderId: String(cartOrder.id),
+                        productId: String(productId),
+                        quantity: 1,
+                        price: productData.price,
+                        promotionId: "0",
+                        status: 1,
+                        lastEdited: new Date().toISOString(),
+                        createDate: new Date().toISOString()
+                    });
+                }
+
+                // 4. Update cart count in localStorage for header icon
+                localStorage.setItem('amount', (Number(localStorage.getItem('amount')) + 1).toString());
+
+                // 5. Show success message
+                alert("Custom bracelet added to cart successfully!");
+
+                // 6. Navigate to cart page
+                navigate("/cart");
+
+            } catch (error) {
+                console.error("Error creating product or adding to cart:", error);
+                setError("Failed to add bracelet to cart. Please try again.");
+                alert("Failed to add bracelet to cart. Please try again.");
             }
         } catch (err: any) {
             console.error("Error creating order:", err);
@@ -364,7 +383,13 @@ const DesignBraceletPage: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', height: 'calc(100vh - 150px)', overflow: 'hidden', background: '#1e1e1e' }}>
+        <div style={{ 
+            display: 'flex', 
+            height: 'calc(100vh - 150px)', 
+            overflow: 'hidden', 
+            background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%)',
+            position: 'relative'
+        }}>
             {/* Sidebar - Parts Selector */}
             <PartLibrary
                 availableParts={availableParts}
@@ -399,7 +424,7 @@ const DesignBraceletPage: React.FC = () => {
                 onSaveImage={saveWorkspaceImage}
                 onToggleAutoRotation={toggleAutoRotation}
                 isAutoRotating={isAutoRotating}
-                onOrder={orderProduct}
+                onOrder={addToCartProduct}
                 isProcessingOrder={isProcessingOrder}
             />
         </div>
