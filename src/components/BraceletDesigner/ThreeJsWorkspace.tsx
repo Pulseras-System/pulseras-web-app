@@ -496,60 +496,60 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     }, [selectedObject]);
     
     // Function to capture and save the workspace as an image
-    const captureWorkspaceImage = () => {
-        if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
-            console.error('Renderer, scene, or camera not initialized');
-            return;
-        }
+    // const captureWorkspaceImage = () => {
+    //     if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+    //         console.error('Renderer, scene, or camera not initialized');
+    //         return;
+    //     }
 
-        try {
-            // Force render to ensure the latest state is captured
-            rendererRef.current.render(sceneRef.current, cameraRef.current);
+    //     try {
+    //         // Force render to ensure the latest state is captured
+    //         rendererRef.current.render(sceneRef.current, cameraRef.current);
             
-            // Get the canvas element
-            const canvas = rendererRef.current.domElement;
+    //         // Get the canvas element
+    //         const canvas = rendererRef.current.domElement;
             
-            // Convert canvas to blob
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    // Create a download link
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `bracelet-design-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }
-            }, 'image/png');
-        } catch (error) {
-            console.error('Error capturing workspace image:', error);
-        }
-    };    // Convert the workspace image to a base64 string
-    const convertImageToBase64 = () => {
-        return new Promise<string>((resolve, reject) => {
-            if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
-                return reject('Renderer, scene, or camera not initialized');
-            }
+    //         // Convert canvas to blob
+    //         canvas.toBlob((blob) => {
+    //             if (blob) {
+    //                 // Create a download link
+    //                 const url = URL.createObjectURL(blob);
+    //                 const link = document.createElement('a');
+    //                 link.href = url;
+    //                 link.download = `bracelet-design-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+    //                 document.body.appendChild(link);
+    //                 link.click();
+    //                 document.body.removeChild(link);
+    //                 URL.revokeObjectURL(url);
+    //             }
+    //         }, 'image/png');
+    //     } catch (error) {
+    //         console.error('Error capturing workspace image:', error);
+    //     }
+    // };    // Convert the workspace image to a base64 string
+    // const convertImageToBase64 = () => {
+    //     return new Promise<string>((resolve, reject) => {
+    //         if (!rendererRef.current || !sceneRef.current || !cameraRef.current) {
+    //             return reject('Renderer, scene, or camera not initialized');
+    //         }
 
-            try {
-                // Force render to ensure the latest state is captured
-                rendererRef.current.render(sceneRef.current, cameraRef.current);
+    //         try {
+    //             // Force render to ensure the latest state is captured
+    //             rendererRef.current.render(sceneRef.current, cameraRef.current);
                 
-                // Get the canvas element
-                const canvas = rendererRef.current.domElement;
+    //             // Get the canvas element
+    //             const canvas = rendererRef.current.domElement;
                 
-                // Convert canvas to base64 string
-                const imageData = canvas.toDataURL('image/png');
+    //             // Convert canvas to base64 string
+    //             const imageData = canvas.toDataURL('image/png');
                 
-                resolve(imageData);
-            } catch (error) {
-                console.error('Error converting image to base64:', error);
-                reject('Failed to convert image to base64');
-            }
-        });
-    };    // Effect to handle image capture when isCapturing flag changes
+    //             resolve(imageData);
+    //         } catch (error) {
+    //             console.error('Error converting image to base64:', error);
+    //             reject('Failed to convert image to base64');
+    //         }
+    //     });
+    // };    // Effect to handle image capture when isCapturing flag changes
     useEffect(() => {
         if (isCapturing && rendererRef.current && sceneRef.current && cameraRef.current) {
             console.log("Capturing image from ThreeJsWorkspace");

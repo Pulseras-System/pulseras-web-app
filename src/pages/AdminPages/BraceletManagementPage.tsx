@@ -22,7 +22,7 @@ import ProductService, { Product } from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
 import Pagination from "@/components/pagination";
 
-const itemsPerPage = 8;
+const itemsPerPage = 7;
 
 const BraceletManagement = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -67,7 +67,7 @@ const BraceletManagement = () => {
       // Có thể truyền thêm filter nếu backend hỗ trợ
     })
       .then((res) => {
-        setProducts(res.items.filter((p) => p.type.toLowerCase().includes("bracelet")));
+        setProducts(res.items);
         setTotalPages(res.totalPages);
       })
       .catch((error) => {
@@ -78,11 +78,11 @@ const BraceletManagement = () => {
   // Load categories and build mapping
   useEffect(() => {
     CategoryService.get()
-      .then((cats) => {
+      .then(() => {
         const map: Record<string, string> = {};
-        cats.forEach((cat) => {
-          map[String(cat.categoryId)] = cat.categoryName;
-        });
+        // cats.forEach((cat) => {
+        //   map[String(cat.categoryId)] = cat.categoryName;
+        // });
         setCategoriesMap(map);
       })
       .catch((error) => {
@@ -109,17 +109,6 @@ const BraceletManagement = () => {
 
   //   return matchesSearch && matchesPrice && matchesMaterial;
   // });
-
-  // const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  // const startIndex = (currentPage - 1) * itemsPerPage;
-  // const endIndex = startIndex + itemsPerPage;
-  // const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
-  // const handlePageChange = (page: number) => {
-  //   if (page >= 1 && page <= totalPages) {
-  //     setCurrentPage(page);
-  //   }
-  // };
 
   const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
 
@@ -353,7 +342,7 @@ const BraceletManagement = () => {
                   <div className="font-semibold">{product.productName}</div>
                   <div className="text-xs text-gray-600">
                     {product.categoryIds.length > 0
-                      ? product.categoryIds.map((id) => getCategoryName(id)).join(", ")
+                      ? product.categoryName
                       : "Không có danh mục"}
                   </div>
                 </TableCell>

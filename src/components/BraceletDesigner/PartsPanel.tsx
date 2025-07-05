@@ -287,7 +287,7 @@ const PartsPanel: React.FC<PartsPanelProps> = ({
                             </>
                         ) : (
                             <>
-                                <span>🛒</span> Order Bracelet ({renderedObjects.length > 0 ? 
+                                <span>🛒</span> Add to Cart ({renderedObjects.length > 0 ? 
                                     `${(renderedObjects.length * 50000).toLocaleString()}₫` : 
                                     "Add parts first"})
                             </>

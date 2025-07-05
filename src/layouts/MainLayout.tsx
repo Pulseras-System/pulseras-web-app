@@ -9,7 +9,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
-  Home, ShoppingBag, LayoutGrid, Sparkles, Info, Phone,
+  Home, ShoppingBag, Sparkles, Info, Phone,
   ShoppingCart, User, Menu, Search, LogOut, Settings, Heart, Package,
 } from "lucide-react";
 
@@ -39,7 +39,7 @@ const MainLayout = () => {
   const navLinks = {
     "/": { label: "Trang chủ", icon: Home },
     "/shop": { label: "Cửa hàng", icon: ShoppingBag },
-    "/categories": { label: "Danh mục", icon: LayoutGrid },
+    // "/categories": { label: "Danh mục", icon: LayoutGrid },
     "/design": { label: "Thiết kế", icon: Sparkles },
     "/about": { label: "Về chúng tôi", icon: Info },
     "/contact": { label: "Liên hệ", icon: Phone },
