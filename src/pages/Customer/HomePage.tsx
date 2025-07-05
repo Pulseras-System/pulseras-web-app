@@ -44,7 +44,7 @@ const BraceletCard = ({
   productRaw,
 }: BraceletCardProps) => (
   <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
-    <div className="relative aspect-square ">
+    <div className="relative w-full h-64">
       <img
         loading="lazy"
         src={imageSrc}
@@ -56,8 +56,8 @@ const BraceletCard = ({
     </div>
     
     <div className="p-4 flex flex-col justify-between flex-grow">
-      <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-      <p className="text-sm text-gray-600 mt-1 flex-grow">{description}</p>
+      <h3 className="text-lg font-semibold text-gray-800 truncate" title={name}>{name}</h3>
+      <p className="text-sm text-gray-600 mt-1 flex-grow truncate" title={description}>{description}</p>
       <div className="flex justify-between items-center mt-4">
         <span className="text-md font-bold text-blue-600">{price}</span>
         <div className="flex space-x-2">

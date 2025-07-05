@@ -57,6 +57,12 @@ const DesignBraceletPage: React.FC = () => {
             name: 'Gem Block',
             modelPath: '/scene.glb',
             category: 'gems'
+        },
+        {
+            id: 'star-gem',
+            name: 'Star Block',
+            modelPath: '/star4.glb',
+            category: 'gems'
         }
     ]);
 
