@@ -78,11 +78,11 @@ const BraceletManagement = () => {
   // Load categories and build mapping
   useEffect(() => {
     CategoryService.get()
-      .then((cats) => {
+      .then(() => {
         const map: Record<string, string> = {};
-        cats.forEach((cat) => {
-          map[String(cat.categoryId)] = cat.categoryName;
-        });
+        // cats.forEach((cat) => {
+        //   map[String(cat.categoryId)] = cat.categoryName;
+        // });
         setCategoriesMap(map);
       })
       .catch((error) => {
@@ -342,7 +342,7 @@ const BraceletManagement = () => {
                   <div className="font-semibold">{product.productName}</div>
                   <div className="text-xs text-gray-600">
                     {product.categoryIds.length > 0
-                      ? product.categoryIds.map((id) => getCategoryName(id)).join(", ")
+                      ? product.categoryName
                       : "Không có danh mục"}
                   </div>
                 </TableCell>

@@ -5,6 +5,7 @@ const PRODUCT_URL = "/products";
 export interface Product {
   productId: string; // ID là string
   categoryIds: string[]; // Danh sách category ID
+  categoryName?: string; // Tên danh mục, có thể không có nếu không cần thiết
   productName: string;
   productDescription: string;
   productMaterial: string;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import ProductService, { Product } from "@/services/ProductService";
 import { AddToCartButton } from "@/components/AddToCartButton";
 

@@ -1,4 +1,3 @@
-import { getYear } from "date-fns";
 import api from "./apiService";
 
 const ORDER_URL = "/orders";
@@ -44,6 +43,12 @@ export interface WeeklyOverviewItem {
   day: string;
   revenue: number;
   orderCount: number;
+}
+
+export interface OverviewResponse {
+  weekly: { label: string; orderCount: number; revenue: number }[];
+  monthly: { label: string; orderCount: number; revenue: number }[];
+  yearly: { label: string; orderCount: number; revenue: number }[];
 }
 
 const OrderService = {
@@ -93,6 +98,10 @@ const OrderService = {
   },
   getYearlyOverview: async (): Promise<WeeklyOverviewItem[]> => {
     const response = await api.get<WeeklyOverviewItem[]>(`${ORDER_URL}/yearly-overview`);
+    return response.data;
+  },
+  getOverview: async (): Promise<OverviewResponse> => {
+    const response = await api.get<OverviewResponse>(`${ORDER_URL}/overview`);
     return response.data;
   },
 };

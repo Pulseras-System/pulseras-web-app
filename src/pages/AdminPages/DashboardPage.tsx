@@ -33,18 +33,11 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import OrderService, { Order } from "../../services/OrderService";
+import OrderService, { Order, OverviewResponse } from "../../services/OrderService";
 import AccountService from "@/services/AccountService";
 import ProductService, { Product } from "@/services/ProductService";
 
 const COLORS = ["#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
-
-const topProducts = [
-  { name: "Vòng tay đá phong thủy", sales: 2345, price: "899.000đ" },
-  { name: "Vòng tay hoàng hôn vàng", sales: 1822, price: "1.199.000đ" },
-  { name: "Vòng tay bohemian", sales: 1458, price: "699.000đ" },
-  { name: "Vòng tay hơi thở biển", sales: 1203, price: "849.000đ" },
-];
 
 const AnimatedSection = ({
   children,
@@ -103,6 +96,7 @@ const AdminDashboard = () => {
   const [lineChartData, setLineChartData] = useState<any[]>([]);
   const [loadingChart, setLoadingChart] = useState(false);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
+  const [overviewData, setOverviewData] = useState<OverviewResponse | null>(null);
 
   useEffect(() => {
     // Gọi API lấy tổng doanh thu qua OrderService
@@ -200,65 +194,66 @@ const AdminDashboard = () => {
     fetchTypeDistribution();
 
     // Lấy dữ liệu tổng quan doanh số theo tuần
-    const fetchWeeklyOverview = async () => {
+    const fetchOverview = async () => {
+      setLoadingChart(true);
       try {
-        const data = await OrderService.getWeeklyOverview();
-        // Map API fields to chart fields
+        const data = await OrderService.getOverview();
+        setOverviewData(data);
+        // Default to weekly
         setLineChartData(
-          data.map(item => ({
-            day: item.day,
+          data.weekly.map(item => ({
+            day: item.label,
             sales: item.revenue,
             orders: item.orderCount,
           }))
         );
       } catch {
-        setLineChartData([]);
-      }
-    };
-    fetchWeeklyOverview();
-  }, []);
-
-  // Fetch chart data based on filter
-  useEffect(() => {
-    const fetchChartData = async () => {
-      setLoadingChart(true);
-      try {
-        let data: any[] = [];
-        if (salesFilter === "week") {
-          data = await OrderService.getWeeklyOverview();
-          setLineChartData(
-            data.map(item => ({
-              day: item.day,
-              sales: item.revenue,
-              orders: item.orderCount,
-            }))
-          );
-        } else if (salesFilter === "month") {
-          data = await OrderService.getMonthlyOverview();
-          setLineChartData(
-            data.map(item => ({
-              day: item.day,
-              sales: item.revenue,
-              orders: item.orderCount,
-            }))
-          );
-        } else if (salesFilter === "year") {
-          data = await OrderService.getYearlyOverview();
-          setLineChartData(
-            data.map(item => ({
-              day: `Th${item.month}`,
-              sales: item.revenue,
-              orders: item.orderCount,
-            }))
-          );
-        }
-      } catch (e) {
+        setOverviewData(null);
         setLineChartData([]);
       }
       setLoadingChart(false);
     };
+    fetchOverview();
+  }, []);
+
+  // Fetch chart data based on filter
+  // --- FIXED chart data effect ---
+  useEffect(() => {
+    const fetchChartData = () => {
+      if (!overviewData) return;
+
+      setLoadingChart(true);
+
+      let chartData: { day: string; sales: number; orders: number }[] = [];
+
+      if (salesFilter === "week") {
+        chartData = overviewData.weekly.map(item => ({
+          day: item.label,
+          sales: item.revenue,
+          orders: item.orderCount,
+        }));
+      } else if (salesFilter === "month") {
+        chartData = overviewData.monthly.map(item => ({
+          day: item.label,
+          sales: item.revenue,
+          orders: item.orderCount,
+        }));
+      } else {
+        chartData = overviewData.yearly.map(item => ({
+          day: item.label,
+          sales: item.revenue,
+          orders: item.orderCount,
+        }));
+      }
+
+      setLineChartData(chartData);
+      setLoadingChart(false);
+    };
+
     fetchChartData();
-  }, [salesFilter]);
+  }, [salesFilter, overviewData]);
+  // -------------------------------
+
 
   return (
     <ScrollArea className="p-6 space-y-8 min-h-screen">
