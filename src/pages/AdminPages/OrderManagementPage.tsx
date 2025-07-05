@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter, Package, Eye } from "lucide-react";
+import { Pen, Plus, Search, Filter, Package, Eye, ShoppingBag, User, CreditCard, Trash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,9 @@ import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
 import OrderService, { Order as ApiOrder } from "@/services/OrderService";
 import AccountService from "@/services/AccountService";
+import OrderDetailService, { OrderDetail } from "@/services/OrderDetailService";
+import ProductService, { Product } from "@/services/ProductService";
+
 
 const itemsPerPage = 10;
 
@@ -86,6 +89,9 @@ const OrderManagement = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<null | { type: "cancel" | "delete", order: OrderRow }>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
 
   // Fetch orders and customer names
   useEffect(() => {
@@ -261,6 +267,8 @@ const OrderManagement = () => {
     }
   };
 
+
+
   // Khi bấm nút Xóa
   const handleDeleteClick = (order: OrderRow) => {
     setPendingAction({ type: "delete", order });
@@ -314,6 +322,41 @@ const OrderManagement = () => {
     return [current, ...(statusTransitions[current] || [])];
   };
 
+  // Khi mở modal xem chi tiết đơn hàng
+  const handleViewOrder = async (order: OrderRow) => {
+    setViewOrder(order);
+    setLoadingOrderDetails(true);
+    setOrderDetails([]);
+    setProducts([]);
+    
+    try {
+      // Lấy chi tiết đơn hàng
+      const details = await OrderDetailService.getByOrderId(String(order.id));
+      const activeDetails = details.filter(d => d.status !== 0); // Chỉ lấy các item đang active
+      setOrderDetails(activeDetails);
+
+      // Lấy thông tin sản phẩm cho từng item
+      if (activeDetails.length > 0) {
+        try {
+          const productPromises = activeDetails.map(detail => 
+            ProductService.getById(detail.productId)
+          );
+          
+          const fetchedProducts = await Promise.all(productPromises);
+          setProducts(fetchedProducts.filter(p => p)); // Filter out any null results
+        } catch (productError) {
+          console.error("Error fetching products:", productError);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching order details:", e);
+    } finally {
+      setLoadingOrderDetails(false);
+    }
+  };
+
+
+
   return (
     <div className="p-6 w-full space-y-6">
       {/* Header */}
@@ -322,9 +365,10 @@ const OrderManagement = () => {
           <h2 className="text-2xl font-bold text-black">Quản lý Đơn hàng</h2>
           <p className="text-sm text-black">Danh sách đơn hàng trong hệ thống</p>
         </div>
+
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
@@ -335,15 +379,15 @@ const OrderManagement = () => {
               }}
             />
           </div>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button
+          <Button 
             className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
@@ -356,7 +400,7 @@ const OrderManagement = () => {
       {/* Filters */}
       {showFilters && (
         <div className="bg-pink-100 p-4 rounded-lg border border-pink-100 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label className="block text-sm font-medium text-black mb-1">Lọc theo trạng thái</Label>
               <select
@@ -389,90 +433,111 @@ const OrderManagement = () => {
                 <option value="over400">Trên 400.000₫</option>
               </select>
             </div>
+            <div>
+              <Label className="block text-sm font-medium text-black mb-1">Lọc theo thời gian</Label>
+              <select
+                className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
+                defaultValue="all"
+              >
+                <option value="all">Tất cả thời gian</option>
+                <option value="today">Hôm nay</option>
+                <option value="week">7 ngày qua</option>
+                <option value="month">30 ngày qua</option>
+              </select>
+            </div>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-pink-100 bg-white shadow-sm overflow-auto">
         <Table className="min-w-[700px]">
           <TableHeader className="bg-pink-100">
             <TableRow>
-              <TableHead className="text-black">STT</TableHead>
-              <TableHead className="text-black">Tên khách hàng</TableHead>
-              <TableHead className="text-black">Ngày đặt hàng</TableHead>
+              <TableHead className="text-black">Thứ tự</TableHead>
+              <TableHead className="text-black">Khách hàng</TableHead>
+              <TableHead className="text-black">Ngày đặt</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black">Tổng tiền (VND)</TableHead>
+              <TableHead className="text-black">Tổng tiền</TableHead>
               <TableHead className="text-black text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Đang tải...</TableCell>
+                <TableCell colSpan={6}>
+                  <div className="flex items-center justify-center py-8 px-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-300 mr-3"></div>
+                    <span className="text-black font-medium">Đang tải dữ liệu...</span>
+                  </div>
+                </TableCell>
               </TableRow>
-            ) : currentOrders.map((order, idx) => {
-              // const isCancelled = order.status === "Đã hủy";
+            ) : currentOrders.map((order, index) => {
               const isDisabled =
                 order.status === "Đã hủy" ||
                 order.status === "Đã hoàn thành" ||
                 order.status === "Trong giỏ hàng";
+              
               return (
                 <TableRow key={order.id} className="hover:bg-pink-100 border-pink-100">
-                  <TableCell className="font-medium">{startIndex + idx + 1}</TableCell>
-                  <TableCell className="font-medium text-black">
-                    <div className="font-semibold">{order.customerName}</div>
+                  <TableCell className="font-medium text-black whitespace-nowrap">
+                    <div className="font-semibold">{startIndex + index + 1}</div>
+                    {/* <div className="text-xs text-black mt-0.5">#{order.id}</div> */}
                   </TableCell>
-                  <TableCell className="text-black">{formatDate(order.orderDate)}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${order.status === "Đã hủy"
-                      ? "bg-red-100 text-red-800"
-                      : order.status === "Trong giỏ hàng"
-                        ? "bg-gray-200 text-gray-800"
-                        : order.status === "Đã đặt hàng"
-                          ? "bg-yellow-100 text-yellow-800"
+                    <div className="font-medium text-black">{order.customerName}</div>
+                    <div className="text-xs text-black mt-0.5 line-clamp-1">
+                      {order.orderInfor || "Không có ghi chú"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-black">{formatDate(order.orderDate)}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      order.status === "Đã hoàn thành" 
+                        ? "bg-green-100 text-green-800" 
+                        : order.status === "Đã hủy" 
+                          ? "bg-red-100 text-red-800" 
                           : order.status === "Đã thanh toán"
                             ? "bg-blue-100 text-blue-800"
-                            : order.status === "Đã hoàn thành"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                      }`}>
+                            : "bg-pink-100 text-pink-800"
+                    }`}>
                       {order.status}
                     </span>
                   </TableCell>
-                  <TableCell className="font-medium text-black">
-                    {order.totalAmount.toLocaleString()}₫
+                  <TableCell className="font-medium whitespace-nowrap text-black">
+                    <div>{order.totalAmount.toLocaleString()}₫</div>
+                    <div className="text-xs text-black mt-0.5">{order.amount} sản phẩm</div>
                   </TableCell>
                   <TableCell className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-800"
-                      onClick={() => setViewOrder(order)}
-                      title="Xem chi tiết"
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                      onClick={() => handleViewOrder(order)}
+                      title="Xem chi tiết đơn hàng"
                       disabled={order.status === "Trong giỏ hàng"}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
                       className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
                       onClick={() => handleEditClick(order)}
-                      title="Chỉnh sửa trạng thái"
+                      title="Cập nhật trạng thái"
                       disabled={isDisabled}
                     >
                       <Pen className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-500 border-pink-100 hover:bg-pink-100 hover:text-red-600"
                       onClick={() => handleDeleteClick(order)}
-                      disabled={isDisabled}
                       title="Xóa đơn hàng"
+                      disabled={order.status === "Trong giỏ hàng"}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -493,6 +558,18 @@ const OrderManagement = () => {
           <p className="text-sm text-black mt-1">
             Không có đơn hàng nào phù hợp với tiêu chí tìm kiếm
           </p>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("all");
+              setPriceFilter("all");
+              setCurrentPage(1);
+            }}
+            className="mt-4 text-black border-pink-100 hover:bg-pink-100"
+          >
+            Xóa bộ lọc
+          </Button>
         </div>
       )}
 
@@ -663,19 +740,159 @@ const OrderManagement = () => {
       </Dialog>
 
       {/* VIEW MODAL */}
-      <Dialog open={!!viewOrder} onOpenChange={() => setViewOrder(null)}>
-        <DialogContent className="sm:max-w-lg bg-white text-black rounded-2xl shadow-xl border border-pink-100">
-          <DialogHeader>
-            <DialogTitle className="text-black">Chi tiết đơn hàng</DialogTitle>
+      <Dialog open={!!viewOrder} onOpenChange={() => {
+        setViewOrder(null);
+        setOrderDetails([]);
+        setProducts([]);
+      }}>
+        <DialogContent className="sm:max-w-4xl bg-white text-black rounded-2xl shadow-xl border border-pink-100 p-0 overflow-hidden">
+          <DialogHeader className="bg-pink-100 px-6 py-4">
+            <DialogTitle className="text-black text-xl">Chi tiết đơn hàng #{viewOrder?.id}</DialogTitle>
           </DialogHeader>
+          
           {viewOrder && (
-            <div className="space-y-2">
-              <div><b>Khách hàng:</b> {viewOrder.customerName}</div>
-              <div><b>Ngày đặt:</b> {formatDate(viewOrder.orderDate)}</div>
-              <div><b>Trạng thái:</b> {viewOrder.status}</div>
-              <div><b>Tổng tiền:</b> {viewOrder.totalAmount.toLocaleString()}₫</div>
-              <div><b>Thông tin đơn:</b> {viewOrder.orderInfor}</div>
-              <div><b>Số lượng:</b> {viewOrder.amount}</div>
+            <div className="p-6">
+              {/* Thông tin đơn hàng và khách hàng trong layout ngang */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
+                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Thông tin đơn hàng
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <span className="text-black">Số đơn:</span>
+                    <span className="font-medium text-black truncate" title={`#${viewOrder.id}`}>#{String(viewOrder.id).length > 10 ? String(viewOrder.id).substring(0, 10) + '...' : viewOrder.id}</span>
+                    
+                    <span className="text-black">Ngày đặt:</span>
+                    <span className="font-medium text-black">{formatDate(viewOrder.orderDate)}</span>
+                    
+                    <span className="text-black">Trạng thái:</span>
+                    <span 
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        viewOrder.status === "Đã hủy" 
+                          ? "bg-red-100 text-red-800 border border-red-200" 
+                          : viewOrder.status === "Đã hoàn thành" 
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : viewOrder.status === "Đã thanh toán"
+                          ? "bg-blue-100 text-blue-800 border border-blue-200"
+                          : "bg-pink-100 text-pink-800 border border-pink-200"
+                      }`}
+                    >
+                      {viewOrder.status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
+                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Thông tin khách hàng
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <span className="text-black">Tên khách hàng:</span>
+                    <span className="font-medium text-black">{viewOrder.customerName}</span>
+                    
+                    <span className="text-black">Phương thức:</span>
+                    <span className="font-medium text-black">COD</span>
+                    
+                    <span className="text-black">Ghi chú:</span>
+                    <span className="font-medium text-black line-clamp-1" title={viewOrder.orderInfor || "Không có ghi chú"}>
+                      {viewOrder.orderInfor || "Không có ghi chú"}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
+                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Thông tin thanh toán
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <span className="text-black">Tổng sản phẩm:</span>
+                    <span className="font-medium text-black">{viewOrder.amount} sản phẩm</span>
+                    
+                    <span className="text-black">Phí vận chuyển:</span>
+                    <span className="font-medium text-black">30,000₫</span>
+                    
+                    <span className="text-black font-semibold">Tổng thanh toán:</span>
+                    <span className="font-bold text-black">
+                      {viewOrder.totalAmount.toLocaleString()}₫
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Sản phẩm đã mua */}
+              <div className="mb-3 pb-3 border-b border-pink-100 flex items-center justify-between">
+                <h3 className="font-semibold text-black flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4 text-black" />
+                  Sản phẩm đã mua
+                </h3>
+                <span className="text-sm text-black font-medium">{orderDetails.length} sản phẩm</span>
+              </div>
+              
+              {loadingOrderDetails ? (
+                <div className="flex justify-center items-center py-8 bg-white rounded-lg border border-pink-100 shadow-sm">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-200 mr-3"></div>
+                  <span className="text-black font-medium">Đang tải thông tin sản phẩm...</span>
+                </div>
+              ) : orderDetails.length === 0 ? (
+                <div className="bg-white rounded-lg p-8 text-center border border-pink-100 shadow-sm">
+                  <Package className="h-12 w-12 text-pink-300 mx-auto mb-3" />
+                  <p className="text-black">Không có thông tin sản phẩm</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg border border-pink-100 overflow-hidden shadow-sm">
+                  <Table className="min-w-[600px]">
+                    <TableHeader className="bg-pink-100">
+                      <TableRow className="border-b border-pink-100">
+                        <TableHead className="text-black font-medium py-3">STT</TableHead>
+                        <TableHead className="text-black font-medium">Sản phẩm</TableHead>
+                        <TableHead className="text-black font-medium">Giá</TableHead>
+                        <TableHead className="text-black font-medium">SL</TableHead>
+                        <TableHead className="text-black font-medium text-right">Thành tiền</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orderDetails.map((detail, idx) => {
+                        const product = products.find(p => p.productId === detail.productId);
+                        return (
+                          <TableRow key={detail.id} className="hover:bg-pink-100 border-b border-pink-100 transition-colors">
+                            <TableCell className="font-medium text-black">{idx + 1}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                {product && product.productImage && (
+                                  <img src={product.productImage} alt={product.productName} className="h-16 w-16 object-cover rounded-md border border-pink-100 shadow-sm" />
+                                )}
+                                <div>
+                                  <div className="font-medium text-black">
+                                    {product ? product.productName : "Sản phẩm không xác định"}
+                                  </div>
+                                  {product && (
+                                    <div className="text-xs text-black mt-1 flex gap-2">
+                                      <span className="px-2 py-0.5 bg-pink-50 rounded-full border border-pink-100">{product.type}</span>
+                                      <span className="px-2 py-0.5 bg-pink-50 rounded-full border border-pink-100">{product.productMaterial || "-"}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-black">{detail.price.toLocaleString()}₫</TableCell>
+                            <TableCell className="text-black">
+                              <span className="px-2 py-0.5 bg-pink-50 rounded border border-pink-100 inline-block min-w-[30px] text-center">
+                                {detail.quantity}
+                              </span>
+                            </TableCell>
+                            <TableCell className="font-medium text-black text-right">
+                              {(detail.price * detail.quantity).toLocaleString()}₫
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
