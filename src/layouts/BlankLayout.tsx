@@ -42,9 +42,9 @@ const BlankLayout: React.FC = () => {
         navigate("/");
     };
     return (
-        <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-100 to-pink-100 font-sans text-gray-800 antialiased">
+        <div className="flex flex-col min-h-screen bg-gray-50 font-sans text-gray-800 antialiased">
             {/* Header with Navigation */}
-            <header className="sticky top-0 z-50 backdrop-blur-md border-b border-sky-200 shadow-sm bg-sky-600/90 text-white transition-all duration-300 hover:shadow-md h-20">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md h-20">
                 <div className="container flex items-center justify-between h-full px-4 mx-auto">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
@@ -53,19 +53,19 @@ const BlankLayout: React.FC = () => {
 
                     {/* Navigation Links */}
                     <nav className="flex items-center gap-6">
-                        <Link to="/" className="hover:text-sky-100 transition-colors">
+                        <Link to="/" className="hover:text-blue-600 transition-colors font-medium">
                             Trang chủ
                         </Link>
-                        <Link to="/shop" className="hover:text-sky-100 transition-colors">
+                        <Link to="/shop" className="hover:text-blue-600 transition-colors font-medium">
                             Cửa hàng
                         </Link>
-                        <Link to="/design" className="hover:text-sky-100 transition-colors">
+                        <Link to="/design" className="hover:text-blue-600 transition-colors font-medium">
                             Thiết kế
                         </Link>
-                        <Link to="/about" className="hover:text-sky-100 transition-colors">
+                        <Link to="/about" className="hover:text-blue-600 transition-colors font-medium">
                             Về chúng tôi
                         </Link>
-                        <Link to="/contact" className="hover:text-sky-100 transition-colors">
+                        <Link to="/contact" className="hover:text-blue-600 transition-colors font-medium">
                             Liên hệ
                         </Link>
                     </nav>
@@ -78,11 +78,11 @@ const BlankLayout: React.FC = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="text-white hover:bg-sky-500 rounded-full relative transition-all hover:scale-110"
+                            className="text-gray-600 hover:bg-gray-100 rounded-full relative transition-all hover:scale-110"
                             onClick={() => navigate("/cart")}
                         >
                             <ShoppingCart className="h-5 w-5" />
-                            <span className="absolute -top-1 -right-1 bg-white text-sky-600 text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
                                 {localStorage.getItem("amount") || "0"}
                             </span>
                         </Button>
@@ -93,10 +93,10 @@ const BlankLayout: React.FC = () => {
                                 <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className="text-white hover:bg-sky-500 rounded-full transition-all hover:scale-110 gap-2"
+                                        className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110 gap-2"
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-sky-600 font-medium">
+                                            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
                                                 {account.fullName.charAt(0).toUpperCase()}
                                             </div>
                                             <span className="font-medium">{account.fullName.split(' ')[0]}</span>
@@ -134,10 +134,10 @@ const BlankLayout: React.FC = () => {
                             </DropdownMenu>
                         ) : (
                             <>
-                                <Button variant="outline" asChild className="bg-transparent text-white hover:text-sky-600">
+                                <Button variant="outline" asChild className="border-gray-200 text-gray-600 hover:bg-gray-100">
                                     <Link to="/login">Đăng nhập</Link>
                                 </Button>
-                                <Button asChild className="bg-white text-sky-600 hover:bg-sky-50">
+                                <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
                                     <Link to="/register">Đăng ký</Link>
                                 </Button>
                             </>
@@ -147,29 +147,29 @@ const BlankLayout: React.FC = () => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1">
+            <main className="flex-1 bg-white">
                 <Outlet />
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-sky-200 shadow-inner backdrop-blur-sm bg-sky-600/80 text-white py-4">
+            <footer className="border-t border-gray-200 py-2 bg-white text-gray-700">
                 <div className="container mx-auto px-4 flex items-center justify-between">
                     <div className="flex flex-col">
-                        <p className="font-medium text-white/90">
+                        <p className="font-medium text-gray-800">
                             © {new Date().getFullYear()} Pulsera. All rights reserved.
                         </p>
-                        <p className="text-sm text-white/70 mt-1">
+                        <p className="text-sm text-gray-600 mt-1">
                             Designed with ❤️ for bracelet lovers
                         </p>
                     </div>
                     <div className="flex gap-6">
-                        <Link to="/privacy" className="text-sm hover:text-sky-100 transition-colors">
+                        <Link to="/privacy" className="text-sm text-gray-600 hover:text-blue-500 transition-colors">
                             Chính sách bảo mật
                         </Link>
-                        <Link to="/terms" className="text-sm hover:text-sky-100 transition-colors">
+                        <Link to="/terms" className="text-sm text-gray-600 hover:text-blue-500 transition-colors">
                             Điều khoản sử dụng
                         </Link>
-                        <Link to="/faq" className="text-sm hover:text-sky-100 transition-colors">
+                        <Link to="/faq" className="text-sm text-gray-600 hover:text-blue-500 transition-colors">
                             FAQ
                         </Link>
                     </div>

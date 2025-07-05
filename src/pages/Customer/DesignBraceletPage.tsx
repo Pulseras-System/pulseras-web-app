@@ -325,8 +325,8 @@ const DesignBraceletPage: React.FC = () => {
                 // 5. Show success message
                 alert("Custom bracelet added to cart successfully!");
 
-                // 6. Optional: Navigate to cart page or clear design
-                // navigate("/cart");
+                // 6. Navigate to cart page
+                navigate("/cart");
 
             } catch (error) {
                 console.error("Error creating product or adding to cart:", error);
@@ -383,7 +383,13 @@ const DesignBraceletPage: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', height: 'calc(100vh - 150px)', overflow: 'hidden', background: '#1e1e1e' }}>
+        <div style={{ 
+            display: 'flex', 
+            height: 'calc(100vh - 150px)', 
+            overflow: 'hidden', 
+            background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%)',
+            position: 'relative'
+        }}>
             {/* Sidebar - Parts Selector */}
             <PartLibrary
                 availableParts={availableParts}

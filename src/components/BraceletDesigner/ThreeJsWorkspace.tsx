@@ -55,7 +55,25 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         // Initialize scene
         const scene = new THREE.Scene();
         sceneRef.current = scene;
-        scene.background = new THREE.Color(0x1e1e1e); // Dark background
+        
+        // Create gradient background with gray tones
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const context = canvas.getContext('2d');
+        if (context) {
+            // Create radial gradient from center with gray tones
+            const gradient = context.createRadialGradient(256, 256, 0, 256, 256, 256);
+            gradient.addColorStop(0, '#6b7280'); // Gray-500 at center
+            gradient.addColorStop(0.7, '#4b5563'); // Gray-600 in middle  
+            gradient.addColorStop(1, '#374151'); // Gray-700 at edges
+            
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 512, 512);
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        scene.background = texture;
         
         // Get container dimensions
         const container = mountRef.current;
@@ -86,26 +104,36 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         controls.enableDamping = true;
         controlsRef.current = controls;
         
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9); // Increased ambient light intensity
+        // Lighting setup with warmer tones to complement the gradient background
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Slightly reduced ambient
         scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); 
+        // Main directional light with slight warm tint
+        const directionalLight = new THREE.DirectionalLight(0xfff8e7, 1.3); 
         directionalLight.position.set(5, 10, 7);
         directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
         scene.add(directionalLight);
         
-        // Add more lights from different angles for better visibility
-        const frontLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        // Front fill light with cooler tone
+        const frontLight = new THREE.DirectionalLight(0xe7f3ff, 0.6);
         frontLight.position.set(0, 0, 10);
         scene.add(frontLight);
         
-        const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+        // Back rim light with purple accent matching the project theme
+        const backLight = new THREE.DirectionalLight(0x9c7cfa, 0.3); // Subtle purple tint
         backLight.position.set(0, 0, -10);
         scene.add(backLight);
-          // Grid helper for reference - with brighter colors for better visibility
-        const gridHelper = new THREE.GridHelper(10, 10, 0xaaaaaa, 0x666666);
+        
+        // Add hemisphere light for better overall illumination
+        const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x2a3447, 0.4);
+        scene.add(hemisphereLight);
+          // Grid helper with gray colors
+        const gridHelper = new THREE.GridHelper(10, 10, 0x9ca3af, 0x6b7280); // Gray-400 main lines, gray-500 sub lines
         gridHelper.position.y = -0.01; // Slightly below objects to avoid z-fighting
+        gridHelper.material.opacity = 0.3;
+        gridHelper.material.transparent = true;
         scene.add(gridHelper);
         
         // Create the bracelet string that will always be present
@@ -170,10 +198,13 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         
         // Create cylinder geometry for the bracelet string
         const geometry = new THREE.CylinderGeometry(0.1, 0.1, 6, 16); // radius top, radius bottom, height, segments
-        const material = new THREE.MeshLambertMaterial({ 
-            color: 0xCD853F, // Sandy brown color for rope/string look
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0xD4AF37, // Gold color for premium look
+            shininess: 30,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.95,
+            emissive: 0x332200, // Subtle warm glow
+            emissiveIntensity: 0.1
         });
         
         const braceletString = new THREE.Mesh(geometry, material);
@@ -296,14 +327,55 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                                 child.castShadow = true;
                                 child.receiveShadow = true;
                                 
-                                // Assign a bright yellow material to make it visible
-                                child.material = new THREE.MeshStandardMaterial({ 
-                                    color: 0xffff00, // Bright yellow color
-                                    metalness: 0.5,
-                                    roughness: 0.3,
-                                    emissive: 0x333300,
-                                    emissiveIntensity: 0.2
-                                });
+                                // Keep the original material from .glb file but enhance it for better visibility
+                                if (child.material) {
+                                    // If it's an array of materials, enhance each one
+                                    if (Array.isArray(child.material)) {
+                                        child.material.forEach((mat) => {
+                                            if (mat instanceof THREE.MeshStandardMaterial) {
+                                                // Enhance the existing material properties for better lighting
+                                                mat.metalness = mat.metalness || 0.3;
+                                                mat.roughness = mat.roughness || 0.4;
+                                                // Add slight emissive for visibility without changing base color
+                                                if (!mat.emissive || mat.emissive.getHex() === 0) {
+                                                    mat.emissive = new THREE.Color(mat.color).multiplyScalar(0.05);
+                                                }
+                                            } else if (mat instanceof THREE.MeshPhongMaterial) {
+                                                // For Phong materials, enhance shininess
+                                                mat.shininess = mat.shininess || 30;
+                                                // Add slight emissive for visibility without changing base color
+                                                if (!mat.emissive || mat.emissive.getHex() === 0) {
+                                                    mat.emissive = new THREE.Color(mat.color).multiplyScalar(0.05);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        // Single material enhancement
+                                        if (child.material instanceof THREE.MeshStandardMaterial) {
+                                            // Enhance the existing material properties for better lighting
+                                            child.material.metalness = child.material.metalness || 0.3;
+                                            child.material.roughness = child.material.roughness || 0.4;
+                                            // Add slight emissive for visibility without changing base color
+                                            if (!child.material.emissive || child.material.emissive.getHex() === 0) {
+                                                child.material.emissive = new THREE.Color(child.material.color).multiplyScalar(0.05);
+                                            }
+                                        } else if (child.material instanceof THREE.MeshPhongMaterial) {
+                                            // For Phong materials, enhance shininess
+                                            child.material.shininess = child.material.shininess || 30;
+                                            // Add slight emissive for visibility without changing base color
+                                            if (!child.material.emissive || child.material.emissive.getHex() === 0) {
+                                                child.material.emissive = new THREE.Color(child.material.color).multiplyScalar(0.05);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Fallback: if no material exists, create a basic one
+                                    child.material = new THREE.MeshStandardMaterial({ 
+                                        color: 0xcccccc, // Light gray fallback
+                                        metalness: 0.3,
+                                        roughness: 0.4
+                                    });
+                                }
                             }
                         });
                         
@@ -716,9 +788,10 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
             style={{ 
                 flex: 1, 
                 position: 'relative',
-                backgroundColor: '#1e1e1e',
-                borderLeft: '1px solid #333',
-                borderRight: '1px solid #333',
+                background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%)', // Gray gradient background
+                borderLeft: '1px solid #6b7280', 
+                borderRight: '1px solid #6b7280',
+                overflow: 'hidden'
             }}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -777,21 +850,22 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    background: 'rgba(0, 0, 0, 0.8)',
+                    background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.9))',
                     color: 'white',
-                    padding: '20px 25px',
-                    borderRadius: '10px',
+                    padding: '25px 30px',
+                    borderRadius: '15px',
                     zIndex: 10,
                     textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    backdropFilter: 'blur(5px)'
+                    border: '1px solid rgba(156, 163, 175, 0.3)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 8px 32px rgba(107, 114, 128, 0.2)'
                 }}>
-                    <div style={{ fontSize: '18px', marginBottom: '10px', color: '#CD853F' }}>
-                        🔗 Bracelet Base Ready
+                    <div style={{ fontSize: '20px', marginBottom: '12px', color: '#D4AF37' }}>
+                        ✨ Golden Bracelet Base Ready
                     </div>
-                    <div style={{ fontSize: '14px', lineHeight: '1.5', color: '#ccc' }}>
+                    <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#ddd' }}>
                         Drag and drop charms from the library to create your bracelet!<br/>
-                        The brown string is your bracelet base.
+                        <span style={{ color: '#D4AF37' }}>The golden string</span> is your premium bracelet base.
                     </div>
                 </div>
             )}
@@ -809,27 +883,35 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 <button 
                     onClick={toggleDragMode}
                     style={{
-                        background: dragMode ? '#4CAF50' : 'rgba(85, 85, 85, 0.7)',
+                        background: dragMode ? 
+                            'linear-gradient(135deg, #9ca3af, #6b7280)' : 
+                            'linear-gradient(135deg, rgba(85, 85, 85, 0.8), rgba(55, 55, 55, 0.8))',
                         color: 'white',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: '6px',
+                        border: dragMode ? '1px solid rgba(156, 163, 175, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                        padding: '12px 18px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         fontWeight: '500',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
-                        backdropFilter: 'blur(5px)',
-                        transition: 'all 0.2s ease'
+                        boxShadow: dragMode ? 
+                            '0 4px 15px rgba(156, 163, 175, 0.3)' : 
+                            '0 4px 6px rgba(0,0,0,0.2)',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'all 0.3s ease'
                     }}
                     onMouseOver={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = dragMode ? 
+                            '0 6px 20px rgba(156, 163, 175, 0.4)' : 
+                            '0 6px 12px rgba(0,0,0,0.3)';
                     }}
                     onMouseOut={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 6px rgba(0,0,0,0.2)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = dragMode ? 
+                            '0 4px 15px rgba(156, 163, 175, 0.3)' : 
+                            '0 4px 6px rgba(0,0,0,0.2)';
                     }}
                 >
                     <span style={{ fontSize: '16px' }}>
@@ -842,27 +924,35 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 <button 
                     onClick={toggleRotationMode}
                     style={{
-                        background: rotationMode ? '#FF9800' : 'rgba(85, 85, 85, 0.7)',
+                        background: rotationMode ? 
+                            'linear-gradient(135deg, #FF9800, #FFB74D)' : 
+                            'linear-gradient(135deg, rgba(85, 85, 85, 0.8), rgba(55, 55, 55, 0.8))',
                         color: 'white',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: '6px',
+                        border: rotationMode ? '1px solid rgba(255, 152, 0, 0.5)' : '1px solid rgba(255,255,255,0.1)',
+                        padding: '12px 18px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         fontWeight: '500',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
-                        backdropFilter: 'blur(5px)',
-                        transition: 'all 0.2s ease'
+                        boxShadow: rotationMode ? 
+                            '0 4px 15px rgba(255, 152, 0, 0.3)' : 
+                            '0 4px 6px rgba(0,0,0,0.2)',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'all 0.3s ease'
                     }}
                     onMouseOver={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = rotationMode ? 
+                            '0 6px 20px rgba(255, 152, 0, 0.4)' : 
+                            '0 6px 12px rgba(0,0,0,0.3)';
                     }}
                     onMouseOut={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 6px rgba(0,0,0,0.2)';
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = rotationMode ? 
+                            '0 4px 15px rgba(255, 152, 0, 0.3)' : 
+                            '0 4px 6px rgba(0,0,0,0.2)';
                     }}
                 >
                     <span style={{ fontSize: '16px' }}>
@@ -878,33 +968,38 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     position: 'absolute',
                     top: '15px',
                     right: '15px',
-                    background: 'rgba(0, 0, 0, 0.75)',
+                    background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(0, 0, 0, 0.8))',
                     color: 'white',
-                    padding: '10px 15px',
-                    borderRadius: '6px',
+                    padding: '12px 18px',
+                    borderRadius: '10px',
                     zIndex: 10,
-                    backdropFilter: 'blur(5px)',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
+                    backdropFilter: 'blur(15px)',
+                    boxShadow: '0 4px 20px rgba(107, 114, 128, 0.15)',
+                    border: '1px solid rgba(156, 163, 175, 0.2)',
+                    maxWidth: '280px'
                 }}>
                     <div style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: '8px',
-                        marginBottom: dragMode ? '5px' : '0' 
+                        gap: '10px',
+                        marginBottom: dragMode ? '8px' : '0' 
                     }}>
                         <span style={{ 
                             fontSize: '14px',
-                            width: '20px',
-                            height: '20px',
+                            width: '22px',
+                            height: '22px',
                             borderRadius: '50%',
-                            background: dragMode ? '#4CAF50' : '#555',
+                            background: dragMode ? 
+                                'linear-gradient(135deg, #9ca3af, #6b7280)' : 
+                                'linear-gradient(135deg, #555, #777)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            boxShadow: dragMode ? '0 0 10px rgba(156, 163, 175, 0.5)' : 'none'
                         }}>
                             {dragMode ? '✓' : '✗'}
                         </span>
-                        <span style={{ fontWeight: '500' }}>
+                        <span style={{ fontWeight: '600', fontSize: '15px' }}>
                             {dragMode ? 'Drag Mode Active' : 'Drag Mode Inactive'}
                         </span>
                     </div>
@@ -913,9 +1008,10 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                         <p style={{ 
                             margin: '0', 
                             fontSize: '13px',
-                            color: '#aaa'
+                            color: '#ddd',
+                            lineHeight: '1.4'
                         }}>
-                            Click and drag objects to reposition
+                            Click and drag objects to reposition them
                         </p>
                     )}
                 </div>
@@ -928,34 +1024,38 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    background: 'rgba(0, 0, 0, 0.75)',
+                    background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(0, 0, 0, 0.8))',
                     color: 'white',
-                    padding: '20px 30px',
-                    borderRadius: '8px',
+                    padding: '25px 35px',
+                    borderRadius: '15px',
                     zIndex: 10,
                     textAlign: 'center',
-                    backdropFilter: 'blur(5px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                    maxWidth: '400px'
+                    backdropFilter: 'blur(15px)',
+                    boxShadow: '0 8px 32px rgba(107, 114, 128, 0.15)',
+                    maxWidth: '450px',
+                    border: '1px solid rgba(156, 163, 175, 0.2)'
                 }}>
                     <div style={{ 
-                        fontSize: '32px', 
-                        marginBottom: '15px',
-                        color: '#4CAF50'
+                        fontSize: '36px', 
+                        marginBottom: '18px',
+                        color: '#9ca3af',
+                        textShadow: '0 0 20px rgba(156, 163, 175, 0.5)'
                     }}>
                         ↓
                     </div>
                     <h3 style={{
-                        margin: '0 0 10px 0',
+                        margin: '0 0 12px 0',
                         color: '#ffffff',
                         fontWeight: '600',
-                        fontSize: '18px'
+                        fontSize: '20px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                     }}>
                         Drag Parts Here
                     </h3>
                     <p style={{ 
-                        color: '#aaa',
-                        margin: '0'
+                        color: '#ddd',
+                        margin: '0',
+                        lineHeight: '1.5'
                     }}>
                         Drag items from the left panel and drop them in this workspace to build your custom bracelet
                     </p>
