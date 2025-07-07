@@ -1,107 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronRight, Search, ChevronLeft, ChevronFirst, ChevronLast } from "lucide-react";
-import { motion } from 'framer-motion';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { motion } from "framer-motion";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import ProductService, { Product } from "@/services/ProductService";
+import { AddToCartButton } from "@/components/AddToCartButton";
+import { Category } from "@/services/CategoryService";
 
-interface Bracelet {
-  name: string;
-  description: string;
-  price: string;
-  imageSrc: string;
-  category: string;
-}
-
-const mockBracelets: Bracelet[] = Array.from({ length: 20 }, (_, i) => ({
-  name: `Vòng tay ${i + 1}`,
-  description: ["Đá tự nhiên", "Mạ vàng", "Tinh thể", "Bohemian"][i % 4],
-  price: `${(700 + i * 50).toLocaleString("vi-VN")}₫`,
-  imageSrc: `https://placehold.co/600x600/cccccc/000000?text=Vong+${i + 1}`,
-  category: ["Tất cả", "Bohemian", "Tinh Thể", "Vàng"][i % 4],
-}));
-
-const categories = [
-  { name: "Tất cả vòng tay", value: "Tất cả", bg: "bg-gradient-to-br from-blue-300 to-blue-400", icon: "✨" },
-  { name: "Bohemian", value: "Bohemian", bg: "bg-gradient-to-br from-green-200 to-green-300", icon: "🌿" },
-  { name: "Tinh Thể", value: "Tinh Thể", bg: "bg-gradient-to-br from-pink-200 to-pink-300", icon: "🔮" },
-  { name: "Vàng", value: "Vàng", bg: "bg-gradient-to-br from-yellow-200 to-yellow-300", icon: "🌟" },
-];
 
 const BraceletsPerPage = 12;
 
-const BraceletCard = ({
-  name,
-  description,
-  price,
-  imageSrc,
-  id,
-}: Bracelet & { id: number }) => (
-  <Link
-    to={`/shop/${id}`}
-    className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg"
-  >
-    {/* Nội dung sản phẩm mặc định */}
-    <div className="flex flex-col">
-      {/* Hình ảnh */}
+const BraceletCard = ({ product }: { product: Product }) => (
+  <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
+    <div className="flex flex-col h-full">
       <div className="relative overflow-hidden aspect-square">
         <img
           loading="lazy"
-          src={imageSrc}
-          alt={`Vòng tay ${name}`}
+          src={product.productImage}
+          alt={`Vòng tay ${product.productName}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
-
-      </div>
-      {/* Phần thông tin và nút mua hàng */}
-      <div className="p-4">
-        {/* Hàng trên: tên, mô tả và giá */}
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
-          </div>
-          <div className="ml-4 flex-shrink-0">
-            <span className="text-md font-bold text-blue-600">{price}</span>
-          </div>
-        </div>
-        {/* Hàng dưới: 2 nút */}
-        <div className="flex justify-between gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
-          >
-            Thêm vào giỏ
-          </Button>
+        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 p-4">
           <Button
             variant="default"
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            size="lg"
+            className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all w-full"
+            onClick={() => window.location.href = `/shop/${product.productId}`}
           >
-            Mua ngay
+            Xem chi tiết
           </Button>
+          <div className="flex gap-2 w-full">
+            <AddToCartButton
+              product={{
+                id: product.productId,
+                name: product.productName,
+                image: product.productImage,
+                price: product.price,
+                type: product.type,
+                material: product.productMaterial
+              }}
+              variant="outline"
+              className="text-sm border-white bg-white/80 text-pink-500 hover:bg-white hover:text-pink-600 flex-1 shadow-md"
+            />
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-blue-600/90 hover:bg-blue-700 text-white flex-1 shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = `/shop/${product.productId}`;
+              }}
+            >
+              Mua ngay
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="p-4 flex flex-col justify-between flex-grow">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">{product.productName}</h3>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.productMaterial}</p>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.type}</p>
+          </div>
+          <div className="ml-4 flex-shrink-0">
+            <span className="text-md font-bold text-blue-600">
+              {product.price.toLocaleString("vi-VN")}₫
+            </span>
+          </div>
         </div>
       </div>
     </div>
-
-    {/* Overlay hover bao toàn bộ thẻ sản phẩm */}
-    <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex items-center justify-center">
-      <Button
-        variant="default"
-        size="lg"
-        className="bg-white/95 hover:bg-white text-pink-600 hover:text-pink-700 shadow-md hover:shadow-lg transition-all"
-      >
-        Xem chi tiết
-      </Button>
-    </div>
-  </Link>
+  </div>
 );
 
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   const { ref, isInView } = useScrollAnimation();
-  
+
   return (
     <motion.div
       ref={ref}
@@ -116,25 +92,33 @@ const AnimatedSection = ({ children, className }: { children: React.ReactNode; c
 };
 
 const ProductPage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
-  const filteredBracelets = mockBracelets.filter((b) => {
-    const matchesCategory =
-      selectedCategory === "Tất cả" || b.category === selectedCategory;
-    const matchesSearch =
-      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Lấy dữ liệu sản phẩm từ API khi trang load hoặc filter/pagination thay đổi
+  useEffect(() => {
+    ProductService.get({
+      keyword: searchTerm,
+      categoryId: selectedCategoryId || undefined,
+      page: currentPage - 1,
+      size: BraceletsPerPage,
+    })
+      .then(data => {
+        setProducts(data.items);
+        setTotalPages(data.totalPages);
+        setTotalItems(data.totalItems);
+      })
+      .catch(err => console.error("Error fetching products:", err));
+  }, [searchTerm, currentPage, selectedCategoryId]);
 
-  const totalPages = Math.ceil(filteredBracelets.length / BraceletsPerPage);
-  const paginated = filteredBracelets.slice(
-    (currentPage - 1) * BraceletsPerPage,
-    currentPage * BraceletsPerPage
-  );
 
   const changePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -194,7 +178,6 @@ const ProductPage = () => {
         {/* Search and Filter */}
         <AnimatedSection className="mb-12">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100">
-            {/* Search input */}
             <AnimatedSection className="max-w-md mx-auto mb-6 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-blue-400" />
@@ -211,42 +194,41 @@ const ProductPage = () => {
               />
             </AnimatedSection>
 
-            {/* Categories */}
             <AnimatedSection>
-              <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6 relative inline-block">
-                <span className="relative z-10 px-4 bg-white">Danh mục vòng tay</span>
-                <span className="absolute bottom-3 left-0 right-0 h-1 bg-blue-100 z-0"></span>
+              <h2 className="text-lg sm:text-xl font-bold text-center text-blue-900 mb-6">
+                Danh mục vòng tay
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                {categories.map((cat, index) => (
-                  <motion.button
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    onClick={() => {
-                      setSelectedCategory(cat.value);
-                      setCurrentPage(1);
-                    }}
-                    className={`${cat.bg} rounded-xl p-4 text-center text-white font-medium hover:shadow-lg transition-all hover:scale-[1.03] relative overflow-hidden group ${
-                      selectedCategory === cat.value ? "ring-2 ring-white ring-opacity-70" : ""
-                    }`}
+
+              {/* Nút “Tất cả” */}
+              <div className="flex flex-wrap gap-3 justify-center mb-4">
+                <button
+                  onClick={() => { setSelectedCategoryId(null); setCurrentPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium
+                 ${selectedCategoryId === null ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-700"}
+                 hover:shadow`}
+                >
+                  Tất cả
+                </button>
+
+                {categories.map(cat => (
+                  <button
+                    key={cat.categoryId}
+                    onClick={() => { setSelectedCategoryId(cat.categoryId); setCurrentPage(1); }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium
+                   ${selectedCategoryId === cat.categoryId ? "bg-blue-500 text-white" : "bg-blue-100 text-blue-700"}
+                   hover:shadow`}
                   >
-                    <span className="absolute opacity-20 group-hover:opacity-30 transition-opacity text-5xl right-2 top-2">
-                      {cat.icon}
-                    </span>
-                    <span className="relative z-10 drop-shadow-md">{cat.name}</span>
-                  </motion.button>
+                    {cat.categoryName}
+                  </button>
                 ))}
               </div>
             </AnimatedSection>
+
           </div>
         </AnimatedSection>
 
         {/* Products */}
-              <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
-
-          
+        <section className="px-6 py-16 max-w-7xl mx-auto w-full ">
           <AnimatedSection className="text-center mb-12">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900 relative inline-block">
               <span className="relative z-10 px-4">
@@ -256,16 +238,16 @@ const ProductPage = () => {
             </h2>
           </AnimatedSection>
 
-          {paginated.length > 0 ? (
+          {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {paginated.map((bracelet, index) => (
+              {products.map((bracelet) => (
                 <motion.div
-                  key={index}
+                  key={bracelet.productId}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <BraceletCard id={mockBracelets.indexOf(bracelet) + 1} {...bracelet} />
+                  <BraceletCard product={bracelet} />
                 </motion.div>
               ))}
             </div>
@@ -331,11 +313,10 @@ const ProductPage = () => {
                       key={pageNum}
                       variant={pageNum === currentPage ? "default" : "outline"}
                       onClick={() => changePage(pageNum)}
-                      className={`min-w-[40px] ${
-                        pageNum === currentPage
+                      className={`min-w-[40px] ${pageNum === currentPage
                           ? "bg-blue-500 hover:bg-blue-600"
                           : "border-blue-300 hover:bg-blue-50 text-blue-600"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </Button>
@@ -363,8 +344,8 @@ const ProductPage = () => {
               </div>
               <p className="text-sm text-blue-600">
                 Hiển thị {(currentPage - 1) * BraceletsPerPage + 1} -{" "}
-                {Math.min(currentPage * BraceletsPerPage, filteredBracelets.length)} trong số{" "}
-                {filteredBracelets.length} sản phẩm
+                {Math.min(currentPage * BraceletsPerPage, totalItems)} trong số{" "}
+                {totalItems} sản phẩm
               </p>
             </AnimatedSection>
           )}

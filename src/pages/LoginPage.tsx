@@ -2,14 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
+import AuthService from "@/services/AuthService";
+import OrderService from "@/services/OrderService";
+import OrderDetailService from "@/services/OrderDetailService";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Đăng nhập với Google
   const handleGoogleLogin = async () => {
@@ -18,8 +26,19 @@ const LoginPage = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-      console.log("Google Login Success:", user);
-      console.log("JWT Token:", token); // Log JWT token
+      await AuthService.googleLogin(token); // Gọi service để lưu token và account
+
+      const accountStr = localStorage.getItem('account');
+      if (accountStr) {
+        const account = JSON.parse(accountStr);
+        const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
+        if (orderId){
+          const amount = await OrderDetailService.countAmount(orderId.id);
+          localStorage.setItem('amount', amount.toString());
+        }
+      }
+      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
+      window.location.reload();
     } catch (error) {
       console.error("Google Login Error:", error);
     }
@@ -36,6 +55,38 @@ const LoginPage = () => {
       console.log("JWT Token:", token); // Log JWT token
     } catch (error) {
       console.error("Facebook Login Error:", error);
+    }
+  };
+
+  // Đăng nhập với tài khoản hệ thống
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      await AuthService.login({ username, password });
+
+      const accountStr = localStorage.getItem('account');
+      if (accountStr) {
+        const account = JSON.parse(accountStr);
+        const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
+        if (orderId){
+          const amount = await OrderDetailService.countAmount(orderId.id);
+          localStorage.setItem('amount', amount.toString());
+        }
+      }
+
+      
+      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
+      window.location.reload();
+
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản/mật khẩu."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,13 +108,15 @@ const LoginPage = () => {
         <h1 className="text-3xl font-bold text-center mt-6 mb-2 text-violet-900">Đăng nhập</h1>
         <p className="text-center text-violet-600 mb-6">Hãy nhập thông tin của bạn để đăng nhập</p>
 
-        <div className="space-y-5">
+        <form className="space-y-5" onSubmit={handleLogin}>
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium text-violet-700">Email</Label>
+            <Label htmlFor="username" className="text-sm font-medium text-violet-700">Tên đăng nhập</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="Nhập email của bạn"
+              id="username"
+              type="text"
+              placeholder="Tên đăng nhập"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
               className="focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
             />
           </div>
@@ -75,6 +128,8 @@ const LoginPage = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Nhập mật khẩu của bạn"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 className="pr-10 focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
               />
               <button
@@ -93,10 +148,14 @@ const LoginPage = () => {
             </Link>
           </div>
 
-          <Button className="w-full bg-violet-500 hover:bg-violet-600 text-white transition duration-200 shadow-md hover:shadow-lg">
-            Đăng nhập
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
+
+          <Button className="w-full bg-violet-500 hover:bg-violet-600 text-white transition duration-200 shadow-md hover:shadow-lg" type="submit" disabled={loading}>
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
-        </div>
+        </form>
 
         <div className="flex items-center my-6">
           <div className="flex-grow h-px bg-violet-200"></div>

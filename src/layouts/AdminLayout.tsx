@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu, ChartArea} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, ChartArea, Layers} from "lucide-react";
 import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: ChartArea },
+  { label: "Bảng điều khiển", path: "/admin/dashboard", icon: ChartArea },
   { label: "Vòng tay", path: "/admin/bracelets", icon: Gem },
+  { label: "Danh mục", path: "/admin/categories", icon: Layers },
+
   { label: "Nguyên liệu", path: "/admin/materials", icon: Package },
   { label: "Đơn hàng", path: "/admin/orders", icon: Box },
   { label: "Người dùng", path: "/admin/users", icon: Users },
@@ -160,7 +162,7 @@ const AdminLayout = () => {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="w-64 p-2 rounded-xl shadow-lg border-0 bg-white/95" align="end" >
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
@@ -176,7 +178,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col lg:ml-64 mt-16 lg:mt-0">
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-sm z-10">
-          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-xl font-bold text-blue-900 tracking-tight">Bảng quản lý</h1>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -197,7 +199,7 @@ const AdminLayout = () => {
                   </svg>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent className="bg-white/95" align="end">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Hồ sơ</DropdownMenuItem>

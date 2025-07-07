@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -19,200 +19,82 @@ import {
   Mail,
   Phone,
   Calendar,
-  ShoppingBag,
-  CreditCard
+  ShieldCheck,
+  UserCheck
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Pagination from "@/components/pagination";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import AccountService, { Account } from "@/services/AccountService";
 
-interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  totalOrders: number;
-  totalSpent: number;
-  joinDate: string;
-  status: "active" | "inactive";
-  avatar: string;
-}
-
-const emptyCustomer: Customer = {
-  id: -1,
-  name: "",
+// Define empty account template
+const emptyAccount: Account = {
+  id: "",
+  fullName: "",
+  username: "",
   email: "",
   phone: "",
-  address: "",
-  totalOrders: 0,
-  totalSpent: 0,
-  joinDate: new Date().toISOString().split("T")[0],
-  status: "active",
-  avatar: "/api/placeholder/100/100?text=?"
+  roleId: 2, // Default to regular user role
+  createDate: new Date().toISOString(),
+  lastEdited: new Date().toISOString(),
+  status: 1 // Active by default
 };
-
-const mockCustomers: Customer[] = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@example.com",
-    phone: "0901234567",
-    address: "123 Lê Lợi, Quận 1, TP.HCM",
-    totalOrders: 12,
-    totalSpent: 5600000,
-    joinDate: "2023-05-15",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=NVA"
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    email: "tranthib@example.com",
-    phone: "0912345678",
-    address: "456 Nguyễn Huệ, Quận 1, TP.HCM",
-    totalOrders: 8,
-    totalSpent: 3200000,
-    joinDate: "2023-06-20",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=TTB"
-  },
-  {
-    id: 3,
-    name: "Lê Văn C",
-    email: "levanc@example.com",
-    phone: "0923456789",
-    address: "789 Điện Biên Phủ, Quận 3, TP.HCM",
-    totalOrders: 5,
-    totalSpent: 1800000,
-    joinDate: "2023-07-10",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=LVC"
-  },
-  {
-    id: 4,
-    name: "Phạm Thị D",
-    email: "phamthid@example.com",
-    phone: "0934567890",
-    address: "101 Cách Mạng Tháng 8, Quận 3, TP.HCM",
-    totalOrders: 15,
-    totalSpent: 7500000,
-    joinDate: "2023-04-05",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=PTD"
-  },
-  {
-    id: 5,
-    name: "Võ Thị E",
-    email: "vothie@example.com",
-    phone: "0945678901",
-    address: "202 Trần Hưng Đạo, Quận 5, TP.HCM",
-    totalOrders: 3,
-    totalSpent: 1200000,
-    joinDate: "2023-08-12",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=VTE"
-  },
-  {
-    id: 6,
-    name: "Đặng Văn F",
-    email: "dangvanf@example.com",
-    phone: "0956789012",
-    address: "303 Nguyễn Đình Chiểu, Quận 3, TP.HCM",
-    totalOrders: 9,
-    totalSpent: 4200000,
-    joinDate: "2023-03-25",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=DVF"
-  },
-  {
-    id: 7,
-    name: "Hoàng Thị G",
-    email: "hoangthig@example.com",
-    phone: "0967890123",
-    address: "404 Lý Tự Trọng, Quận 1, TP.HCM",
-    totalOrders: 7,
-    totalSpent: 2800000,
-    joinDate: "2023-09-08",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=HTG"
-  },
-  {
-    id: 8,
-    name: "Ngô Văn H",
-    email: "ngovanh@example.com",
-    phone: "0978901234",
-    address: "505 Nam Kỳ Khởi Nghĩa, Quận 3, TP.HCM",
-    totalOrders: 11,
-    totalSpent: 5100000,
-    joinDate: "2023-02-18",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=NVH"
-  },
-  {
-    id: 9,
-    name: "Trương Văn I",
-    email: "truongvani@example.com",
-    phone: "0989012345",
-    address: "606 Hai Bà Trưng, Quận 1, TP.HCM",
-    totalOrders: 6,
-    totalSpent: 2400000,
-    joinDate: "2023-10-05",
-    status: "active",
-    avatar: "/api/placeholder/100/100?text=TVI"
-  },
-  {
-    id: 10,
-    name: "Lý Thị K",
-    email: "lythik@example.com",
-    phone: "0990123456",
-    address: "707 Phan Xích Long, Phú Nhuận, TP.HCM",
-    totalOrders: 4,
-    totalSpent: 1600000,
-    joinDate: "2023-11-15",
-    status: "inactive",
-    avatar: "/api/placeholder/100/100?text=LTK"
-  }
-];
 
 const itemsPerPage = 5;
 
-const CustomerManagementPage = () => {
-  const [customers, setCustomers] = useState(mockCustomers);
+const UserManagementPage = () => {
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [spendingFilter, setSpendingFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredCustomers = customers.filter(customer => {
+  // Fetch accounts on component mount
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await AccountService.get();
+        setAccounts(data);
+      } catch (error) {
+        console.error("Failed to fetch accounts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, []);
+
+  const filteredAccounts = accounts.filter(account => {
     const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+      account.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.phone.includes(searchTerm);
     
     const matchesStatus = 
       statusFilter === "all" || 
-      customer.status === statusFilter;
+      (statusFilter === "active" && account.status === 1) ||
+      (statusFilter === "inactive" && account.status === 0);
     
-    const matchesSpending =
-      spendingFilter === "all" ||
-      (spendingFilter === "under1m" && customer.totalSpent < 1000000) ||
-      (spendingFilter === "1mto5m" && customer.totalSpent >= 1000000 && customer.totalSpent <= 5000000) ||
-      (spendingFilter === "over5m" && customer.totalSpent > 5000000);
+    const matchesRole =
+      roleFilter === "all" ||
+      (roleFilter === "admin" && account.roleId === 1) ||
+      (roleFilter === "user" && account.roleId === 2);
     
-    return matchesSearch && matchesStatus && matchesSpending;
+    return matchesSearch && matchesStatus && matchesRole;
   });
 
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
+  const currentAccounts = filteredAccounts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -220,52 +102,83 @@ const CustomerManagementPage = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
-  const handleAddCustomer = () => {
-    setSelectedCustomer(emptyCustomer);
+  const handleAddAccount = () => {
+    setSelectedAccount(emptyAccount);
     setModalOpen(true);
   };
 
-  const handleEditCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
+  const handleEditAccount = (account: Account) => {
+    setSelectedAccount(account);
     setModalOpen(true);
   };
 
-  const handleSaveCustomer = (customer: Customer) => {
-    if (customer.id === -1) {
-      const newCustomer = {
-        ...customer,
-        id: Math.max(...customers.map(c => c.id)) + 1,
-        avatar: `/api/placeholder/100/100?text=${customer.name.split(" ").map(s => s[0]).join("")}`
-      };
-      setCustomers([...customers, newCustomer]);
-    } else {
-      setCustomers(customers.map(c => (c.id === customer.id ? customer : c)));
+  const handleSaveAccount = async (account: Account) => {
+    try {
+      if (!account.id) {
+        // New account - create
+        const newAccount = await AccountService.create({
+          fullName: account.fullName,
+          username: account.username,
+          email: account.email,
+          phone: account.phone,
+          // password: "defaultPassword123", // A default password, in real app should prompt for this
+          roleId: account.roleId,
+          status: account.status
+        });
+        setAccounts([...accounts, newAccount]);
+        console.log("Tạo người dùng mới thành công");
+      } else {
+        // Update existing account
+        const updatedAccount = await AccountService.update(account.id, {
+          fullName: account.fullName,
+          username: account.username,
+          email: account.email,
+          phone: account.phone,
+          roleId: account.roleId,
+          status: account.status
+        });
+        setAccounts(accounts.map(a => (a.id === account.id ? updatedAccount : a)));
+        console.log("Cập nhật người dùng thành công");
+      }
+      setModalOpen(false);
+      setSelectedAccount(null);
+    } catch (error) {
+      console.error("Failed to save account:", error);
     }
-    setModalOpen(false);
-    setSelectedCustomer(null);
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  };
+
+  const getRoleName = (roleId: number) => {
+    switch (roleId) {
+      case 1:
+        return "Admin";
+      case 2:
+        return "Người dùng";
+      default:
+        return "Không xác định";
+    }
   };
 
   return (
     <div className="p-6 w-full space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-black">Quản lý Khách hàng</h2>
-          <p className="text-sm text-black">Danh sách khách hàng của cửa hàng</p>
+          <h2 className="text-2xl font-bold text-black">Quản lý Người dùng</h2>
+          <p className="text-sm text-black">Danh sách người dùng của hệ thống</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
             <Input
-              placeholder="Tìm kiếm khách hàng..."
+              placeholder="Tìm kiếm người dùng..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
               onChange={(e) => {
@@ -284,10 +197,10 @@ const CustomerManagementPage = () => {
           </Button>
           <Button 
             className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
-            onClick={handleAddCustomer}
+            onClick={handleAddAccount}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Thêm khách hàng
+            Thêm người dùng
           </Button>
         </div>
       </div>
@@ -311,19 +224,18 @@ const CustomerManagementPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">Lọc theo chi tiêu</label>
+              <label className="block text-sm font-medium text-black mb-1">Lọc theo vai trò</label>
               <select
                 className="w-full p-2 border border-pink-100 rounded-md bg-white text-black focus:ring-pink-100 focus:border-pink-100"
-                value={spendingFilter}
+                value={roleFilter}
                 onChange={(e) => {
-                  setSpendingFilter(e.target.value);
+                  setRoleFilter(e.target.value);
                   setCurrentPage(1);
                 }}
               >
-                <option value="all">Tất cả mức chi tiêu</option>
-                <option value="under1m">Dưới 1 triệu</option>
-                <option value="1mto5m">1 - 5 triệu</option>
-                <option value="over5m">Trên 5 triệu</option>
+                <option value="all">Tất cả vai trò</option>
+                <option value="admin">Admin</option>
+                <option value="user">Người dùng</option>
               </select>
             </div>
           </div>
@@ -335,66 +247,69 @@ const CustomerManagementPage = () => {
           <TableHeader className="bg-pink-100">
             <TableRow>
               <TableHead className="text-black w-16">Avatar</TableHead>
-              <TableHead className="text-black">Thông tin khách hàng</TableHead>
+              <TableHead className="text-black">Thông tin người dùng</TableHead>
               <TableHead className="text-black">Liên hệ</TableHead>
-              <TableHead className="text-black">Tổng đơn hàng</TableHead>
-              <TableHead className="text-black">Tổng chi tiêu</TableHead>
+              <TableHead className="text-black">Vai trò</TableHead>
               <TableHead className="text-black">Ngày tham gia</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
               <TableHead className="text-black text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentCustomers.map((customer) => (
-              <TableRow key={customer.id} className="hover:bg-pink-100 border-pink-100">
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-10">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-100 mb-2"></div>
+                    <p className="text-black">Đang tải dữ liệu...</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : currentAccounts.map((account) => (
+              <TableRow key={account.id} className="hover:bg-pink-100 border-pink-100">
                 <TableCell>
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-pink-100 bg-pink-100">
-                    <img 
-                      src={customer.avatar}
-                      alt={customer.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-pink-100 bg-blue-100 flex items-center justify-center text-white font-semibold">
+                    {getInitials(account.fullName)}
                   </div>
                 </TableCell>
                 <TableCell className="font-medium text-black whitespace-nowrap">
-                  <div className="font-semibold">{customer.name}</div>
-                  <div className="text-xs text-black">ID: {customer.id}</div>
+                  <div className="font-semibold">{account.fullName}</div>
+                  <div className="text-xs text-black">@{account.username}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center text-sm mb-1">
                     <Mail className="h-3 w-3 mr-1 text-blue-100" />
-                    {customer.email}
+                    {account.email}
                   </div>
                   <div className="flex items-center text-sm">
                     <Phone className="h-3 w-3 mr-1 text-blue-100" />
-                    {customer.phone}
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex items-center">
-                    <ShoppingBag className="h-4 w-4 mr-1 text-blue-100" />
-                    {customer.totalOrders}
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex items-center">
-                    <CreditCard className="h-4 w-4 mr-1 text-blue-100" />
-                    {formatCurrency(customer.totalSpent)}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1 text-blue-100" />
-                    {formatDate(customer.joinDate)}
+                    {account.phone}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Badge className={`${
-                    customer.status === "active" 
+                    account.roleId === 1 
+                      ? "bg-purple-100 text-purple-800" 
+                      : "bg-blue-100 text-blue-800"
+                  }`}>
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                    {getRoleName(account.roleId)}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1 text-blue-100" />
+                    {formatDate(account.createDate)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge className={`${
+                    account.status === 1 
                       ? "bg-green-100 text-green-800" 
                       : "bg-red-100 text-red-800"
                   }`}>
-                    {customer.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
+                    <UserCheck className="h-3 w-3 mr-1" />
+                    {account.status === 1 ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell className="flex justify-end gap-2">
@@ -402,7 +317,7 @@ const CustomerManagementPage = () => {
                     variant="outline" 
                     size="sm"
                     className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditCustomer(customer)}
+                    onClick={() => handleEditAccount(account)}
                   >
                     <Pen className="h-4 w-4" />
                   </Button>
@@ -420,20 +335,20 @@ const CustomerManagementPage = () => {
         </Table>
       </div>
 
-      {filteredCustomers.length === 0 && (
+      {!isLoading && filteredAccounts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <User className="h-12 w-12 text-blue-100 mb-4" />
-          <h3 className="text-lg font-medium text-black">Không tìm thấy khách hàng</h3>
+          <h3 className="text-lg font-medium text-black">Không tìm thấy người dùng</h3>
           <p className="text-sm text-black mt-1">
-            Không có khách hàng nào phù hợp với tiêu chí tìm kiếm
+            Không có người dùng nào phù hợp với tiêu chí tìm kiếm
           </p>
         </div>
       )}
 
-      {filteredCustomers.length > 0 && (
+      {filteredAccounts.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredCustomers.length)} của {filteredCustomers.length} khách hàng
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredAccounts.length)} của {filteredAccounts.length} người dùng
           </div>
           <Pagination
             currentPage={currentPage}
@@ -443,68 +358,89 @@ const CustomerManagementPage = () => {
         </div>
       )}
 
-      {modalOpen && selectedCustomer && (
+      {modalOpen && selectedAccount && (
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent className="sm:max-w-[600px] bg-white text-black rounded-2xl shadow-xl border border-pink-100">
             <DialogHeader>
               <DialogTitle className="text-black">
-                {selectedCustomer.id === -1 ? "Thêm khách hàng" : "Chỉnh sửa khách hàng"}
+                {!selectedAccount.id ? "Thêm người dùng" : "Chỉnh sửa người dùng"}
               </DialogTitle>
             </DialogHeader>
             <form
               className="grid gap-4 py-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleSaveCustomer(selectedCustomer);
+                handleSaveAccount(selectedAccount);
               }}
             >
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-black">Tên</Label>
+                  <Label className="text-black">Họ tên đầy đủ</Label>
                   <Input
-                    value={selectedCustomer.name}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, name: e.target.value })}
+                    value={selectedAccount.fullName}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, fullName: e.target.value })}
                     required
                   />
                 </div>
                 <div>
+                  <Label className="text-black">Tên đăng nhập</Label>
+                  <Input
+                    value={selectedAccount.username}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, username: e.target.value })}
+                    required
+                    disabled={!!selectedAccount.id} // Disable username editing for existing accounts
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label className="text-black">Email</Label>
                   <Input
                     type="email"
-                    value={selectedCustomer.email}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, email: e.target.value })}
+                    value={selectedAccount.email}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="text-black">Số điện thoại</Label>
+                  <Input
+                    value={selectedAccount.phone}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, phone: e.target.value })}
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-black">Số điện thoại</Label>
-                  <Input
-                    value={selectedCustomer.phone}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, phone: e.target.value })}
-                    required
-                  />
+                  <Label className="text-black">Vai trò</Label>
+                  <select
+                    className="w-full p-2 border border-pink-100 rounded-md bg-white text-black"
+                    value={selectedAccount.roleId}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, roleId: parseInt(e.target.value) })}
+                  >
+                    <option value={1}>Admin</option>
+                    <option value={2}>Người dùng</option>
+                  </select>
                 </div>
                 <div>
                   <Label className="text-black">Trạng thái</Label>
                   <select
                     className="w-full p-2 border border-pink-100 rounded-md bg-white text-black"
-                    value={selectedCustomer.status}
-                    onChange={(e) => setSelectedCustomer({ ...selectedCustomer, status: e.target.value as "active" | "inactive" })}
+                    value={selectedAccount.status}
+                    onChange={(e) => setSelectedAccount({ ...selectedAccount, status: parseInt(e.target.value) })}
                   >
-                    <option value="active">Đang hoạt động</option>
-                    <option value="inactive">Không hoạt động</option>
+                    <option value={1}>Đang hoạt động</option>
+                    <option value={0}>Không hoạt động</option>
                   </select>
                 </div>
               </div>
-              <div>
-                <Label className="text-black">Địa chỉ</Label>
-                <Textarea
-                  value={selectedCustomer.address}
-                  onChange={(e) => setSelectedCustomer({ ...selectedCustomer, address: e.target.value })}
-                />
-              </div>
+              {!selectedAccount.id && (
+                <div className="bg-yellow-100 p-3 rounded-md text-sm">
+                  <p className="font-medium">Lưu ý:</p>
+                  <p>Người dùng mới sẽ được tạo với mật khẩu mặc định. Họ cần đổi mật khẩu khi đăng nhập lần đầu.</p>
+                </div>
+              )}
               <div className="flex justify-end gap-2 mt-2">
                 <Button type="button" variant="outline" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => setModalOpen(false)}>
                   Hủy
@@ -521,4 +457,4 @@ const CustomerManagementPage = () => {
   );
 };
 
-export default CustomerManagementPage;
+export default UserManagementPage;

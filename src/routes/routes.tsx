@@ -17,6 +17,12 @@ import NoPermission from '@/pages/NoPermissionPage';
 import ProductPage from '@/pages/Customer/ProductPage';
 import ProductDetailPage from '@/pages/Customer/ProductDetailPage';
 import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
+import CartPage from '@/pages/Customer/CartPage';
+import ProfilePage from '@/pages/Customer/ProfilePage';
+import MyOrderPage from '@/pages/Customer/MyOrderPage';
+import CheckoutPage from '@/pages/Customer/CheckoutPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
+import ResetPasswordConfirmPage from '@/pages/ResetPasswordConfirmPage';
 
 //Staff Pages
 import BraceletManagement from '@/pages/StaffPages/BraceletManagementPage';
@@ -24,6 +30,7 @@ import MaterialManagement from '@/pages/StaffPages/MaterialManagementPage';
 import OrderManagement from '@/pages/StaffPages/OrderManagementPage';
 import CustomerManagement from '@/pages/StaffPages/CustomerManagementPage';
 import VoucherManagement from '@/pages/StaffPages/VoucherManagementPage';
+import CategoryManagementPage from '@/pages/StaffPages/CategoryManagementPage';
 
 //Admin Pages
 import Dashboard from '@/pages/AdminPages/DashboardPage';
@@ -32,7 +39,7 @@ import MaterialManagementAdmin from '@/pages/AdminPages/MaterialManagementPage';
 import OrderManagementAdmin from '@/pages/AdminPages/OrderManagementPage';
 import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
-
+import CategoryManagementPageAdmin from '@/pages/AdminPages/CategoryManagementPage';
 // Define routes
 const routes = [
   {
@@ -46,6 +53,11 @@ const routes = [
         path: '/login',
         element: <LoginPage />,
       },
+      {
+      path: '/forgot-password', 
+      element: <ResetPasswordPage />,
+    },
+    { path: '/reset-password', element: <ResetPasswordConfirmPage /> },
       {
         path: '/register',
         element: <RegisterPage />,
@@ -73,6 +85,22 @@ const routes = [
       {
         path: '/no-permission',
         element: <NoPermission />,
+      },
+      {
+        path: '/cart',
+        element: <CartPage />,
+      },
+      {
+        path: '/checkout/:id',
+        element: <CheckoutPage />,
+      },
+      {
+        path: '/profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: '/orders',
+        element: <MyOrderPage />,
       },
       {
         path: '*',
@@ -107,6 +135,10 @@ const routes = [
       {
         path: 'vouchers',
         element: <VoucherManagement />,
+      },
+      {
+        path: 'categories',
+        element: <CategoryManagementPageAdmin />,
       },
     ],
   },
@@ -152,6 +184,10 @@ const routes = [
         path: 'vouchers',
         element: <VoucherManagementAdmin />,
       },
+      {
+        path: 'categories',
+        element: <CategoryManagementPage />,
+      }
     ],
   },  
   

@@ -2,23 +2,37 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
+import AuthService from "@/services/AuthService";
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // State cho form
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleGoogleRegister = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
-      console.log("Google Register Success:", result.user);
-      console.log("JWT Token:", token);
+      await AuthService.googleLogin(token); // Gọi service để lưu token và account
+      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
+      window.location.reload();
     } catch (error) {
       console.error("Google Register Error:", error);
     }
@@ -33,6 +47,45 @@ const RegisterPage = () => {
       console.log("JWT Token:", token);
     } catch (error) {
       console.error("Facebook Register Error:", error);
+    }
+  };
+
+  // Hàm xử lý đăng ký
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!fullName || !username || !phone || !email || !password || !confirmPassword) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+    setLoading(true);
+    try {
+      // Gọi API đăng ký
+      await AuthService.signup({
+        fullName,
+        password,
+        username,
+        phone,
+        email,
+        roleId: 0,
+        status: 1,
+      });
+      // Hiển thị alert thông báo đăng ký thành công
+      window.alert("Đăng ký thành công!");
+      navigate("/login");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+        "Đăng ký thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,13 +107,39 @@ const RegisterPage = () => {
         <h1 className="text-3xl font-bold text-center mt-6 mb-2 text-violet-900">Đăng ký</h1>
         <p className="text-center text-violet-600 mb-6">Tạo tài khoản để bắt đầu hành trình của bạn</p>
 
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={handleRegister}>
           <div className="space-y-1.5">
             <Label htmlFor="fullName" className="text-sm font-medium text-violet-700">Họ và tên</Label>
             <Input 
               id="fullName" 
               type="text" 
               placeholder="Nhập họ và tên của bạn" 
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              className="focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="text-sm font-medium text-violet-700">Tên đăng nhập</Label>
+            <Input 
+              id="username" 
+              type="text" 
+              placeholder="Tên đăng nhập" 
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              className="focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="phone" className="text-sm font-medium text-violet-700">Số điện thoại</Label>
+            <Input 
+              id="phone" 
+              type="tel" 
+              placeholder="Số điện thoại" 
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
               className="focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
             />
           </div>
@@ -71,6 +150,8 @@ const RegisterPage = () => {
               id="email" 
               type="email" 
               placeholder="Nhập email của bạn" 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               className="focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
             />
           </div>
@@ -82,6 +163,8 @@ const RegisterPage = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Nhập mật khẩu"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 className="pr-10 focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
               />
               <button
@@ -101,6 +184,8 @@ const RegisterPage = () => {
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Nhập lại mật khẩu"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
                 className="pr-10 focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:outline-none transition duration-150 border-violet-200 bg-violet-50/50"
               />
               <button
@@ -113,12 +198,24 @@ const RegisterPage = () => {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
+
+          {success && (
+            <div className="text-green-600 text-sm text-center">{success}</div>
+          )}
+
           <div className="pt-2">
-            <Button className="w-full bg-violet-500 hover:bg-violet-600 text-white transition duration-200 shadow-md hover:shadow-lg h-11">
-              Tạo tài khoản
+            <Button
+              className="w-full bg-violet-500 hover:bg-violet-600 text-white transition duration-200 shadow-md hover:shadow-lg h-11"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Đang đăng ký..." : "Tạo tài khoản"}
             </Button>
           </div>
-        </div>
+        </form>
 
         <div className="flex items-center my-6">
           <div className="flex-grow h-px bg-violet-200"></div>

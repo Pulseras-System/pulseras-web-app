@@ -1,158 +1,277 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PartLibrary from '../../components/BraceletDesigner/PartLibrary';
+import ThreeJsWorkspace from '../../components/BraceletDesigner/ThreeJsWorkspace';
+import PartsPanel from '../../components/BraceletDesigner/PartsPanel';
+import { BraceletPart, RenderedObject } from '../../components/BraceletDesigner/types';
+import ProductService from '../../services/ProductService';
+import CategoryService from '../../services/CategoryService';
+import OrderService from '../../services/OrderService';
+import OrderDetailService from '../../services/OrderDetailService';
 
 const DesignBraceletPage: React.FC = () => {
-    const mountRef = useRef<HTMLDivElement>(null);
-    const [objects, setObjects] = useState<THREE.Object3D[]>([]); // State để lưu danh sách khối
+    // Navigation
+    const navigate = useNavigate();
 
+    // Add CSS animation for the loading spinner
     useEffect(() => {
-        // Scene setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xcccccc);
-
-        // Camera setup
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            (window.innerWidth - 300) / (window.innerHeight - 150), // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
-            0.1,
-            1000
-        );
-        camera.position.z = 8;
-
-        // Renderer setup
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-
-        const updateDimensions = () => {
-            if (mountRef.current) {
-                const containerHeight = window.innerHeight - 150; // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
-                const containerWidth = window.innerWidth - 300; // Trừ đi chiều rộng của sidebar
-                
-                renderer.setSize(containerWidth, containerHeight);
-                camera.aspect = containerWidth / containerHeight;
-                camera.updateProjectionMatrix();
+        // Add the spin animation style to the document
+        const styleEl = document.createElement('style');
+        styleEl.innerHTML = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
-        };
+        `;
+        document.head.appendChild(styleEl);
 
-        // Gọi ngay khi khởi tạo
-        updateDimensions();
-
-        if (mountRef.current) {
-            mountRef.current.innerHTML = '';
-            mountRef.current.appendChild(renderer.domElement);
-        }
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        pointLight.castShadow = true;
-        scene.add(pointLight);
-
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-
-        // Load GLB model
-        const gltfLoader = new GLTFLoader();
-        gltfLoader.load(
-            '/scene.glb', // Replace with the path to your GLB file
-            (gltf) => {
-                const model = gltf.scene;
-                model.traverse((child) => {
-                    if ((child as THREE.Mesh).isMesh) {
-                        const mesh = child as THREE.Mesh;
-                        mesh.castShadow = true;
-                        mesh.receiveShadow = true;
-                    }
-                });
-                model.position.set(0, 0, 0); // Set the position of the loaded model
-                scene.add(model);
-
-                // Cập nhật danh sách khối
-                setObjects((prevObjects) => [...prevObjects, model]);
-            },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-            },
-            (error) => {
-                console.error('An error occurred while loading the GLB file:', error);
-            }
-        );
-
-        // Animation loop
-        const animate = () => {
-            controls.update();
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        };
-        animate();
-
-        // Handle window resize
-        const handleResize = () => {
-            updateDimensions();
-        };
-
-        // Initial resize
-        handleResize();
-
-        // Add resize event listener
-        window.addEventListener('resize', handleResize);
-
-        // Cleanup on component unmount
+        // Clean up on unmount
         return () => {
-            window.removeEventListener('resize', handleResize);
-            if (mountRef.current) {
-                mountRef.current.removeChild(renderer.domElement);
-            }
-            renderer.dispose();
+            document.head.removeChild(styleEl);
         };
     }, []);
 
-    return (
-        <div style={{ 
-            display: 'flex', 
-            height: 'calc(100vh - 150px)', // Trừ đi chiều cao của header và footer (75px * 2 = 150px)
-            overflow: 'hidden',
-            margin: 0, // Thêm margin 0
-            padding: 0, // Thêm padding 0
-        }}>
-            {/* Sidebar */}
-            <div
-                style={{
-                    width: '300px',
-                    background: '#f5f5f5',
-                    borderRight: '1px solid #ddd',
-                    padding: '10px',
-                    overflowY: 'auto',
-                    margin: 0, // Thêm margin 0
-                }}
-            >
-                <h3>Objects in Scene</h3>
-                <ul>
-                    {objects.map((obj, index) => (
-                        <li key={index}>
-                            {obj.name || `Object ${index + 1}`}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+    // State for parts and objects
+    const [renderedObjects, setRenderedObjects] = useState<RenderedObject[]>([]);
+    const [availableParts] = useState<BraceletPart[]>([
+        {
+            id: 'base-bracelet',
+            name: 'Base Bracelet',
+            modelPath: '/diamond.glb',
+            category: 'bases'
+        },
+        {
+            id: 'charm-cube',
+            name: 'Cube Charm',
+            modelPath: '/cube.glb',
+            category: 'charms'
+        },
+        {
+            id: 'charm-sphere',
+            name: 'Sphere Charm',
+            modelPath: '/sphere.glb',
+            category: 'charms'
+        },
+        {
+            id: 'block-gem',
+            name: 'Gem Block',
+            modelPath: '/scene.glb',
+            category: 'gems'
+        },
+        {
+            id: 'star-gem',
+            name: 'Star Block',
+            modelPath: '/star4.glb',
+            category: 'gems'
+        }
+    ]);
 
-            {/* Three.js Canvas */}
-            <div
-                ref={mountRef}
-                style={{
-                    flex: 1,
-                    position: 'relative',
-                    margin: 0, // Thêm margin 0
-                    padding: 0, // Thêm padding 0
-                }}
+    // Basic UI state
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedObject, setSelectedObject] = useState<string | null>(null);
+    const [dragMode, setDragMode] = useState<boolean>(true); // Default to drag mode enabled
+    const [rotationMode, setRotationMode] = useState<boolean>(false); // Rotation mode for manual rotation
+    const [isCapturing, setIsCapturing] = useState(false); // State for image capture
+    const [isAutoRotating, setIsAutoRotating] = useState(false); // Auto-rotation state (disabled by default)
+
+    // State for captured image
+    const [capturedFile, setCapturedFile] = useState<File | null>(null);
+    const captureResolver = useRef<((f: File) => void) | null>(null);
+    const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+
+    // Function to save workspace as image
+    const saveWorkspaceImage = () => {
+        setIsCapturing(true);
+        // This will be handled by the ThreeJsWorkspace component
+        setTimeout(() => setIsCapturing(false), 1000); // Reset after capture
+    };
+
+    // Handle captured image from workspace
+
+    const handleImageCaptured = (file: File) => {
+        setCapturedFile(file);
+        if (captureResolver.current) {
+            captureResolver.current(file);
+            captureResolver.current = null;
+        }
+    };
+
+    const triggerCapture = (): Promise<File> => {
+        return new Promise<File>((resolve, reject) => {
+            captureResolver.current = resolve;
+            setIsCapturing(true);
+            // safety timeout
+            setTimeout(() => {
+                if (captureResolver.current) {
+                    captureResolver.current = null;
+                    setIsCapturing(false);
+                    reject(new Error("Capture timeout"));
+                }
+            }, 5000);
+        }).finally(() => setIsCapturing(false));
+    };
+
+    // Function to add custom bracelet to cart
+    const addToCartProduct = async () => {
+        try {
+            setIsProcessingOrder(true);
+
+            if (renderedObjects.length === 0) {
+                alert("Please add some parts before adding to cart");
+                return;
+            }
+
+            // Check if user is authenticated
+            const accountStr = localStorage.getItem('account');
+            const accountId = accountStr ? JSON.parse(accountStr).id : null;
+            if (!accountId) {
+                alert("You need to login before adding to cart");
+                navigate('/login', { state: { from: '/design' } });
+                return;
+            }
+
+            let file = capturedFile;
+            if (!file) {
+                try {
+                    file = await triggerCapture();
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to capture preview");
+                    return;
+                }
+            }
+
+            const customBraceletCategory = await CategoryService.getByName("Custom Bracelets");
+            if (!customBraceletCategory) {
+                throw new Error("Custom Bracelets category not found");
+            }
+
+            const payload = {
+                categoryIds: [String(customBraceletCategory.categoryId)] as string[],
+                productName: "Custom Bracelet",
+                productDescription: renderedObjects.map((o) => o.partData.name).join(", ") || "Custom designed bracelet",
+                productMaterial: "custom",
+                quantity: renderedObjects.length,
+                type: "custom",
+                price: renderedObjects.length * 50_000,
+                status: 2,
+                image: file,
+            } as const;
+
+
+            try {
+                const newProduct = await ProductService.create(payload);
+                if (!newProduct?.productId) throw new Error("Invalid productId in response");
+
+                const order = await OrderService.addToCart(accountId, String(newProduct.productId));
+                const itemCount = order.orderDetails.filter((d) => d.status !== 0).length;
+                localStorage.setItem("amount", String(itemCount));
+
+                // 5. Show success message
+                alert("Custom bracelet added to cart successfully!");
+
+                // 6. Navigate to cart page
+                navigate("/cart");
+
+            } catch (error) {
+                console.error("Error creating product or adding to cart:", error);
+                setError("Failed to add bracelet to cart. Please try again.");
+                alert("Failed to add bracelet to cart. Please try again.");
+            }
+        } catch (err: any) {
+            console.error("Error creating order:", err);
+        } finally {
+            setIsProcessingOrder(false);
+            setIsCapturing(false);
+        }
+    };
+
+    // Toggle drag mode
+    const toggleDragMode = () => {
+        setDragMode(prev => !prev);
+        // Disable rotation mode when enabling drag mode
+        if (!dragMode) {
+            setRotationMode(false);
+        }
+    };
+
+    // Toggle rotation mode
+    const toggleRotationMode = () => {
+        setRotationMode(prev => !prev);
+        // Disable drag mode when enabling rotation mode
+        if (!rotationMode) {
+            setDragMode(false);
+        }
+    };
+
+    // Toggle auto-rotation
+    const toggleAutoRotation = () => {
+        setIsAutoRotating(prev => !prev);
+    };
+
+    // Handle part drag start
+    const handlePartDragStart = (e: React.DragEvent<HTMLDivElement>, part: BraceletPart) => {
+        e.dataTransfer.setData('application/json', JSON.stringify(part));
+        document.body.style.cursor = 'grabbing';
+    };
+
+    // Remove object from the scene
+    const removeObject = (id: string) => {
+        setRenderedObjects(prev => {
+            // Filter out the object with the matching id
+            return prev.filter(obj => obj.id !== id);
+        });
+        // If we're removing the currently selected object, deselect it
+        if (selectedObject === id) {
+            setSelectedObject(null);
+        }
+    };
+
+    return (
+        <div style={{
+            display: 'flex',
+            height: 'calc(100vh - 150px)',
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%)',
+            position: 'relative'
+        }}>
+            {/* Sidebar - Parts Selector */}
+            <PartLibrary
+                availableParts={availableParts}
+                onDragStart={handlePartDragStart}
+            />
+
+            {/* Workspace - 3D Canvas */}
+            <ThreeJsWorkspace
+                renderedObjects={renderedObjects}
+                setRenderedObjects={setRenderedObjects}
+                selectedObject={selectedObject}
+                setSelectedObject={setSelectedObject}
+                dragMode={dragMode}
+                rotationMode={rotationMode}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+                error={error}
+                setError={setError}
+                toggleDragMode={toggleDragMode}
+                toggleRotationMode={toggleRotationMode}
+                isCapturing={isCapturing}
+                isAutoRotating={isAutoRotating}
+                onImageCaptured={handleImageCaptured}
+            />
+
+            {/* Parts list/controls panel */}
+            <PartsPanel
+                renderedObjects={renderedObjects}
+                selectedObject={selectedObject}
+                setSelectedObject={setSelectedObject}
+                removeObject={removeObject}
+                onSaveImage={saveWorkspaceImage}
+                onToggleAutoRotation={toggleAutoRotation}
+                isAutoRotating={isAutoRotating}
+                onOrder={addToCartProduct}
+                isProcessingOrder={isProcessingOrder}
             />
         </div>
     );

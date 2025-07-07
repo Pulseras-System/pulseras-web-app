@@ -1,65 +1,54 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, ChevronLeft, ChevronRight, ShoppingCart, Heart } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import ProductService, { Product } from "@/services/ProductService";
+import { AddToCartButton } from "@/components/AddToCartButton";
 
-interface Bracelet {
-  name: string;
-  description: string;
-  price: string;
-  imageSrc: string;
-  category: string;
-  material: string;
-  size: string;
-  rating: number;
-  reviews: number;
-  stock: number;
-  colors: string[];
-}
-
-const mockBracelets: Bracelet[] = Array.from({ length: 20 }, (_, i) => ({
-  name: `Vòng tay ${i + 1}`,
-  description: "Vòng tay thủ công từ " + ["đá tự nhiên", "vàng mạ cao cấp", "tinh thể pha lê", "chất liệu bohemian"][i % 4] + 
-              ", thiết kế tinh tế phù hợp với mọi dịp.",
-  price: `${(700 + i * 50).toLocaleString("vi-VN")}₫`,
-  imageSrc: `https://placehold.co/800x800/cccccc/000000?text=Vong+${i + 1}`,
-  category: ["Tất cả", "Bohemian", "Tinh Thể", "Vàng"][i % 4],
-  material: ["Đá quý tự nhiên", "Vàng 18K mạ", "Pha lê Swarovski", "Da tổng hợp"][i % 4],
-  size: "17cm - 19cm (có thể điều chỉnh)",
-  rating: 4.5 + (i % 5 * 0.1),
-  reviews: 12 + i,
-  stock: 50 - i,
-  colors: ["#F59E0B", "#10B981", "#3B82F6", "#EF4444"][i % 4] === "#F59E0B" 
-          ? ["#F59E0B", "#B45309", "#FCD34D"] 
-          : ["#10B981", "#3B82F6", "#EF4444"].slice(0, 3)
-}));
-
-const BraceletDetailPage = () => {
+const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const braceletIndex = Number(id) - 1;
-  const bracelet = mockBracelets[braceletIndex];
+  // 1. Lấy chi tiết sản phẩm
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      ProductService.getById(id)
+        .then((data) => setProduct(data))
+        .catch((err) => console.error("Error fetching product:", err))
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
 
-  if (!bracelet) {
+  // 2. Lấy sản phẩm liên quan khi đã có product
+  useEffect(() => {
+    if (product) {
+      ProductService.get({ sort: "createDate", size: 20 })
+        .then((allProducts) => {
+          const related = allProducts.items.filter(
+            (p) => p.productId !== product.productId && p.type === product.type
+          );
+          setRelatedProducts(related.slice(0, 4));
+        })
+        .catch((err) => console.error("Error fetching related products:", err));
+    }
+  }, [product]);
+
+  if (loading || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-50">
         <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md border border-blue-100">
-          <h2 className="text-3xl font-semibold text-blue-800 mb-4">Không tìm thấy sản phẩm</h2>
-          <p className="text-blue-600 mb-6">Vòng tay bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
-          <Button 
-            onClick={() => navigate(-1)}
-            className="gap-2 bg-pink-400 hover:bg-pink-500 text-white"
-          >
-            <ChevronLeft size={18} />
-            Quay lại danh sách
-          </Button>
+          <h2 className="text-3xl font-semibold text-blue-800 mb-4">Đang tải dữ liệu...</h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-32 bg-blue-100/50 -z-10" />
       <div className="absolute top-10 left-10 w-16 h-16 rounded-full bg-pink-100/30 blur-md" />
@@ -71,7 +60,7 @@ const BraceletDetailPage = () => {
         <nav className="flex mb-6" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-2">
             <li>
-              <button 
+              <button
                 onClick={() => navigate('/')}
                 className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
               >
@@ -81,7 +70,7 @@ const BraceletDetailPage = () => {
             <li>
               <div className="flex items-center">
                 <ChevronRight className="w-4 h-4 text-blue-400" />
-                <button 
+                <button
                   onClick={() => navigate('/shop')}
                   className="ml-1 text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline md:ml-2"
                 >
@@ -93,7 +82,7 @@ const BraceletDetailPage = () => {
               <div className="flex items-center">
                 <ChevronRight className="w-4 h-4 text-blue-400" />
                 <span className="ml-1 text-sm font-medium text-blue-600 md:ml-2 hover:underline">
-                  {bracelet.name}
+                  {product.productName}
                 </span>
               </div>
             </li>
@@ -106,8 +95,8 @@ const BraceletDetailPage = () => {
           <div className="relative">
             <div className="aspect-square overflow-hidden bg-blue-50">
               <img
-                src={bracelet.imageSrc}
-                alt={bracelet.name}
+                src={product.productImage}
+                alt={product.productName}
                 className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -116,7 +105,6 @@ const BraceletDetailPage = () => {
                 <Heart className="w-5 h-5" />
               </button>
             </div>
-            
             <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-blue-100/50 to-transparent"></div>
           </div>
 
@@ -125,22 +113,32 @@ const BraceletDetailPage = () => {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-3xl font-bold text-blue-900 mb-2">{bracelet.name}</h1>
-                  <p className="text-blue-500 mb-1">Danh mục: {bracelet.category}</p>
+                  <h1 className="text-3xl font-bold text-blue-900 mb-2">
+                    {product.productName}
+                  </h1>
+                  <p className="text-blue-500 mb-1">
+                    Loại: {product.type}
+                  </p>
                 </div>
+                {/* Nếu API có trường đánh giá thì có thể hiển thị */}
                 <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                   <Star className="w-4 h-4 text-pink-400 fill-pink-400" />
                   <span className="ml-1 text-sm font-medium text-blue-700">
-                    {bracelet.rating.toFixed(1)} ({bracelet.reviews} đánh giá)
+                    {/* Có thể thay thế bằng rating, ví dụ: 4.5 (nếu có) */}
+                    4.5 (123 đánh giá)
                   </span>
                 </div>
               </div>
 
               {/* Price and Stock */}
               <div className="my-6">
-                <p className="text-3xl font-semibold text-pink-500">{bracelet.price}</p>
-                {bracelet.stock > 0 ? (
-                  <p className="text-sm text-green-600 mt-1">Còn {bracelet.stock} sản phẩm</p>
+                <p className="text-3xl font-semibold text-pink-500">
+                  {product.price.toLocaleString("vi-VN")}₫
+                </p>
+                {product.quantity > 0 ? (
+                  <p className="text-sm text-green-600 mt-1">
+                    Còn {product.quantity} sản phẩm
+                  </p>
                 ) : (
                   <p className="text-sm text-rose-600 mt-1">Tạm hết hàng</p>
                 )}
@@ -149,37 +147,29 @@ const BraceletDetailPage = () => {
               {/* Product Details */}
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-medium text-blue-900 mb-2">Mô tả sản phẩm</h3>
-                  <p className="text-blue-700">{bracelet.description}</p>
+                  <h3 className="text-lg font-medium text-blue-900 mb-2">
+                    Mô tả sản phẩm
+                  </h3>
+                  <p className="text-blue-700">
+                    {product.productDescription}
+                  </p>
                 </div>
-
                 <div>
-                  <h3 className="text-lg font-medium text-blue-900 mb-2">Thông tin chi tiết</h3>
+                  <h3 className="text-lg font-medium text-blue-900 mb-2">
+                    Thông tin chi tiết
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-lg">
                     <div>
                       <p className="text-sm text-blue-500">Chất liệu</p>
-                      <p className="font-medium text-blue-800">{bracelet.material}</p>
+                      <p className="font-medium text-blue-800">
+                        {product.productMaterial}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-blue-500">Kích thước</p>
-                      <p className="font-medium text-blue-800">{bracelet.size}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-blue-500">Màu sắc</p>
-                      <div className="flex gap-2 mt-1">
-                        {bracelet.colors.map((color, i) => (
-                          <button 
-                            key={i}
-                            className="w-6 h-6 rounded-full border border-blue-200 shadow-sm"
-                            style={{ backgroundColor: color }}
-                            aria-label={`Màu ${i+1}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-blue-500">Bảo hành</p>
-                      <p className="font-medium text-blue-800">6 tháng</p>
+                      <p className="text-sm text-blue-500">Số lượng</p>
+                      <p className="font-medium text-blue-800">
+                        {product.quantity}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -189,15 +179,21 @@ const BraceletDetailPage = () => {
             {/* Action Buttons */}
             <div className="mt-8 pt-6 border-t border-blue-100">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
+                <AddToCartButton
+                  product={{
+                    id: product.productId,
+                    name: product.productName,
+                    image: product.productImage,
+                    price: product.price,
+                    type: product.type,
+                    material: product.productMaterial
+                  }}
+                  variant="outline"
                   className="flex-1 h-12 bg-pink-400 hover:bg-pink-500 text-white shadow-md gap-2 transition-all duration-300"
-                  disabled={bracelet.stock <= 0}
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Thêm vào giỏ hàng
-                </Button>
-                <Button 
-                  variant="outline" 
+                  // disabled={product.quantity <= 0}
+                />
+                <Button
+                  variant="outline"
                   className="flex-1 h-12 border-blue-300 text-blue-700 hover:bg-blue-50 gap-2"
                   onClick={() => navigate(-1)}
                 >
@@ -205,7 +201,7 @@ const BraceletDetailPage = () => {
                   Quay lại
                 </Button>
               </div>
-              {bracelet.stock <= 0 && (
+              {product.quantity <= 0 && (
                 <p className="text-sm text-rose-500 mt-3 text-center">
                   Sản phẩm tạm hết hàng. Vui lòng liên hệ để đặt trước.
                 </p>
@@ -220,29 +216,30 @@ const BraceletDetailPage = () => {
             Sản phẩm tương tự
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {mockBracelets
-              .filter(b => b.category === bracelet.category && b.name !== bracelet.name)
-              .slice(0, 4)
-              .map((item, i) => (
-                <div 
-                  key={i} 
-                  className="group relative bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100 cursor-pointer hover:shadow-lg transition-all hover:border-blue-200"
-                  onClick={() => navigate(`/shop/${mockBracelets.indexOf(item) + 1}`)}
-                >
-                  <div className="aspect-square overflow-hidden bg-blue-50">
-                    <img
-                      src={item.imageSrc}
-                      alt={item.name}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-blue-800 truncate">{item.name}</h3>
-                    <p className="text-blue-600 font-medium mt-1">{item.price}</p>
-                    <div className="w-0 group-hover:w-full h-1 bg-blue-300 mt-2 transition-all duration-300"></div>
-                  </div>
+            {relatedProducts.map((item) => (
+              <div
+                key={item.productId}
+                className="group relative bg-white rounded-lg shadow-sm overflow-hidden border border-blue-100 cursor-pointer hover:shadow-lg transition-all hover:border-blue-200"
+                onClick={() => navigate(`/shop/${item.productId}`)}
+              >
+                <div className="aspect-square overflow-hidden bg-blue-50">
+                  <img
+                    src={item.productImage}
+                    alt={item.productName}
+                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-              ))}
+                <div className="p-4">
+                  <h3 className="font-medium text-blue-800 truncate">
+                    {item.productName}
+                  </h3>
+                  <p className="text-blue-600 font-medium mt-1">
+                    {item.price.toLocaleString("vi-VN")}₫
+                  </p>
+                  <div className="w-0 group-hover:w-full h-1 bg-blue-300 mt-2 transition-all duration-300"></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -250,4 +247,4 @@ const BraceletDetailPage = () => {
   );
 };
 
-export default BraceletDetailPage;
+export default ProductDetailPage;

@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, Layers} from "lucide-react";
 import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
 
 const navItems = [
   { label: "Vòng tay", path: "/staff/bracelets", icon: Gem },
+  { label: "Danh mục", path: "/staff/categories", icon: Layers },
   { label: "Nguyên liệu", path: "/staff/materials", icon: Package },
   { label: "Đơn hàng", path: "/staff/orders", icon: Box },
   { label: "Khách hàng", path: "/staff/customers", icon: Users },
@@ -98,7 +99,7 @@ const StaffLayout = () => {
                   <img 
                     src={Logo} 
                     alt="Workshop logo" 
-                    className="h-10 w-auto group-hover:rotate-4 transition-transform" 
+                    className="w-10 h-auto group-hover:rotate-4 transition-transform" 
                   />
                 </Link>
 
@@ -159,7 +160,7 @@ const StaffLayout = () => {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white/95">
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
@@ -196,7 +197,7 @@ const StaffLayout = () => {
                   </svg>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-white/95">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Hồ sơ</DropdownMenuItem>

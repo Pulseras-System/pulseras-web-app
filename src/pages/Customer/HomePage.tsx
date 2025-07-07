@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import ProductService, { Product } from "@/services/ProductService"; // 1. Import ProductService and Product type
+import { AddToCartButton } from "@/components/AddToCartButton"; // Add this import
 
 // Import ảnh banner từ thư mục assets
 import Banner1 from "../../assets/images/banner1.jpg";
@@ -24,41 +26,61 @@ interface BraceletCardProps {
   description: string;
   price: string;
   imageSrc: string;
+  // Add these optional fields for AddToCartButton
+  id?: string | number;
+  type?: string;
+  material?: string;
+  productRaw?: any; // for fallback
 }
 
-const BraceletCard = ({ name, description, price, imageSrc }: BraceletCardProps) => (
+const BraceletCard = ({
+  name,
+  description,
+  price,
+  imageSrc,
+  id,
+  type,
+  material,
+  productRaw,
+}: BraceletCardProps) => (
   <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
-    <div className="relative aspect-square ">
+    <div className="relative w-full h-64">
       <img
         loading="lazy"
         src={imageSrc}
         alt={`Vòng tay ${name}`}
         className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
       />
-        {/* Subtle overlay/hover effect without a heavy gradient */}
-        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
+      {/* Subtle overlay/hover effect without a heavy gradient */}
+      <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
     </div>
     
     <div className="p-4 flex flex-col justify-between flex-grow">
-      <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-      <p className="text-sm text-gray-600 mt-1 flex-grow">{description}</p>
+      <h3 className="text-lg font-semibold text-gray-800 truncate" title={name}>{name}</h3>
+      <p className="text-sm text-gray-600 mt-1 flex-grow truncate" title={description}>{description}</p>
       <div className="flex justify-between items-center mt-4">
-        <span className="text-md font-bold text-blue-600">{price}</span> {/* Accent color for price */}
+        <span className="text-md font-bold text-blue-600">{price}</span>
         <div className="flex space-x-2">
-            <Button
-                variant="outline"
-                size="sm"
-                className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
-            >
-                Thêm vào giỏ
-            </Button>
-            <Button
-                variant="default"
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-                Mua ngay
-            </Button>
+          <AddToCartButton
+            product={{
+              id: id ?? productRaw?.productId ?? "",
+              name,
+              image: imageSrc,
+              price: productRaw?.price ?? price,
+              type: type ?? productRaw?.type,
+              material: material ?? productRaw?.productMaterial,
+            }}
+            variant="outline"
+            className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
+            // disabled={productRaw?.quantity <= 0}
+          />
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Mua ngay
+          </Button>
         </div>
       </div>
     </div>
@@ -83,12 +105,38 @@ const AnimatedSection = ({ children, className }: { children: React.ReactNode; c
 
 const HomePage = () => {
   const [bannerIndex, setBannerIndex] = useState(0);
+  const [topProducts, setTopProducts] = useState<Product[]>([]); // 2. State for top products
+  const [loadingTop, setLoadingTop] = useState(true);
+
+  // 1. State for latest products
+  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [loadingLatest, setLoadingLatest] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setBannerIndex((prev) => (prev + 1) % heroBanners.length);
     }, 5000); // đổi banner mỗi 5 giây
     return () => clearInterval(timer);
+  }, []);
+
+  // 3. Fetch top products on mount
+  useEffect(() => {
+    setLoadingTop(true);
+    ProductService.getTopBuyProducts()
+      .then((products) => setTopProducts(products))
+      .catch(() => setTopProducts([]))
+      .finally(() => setLoadingTop(false));
+  }, []);
+
+  // 2. Fetch latest products on mount
+  useEffect(() => {
+    setLoadingLatest(true);
+    // You may need to add this method to ProductService if not present:
+    // getLatestProducts: async (): Promise<Product[]> => { ... }
+    ProductService.getLatestProducts?.()
+      .then((products) => setLatestProducts(products))
+      .catch(() => setLatestProducts([]))
+      .finally(() => setLoadingLatest(false));
   }, []);
 
   const bracelets = [
@@ -136,6 +184,34 @@ const HomePage = () => {
     { name: "Tinh Thể", href: "/categories/crystal", bg: "bg-gradient-to-br from-pink-200 to-pink-300", icon: "🔮" },
     { name: "Vàng", href: "/categories/gold", bg:"bg-gradient-to-br from-yellow-200 to-yellow-300", icon: "🌟" },
   ];
+
+  // 4. Map API data to BraceletCardProps
+  const topBracelets = topProducts.length
+    ? topProducts.map((p) => ({
+        name: p.productName,
+        description: p.productDescription,
+        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "",
+        imageSrc: p.productImage || "https://placehold.co/600x600?text=No+Image",
+        id: p.productId,
+        type: p.type,
+        material: p.productMaterial,
+        productRaw: p,
+      }))
+    : bracelets.map((b) => ({ ...b, productRaw: b })); // fallback to static if API empty
+
+  // 4. Map API data to BraceletCardProps for latest products
+  const latestBracelets = latestProducts.length
+    ? latestProducts.map((p) => ({
+        name: p.productName,
+        description: p.productDescription,
+        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "",
+        imageSrc: p.productImage || "https://placehold.co/600x600?text=No+Image",
+        id: p.productId,
+        type: p.type,
+        material: p.productMaterial,
+        productRaw: p,
+      }))
+    : bracelets.map((b) => ({ ...b, productRaw: b })); // fallback to static if API empty
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gradient-to-b from-blue-100 to-pink-100 text-gray-800">
@@ -231,18 +307,21 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-gray-900">Bộ sưu tập nổi bật</h2>
           <p className="mt-2 text-gray-700">Những thiết kế được yêu thích nhất mùa này</p>
         </AnimatedSection>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {bracelets.map((bracelet, index) => (
-            <AnimatedSection key={index}>
-              <BraceletCard {...bracelet} />
-            </AnimatedSection>
-          ))}
-        </div>
+        {loadingTop ? (
+          <div className="text-center text-blue-600">Đang tải...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {topBracelets.map((bracelet, index) => (
+              <AnimatedSection key={index}>
+                <BraceletCard {...bracelet} />
+              </AnimatedSection>
+            ))}
+          </div>
+        )}
         <div className="text-center mt-12">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link to="/shop">Xem thêm</Link>
-            </Button>
+          <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Link to="/shop">Xem thêm</Link>
+          </Button>
         </div>
       </section>
 
@@ -252,20 +331,22 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-gray-900">Sản phẩm mới</h2>
           <p className="mt-2 text-gray-700">Khám phá sản phẩm mới nhất của chúng tôi</p>
         </AnimatedSection>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {bracelets.map((bracelet, index) => (
-            <AnimatedSection key={index}>
-              <BraceletCard {...bracelet} />
-            </AnimatedSection>
-          ))}
-        </div>
+        {loadingLatest ? (
+          <div className="text-center text-blue-600">Đang tải...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {latestBracelets.map((bracelet, index) => (
+              <AnimatedSection key={index}>
+                <BraceletCard {...bracelet} />
+              </AnimatedSection>
+            ))}
+          </div>
+        )}
         <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Link to="/shop">Xem thêm</Link>
             </Button>
         </div>
-        
       </section>
 
       {/* About Section */}
