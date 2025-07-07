@@ -10,6 +10,7 @@ import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from 
 import AuthService from "@/services/AuthService";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
+import { getLandingPathByRole } from "@/utils/roleRedirect";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +33,13 @@ const LoginPage = () => {
       if (accountStr) {
         const account = JSON.parse(accountStr);
         const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
-        if (orderId){
+        if (orderId) {
           const amount = await OrderDetailService.countAmount(orderId.id);
           localStorage.setItem('amount', amount.toString());
         }
       }
-      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
-      window.location.reload();
+      const path = await getLandingPathByRole();
+      navigate(path, { replace: true });
     } catch (error) {
       console.error("Google Login Error:", error);
     }
@@ -70,15 +71,15 @@ const LoginPage = () => {
       if (accountStr) {
         const account = JSON.parse(accountStr);
         const orderId = await (await OrderService.getByAccountId(account.id)).find((o: any) => o.status === 1);
-        if (orderId){
+        if (orderId) {
           const amount = await OrderDetailService.countAmount(orderId.id);
           localStorage.setItem('amount', amount.toString());
         }
       }
 
-      
-      navigate("/"); // Chuyển hướng về trang chính sau khi đăng nhập thành công
-      window.location.reload();
+
+      const path = await getLandingPathByRole();
+      navigate(path, { replace: true });
 
     } catch (err: any) {
       setError(
@@ -97,14 +98,14 @@ const LoginPage = () => {
       <div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-white/40 blur-xl"></div>
       <div className="absolute top-1/4 right-1/4 w-24 h-24 rounded-full bg-white/30 blur-lg"></div>
       <div className="absolute bottom-1/3 left-1/3 w-20 h-20 rounded-full bg-white/30 blur-lg"></div>
-      
+
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 w-full max-w-md border border-violet-100 relative z-10">
         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-violet-500 rounded-full flex items-center justify-center shadow-lg">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        
+
         <h1 className="text-3xl font-bold text-center mt-6 mb-2 text-violet-900">Đăng nhập</h1>
         <p className="text-center text-violet-600 mb-6">Hãy nhập thông tin của bạn để đăng nhập</p>
 
