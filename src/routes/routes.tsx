@@ -5,6 +5,8 @@ import MainLayout from '@/layouts/MainLayout';
 import StaffLayout from '@/layouts/StaffLayout';
 import BlankLayout from '@/layouts/BlankLayout';
 import AdminLayout from '@/layouts/AdminLayout';
+import ProtectedLayout from "@/components/ProtectedLayout";
+
 
 // Pages
 import HomePage from '@/pages/Customer/HomePage';
@@ -54,10 +56,10 @@ const routes = [
         element: <LoginPage />,
       },
       {
-      path: '/forgot-password', 
-      element: <ResetPasswordPage />,
-    },
-    { path: '/reset-password', element: <ResetPasswordConfirmPage /> },
+        path: '/forgot-password',
+        element: <ResetPasswordPage />,
+      },
+      { path: '/reset-password', element: <ResetPasswordConfirmPage /> },
       {
         path: '/register',
         element: <RegisterPage />,
@@ -110,7 +112,11 @@ const routes = [
   },
   {
     path: '/staff',
-    element: <StaffLayout />,
+    element: (
+      <ProtectedLayout allowedRoles={['Staff', 'Admin']}>
+        <StaffLayout />
+      </ProtectedLayout>
+    ),
     children: [
       {
         path: '',
@@ -151,10 +157,14 @@ const routes = [
         element: <DesignBraceletPage />,
       },
     ],
-  },  
+  },
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: (
+      <ProtectedLayout allowedRoles={['Admin']}>
+        <AdminLayout />
+      </ProtectedLayout>
+    ),
     children: [
       {
         path: '',
@@ -189,8 +199,8 @@ const routes = [
         element: <CategoryManagementPage />,
       }
     ],
-  },  
-  
+  },
+
 ];
 
 // Create router
