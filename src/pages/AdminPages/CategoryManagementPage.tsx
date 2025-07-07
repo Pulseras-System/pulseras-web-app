@@ -30,7 +30,7 @@ const CategoryManagementPage = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [newCategory, setNewCategory] = useState<Category>({
-    categoryId: 0,
+    categoryId: "0",
     productId: 0,
     categoryName: "",
     status: 1,
@@ -94,7 +94,7 @@ const CategoryManagementPage = () => {
         .then((created) => {
           setCategories((prev) => [...prev, created]);
           setNewCategory({
-            categoryId: 0,
+            categoryId: "0",
             productId: 0,
             categoryName: "",
             status: 1,

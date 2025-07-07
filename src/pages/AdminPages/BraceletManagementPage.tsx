@@ -24,11 +24,6 @@ import ProductService, {
 } from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
 import Pagination from "@/components/pagination";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 
 const itemsPerPage = 7;
@@ -67,8 +62,7 @@ const BraceletManagement = () => {
   // mapping category id -> categoryName
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
   const [newProductCategoryInput, setNewProductCategoryInput] = useState("");
-  const [editingProductCategoryInput, setEditingProductCategoryInput] = useState("");
-  const [editingCategorySuggestions, setEditingCategorySuggestions] = useState<string[]>([]);
+  const [editingProductCategoryInput, ] = useState("");
   const [categorySuggestions, setCategorySuggestions] = useState<string[]>([]);
 
 

@@ -7,7 +7,6 @@ import { BraceletPart, RenderedObject } from '../../components/BraceletDesigner/
 import ProductService from '../../services/ProductService';
 import CategoryService from '../../services/CategoryService';
 import OrderService from '../../services/OrderService';
-import OrderDetailService from '../../services/OrderDetailService';
 
 const DesignBraceletPage: React.FC = () => {
     // Navigation

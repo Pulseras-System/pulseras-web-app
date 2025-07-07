@@ -98,7 +98,7 @@ const ProductPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, ] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const navigate = useNavigate();

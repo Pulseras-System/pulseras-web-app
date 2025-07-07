@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import OrderService from '@/services/OrderService';
-import OrderDetailService from '@/services/OrderDetailService';
 
 interface AddToCartProps {
   product: {
@@ -19,7 +18,7 @@ interface AddToCartProps {
   variant?: "default" | "outline" | "ghost";
 }
 
-export const AddToCartButton = ({ product, quantity = 1, className = '', variant = 'default' }: AddToCartProps) => {
+export const AddToCartButton = ({ product, className = '', variant = 'default' }: AddToCartProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
