@@ -255,7 +255,7 @@ const BraceletManagement = () => {
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"

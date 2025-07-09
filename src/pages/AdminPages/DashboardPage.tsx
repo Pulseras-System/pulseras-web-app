@@ -35,7 +35,7 @@ import {
 import { useEffect, useState } from "react";
 import OrderService, { Order, OverviewResponse } from "../../services/OrderService";
 import AccountService from "@/services/AccountService";
-import ProductService, { Product } from "@/services/ProductService";
+import ProductService, { TopBuyProduct } from "@/services/ProductService";
 
 const COLORS = ["#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
   const [salesFilter, setSalesFilter] = useState<"week" | "month" | "year">("week");
   const [lineChartData, setLineChartData] = useState<any[]>([]);
   const [loadingChart, setLoadingChart] = useState(false);
-  const [topProducts, setTopProducts] = useState<Product[]>([]);
+  const [topProducts, setTopProducts] = useState<TopBuyProduct[]>([]);
   const [overviewData, setOverviewData] = useState<OverviewResponse | null>(null);
 
   useEffect(() => {
@@ -507,7 +507,7 @@ const AdminDashboard = () => {
                     <li className="p-6 text-center text-gray-500">Đang tải...</li>
                   ) : (
                     topProducts.slice(0, 4).map((item, index) => (
-                      <li key={item.productId} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
+                      <li key={item.product.productId} className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
                         <div className="flex items-center">
                           <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-4 
                     ${index === 0 ? 'bg-purple-100 text-purple-600' :
@@ -517,17 +517,17 @@ const AdminDashboard = () => {
                             {index + 1}
                           </div>
                           <img
-                            src={item.productImage}
-                            alt={item.productName}
+                            src={item.product.productImage}
+                            alt={item.product.productName}
                             className="w-10 h-10 object-cover rounded-lg mr-4 border"
                           />
                           <div>
-                            <p className="font-semibold text-gray-800">{item.productName}</p>
-                            <p className="text-sm text-gray-500">{item.quantity.toLocaleString()} lượt bán</p>
+                            <p className="font-semibold text-gray-800">{item.product.productName}</p>
+                            <p className="text-sm text-gray-500">{item.soldQuantity.toLocaleString()} lượt bán</p>
                           </div>
                         </div>
                         <span className="font-bold text-indigo-600">
-                          {item.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                          {item.product.price.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                         </span>
                       </li>
                     ))
