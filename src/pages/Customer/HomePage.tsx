@@ -123,8 +123,16 @@ const HomePage = () => {
   useEffect(() => {
     setLoadingTop(true);
     ProductService.getTopBuyProducts()
-      .then((products) => setTopProducts(products))
-      .catch(() => setTopProducts([]))
+      .then((topBuyProducts) => {
+        console.log("Top buy products received:", topBuyProducts);
+        // Extract products from TopBuyProduct[] structure
+        const products = topBuyProducts.map(item => item.product);
+        setTopProducts(products);
+      })
+      .catch((error) => {
+        console.error("Error fetching top products:", error);
+        setTopProducts([]);
+      })
       .finally(() => setLoadingTop(false));
   }, []);
 
@@ -134,8 +142,14 @@ const HomePage = () => {
     // You may need to add this method to ProductService if not present:
     // getLatestProducts: async (): Promise<Product[]> => { ... }
     ProductService.getLatestProducts?.()
-      .then((products) => setLatestProducts(products))
-      .catch(() => setLatestProducts([]))
+      .then((products) => {
+        console.log("Latest products received:", products);
+        setLatestProducts(products);
+      })
+      .catch((error) => {
+        console.error("Error fetching latest products:", error);
+        setLatestProducts([]);
+      })
       .finally(() => setLoadingLatest(false));
   }, []);
 
@@ -186,11 +200,11 @@ const HomePage = () => {
   ];
 
   // 4. Map API data to BraceletCardProps
-  const topBracelets = topProducts.length
+  const topBracelets = topProducts.length > 0
     ? topProducts.map((p) => ({
         name: p.productName,
         description: p.productDescription,
-        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "",
+        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "0đ",
         imageSrc: p.productImage || "https://placehold.co/600x600?text=No+Image",
         id: p.productId,
         type: p.type,
@@ -200,11 +214,11 @@ const HomePage = () => {
     : bracelets.map((b) => ({ ...b, productRaw: b })); // fallback to static if API empty
 
   // 4. Map API data to BraceletCardProps for latest products
-  const latestBracelets = latestProducts.length
+  const latestBracelets = latestProducts.length > 0
     ? latestProducts.map((p) => ({
         name: p.productName,
         description: p.productDescription,
-        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "",
+        price: p.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) || "0đ",
         imageSrc: p.productImage || "https://placehold.co/600x600?text=No+Image",
         id: p.productId,
         type: p.type,
