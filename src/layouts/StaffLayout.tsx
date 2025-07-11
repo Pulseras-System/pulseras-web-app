@@ -163,7 +163,11 @@ const StaffLayout = () => {
             <DropdownMenuContent align="end" className="bg-white/95">
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/staff/profile" className="flex items-center">
+                  Hồ sơ
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
@@ -200,7 +204,11 @@ const StaffLayout = () => {
               <DropdownMenuContent align="end" className="bg-white/95">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/staff/profile" className="flex items-center">
+                    Hồ sơ
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
