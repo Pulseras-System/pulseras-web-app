@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 // import { 
 //   NavigationMenu, 
 //   NavigationMenuContent, 
@@ -34,6 +34,24 @@ const navItems = [
 
 const StaffLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+
+  const handleLogout = () => {
+    localStorage.clear();
+
+    document.cookie.split(";").forEach(cookie => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+
+    navigate("/");
+  };
+
+  const handleSettings = () => {
+    navigate("/staff/settings");
+  };
 
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
@@ -163,10 +181,14 @@ const StaffLayout = () => {
             <DropdownMenuContent align="end" className="bg-white/95">
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
-              <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/staff/profile" className="flex items-center">
+                  Hồ sơ
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -200,10 +222,14 @@ const StaffLayout = () => {
               <DropdownMenuContent align="end" className="bg-white/95">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
-                <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/staff/profile" className="flex items-center">
+                    Hồ sơ
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

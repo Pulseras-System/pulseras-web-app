@@ -3,12 +3,12 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 import Logo from '@/assets/images/logo.png';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, Package, Heart, Settings, ShoppingCart } from 'lucide-react';
 
@@ -47,8 +47,12 @@ const BlankLayout: React.FC = () => {
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md h-20">
                 <div className="container flex items-center justify-between h-full px-4 mx-auto">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2">
-                        <img src={Logo} alt="Pulsera logo" className="w-28 h-auto" />
+                    <Link to="/" className="flex items-center gap-2 group relative">
+                        <img
+                            src={Logo}
+                            alt="Pulsera logo"
+                            className="h-12 w-auto transition-all duration-300 group-hover:scale-105 group-hover:rotate-2"
+                        />
                     </Link>
 
                     {/* Navigation Links */}
@@ -73,7 +77,7 @@ const BlankLayout: React.FC = () => {
                     {/* Actions */}
                     <div className="flex items-center gap-3">
                         <ThemeToggle />
-                        
+
                         {/* Cart Icon */}
                         <Button
                             variant="ghost"
