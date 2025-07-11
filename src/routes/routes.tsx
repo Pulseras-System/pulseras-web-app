@@ -32,7 +32,8 @@ import MaterialManagement from '@/pages/StaffPages/MaterialManagementPage';
 import OrderManagement from '@/pages/StaffPages/OrderManagementPage';
 import CustomerManagement from '@/pages/StaffPages/CustomerManagementPage';
 import VoucherManagement from '@/pages/StaffPages/VoucherManagementPage';
-import CategoryManagementPage from '@/pages/StaffPages/CategoryManagementPage';
+import CategoryManagementPageStaff from '@/pages/StaffPages/CategoryManagementPage';
+import StaffProfilePage from '@/pages/StaffPages/StaffProfilePage';
 
 //Admin Pages
 import Dashboard from '@/pages/AdminPages/DashboardPage';
@@ -42,6 +43,7 @@ import OrderManagementAdmin from '@/pages/AdminPages/OrderManagementPage';
 import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
 import CategoryManagementPageAdmin from '@/pages/AdminPages/CategoryManagementPage';
+import AdminProfilePage from '@/pages/AdminPages/AdminProfilePage';
 // Define routes
 const routes = [
   {
@@ -144,7 +146,11 @@ const routes = [
       },
       {
         path: 'categories',
-        element: <CategoryManagementPageAdmin />,
+        element: <CategoryManagementPageStaff />,
+      },
+      {
+        path: 'profile',
+        element: <StaffProfilePage />,
       },
     ],
   },
@@ -196,7 +202,11 @@ const routes = [
       },
       {
         path: 'categories',
-        element: <CategoryManagementPage />,
+        element: <CategoryManagementPageAdmin />,
+      },
+      {
+        path: 'profile',
+        element: <AdminProfilePage />,
       }
     ],
   },

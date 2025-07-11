@@ -262,7 +262,7 @@ const AdminDashboard = () => {
         <AnimatedSection>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card className="shadow-lg border-0 bg-gray-100 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 pb-12 -top-6 relative">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 pb-8 -top-6 relative">
                 <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-indigo-400/20"></div>
                 <CardTitle className="text-white flex items-center">
                   <CreditCard className="h-5 w-5 mr-2" />
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
             </Card>
 
             <Card className="shadow-lg border-0 bg-gray-100 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <CardHeader className="bg-gradient-to-r from-indigo-500 to-rose-500 p-4 pb-12 -top-6 relative">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-rose-500 p-4 pb-8 -top-6 relative">
                 <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-indigo-400/20"></div>
                 <CardTitle className="text-white flex items-center">
                   <Package className="h-5 w-5 mr-2" />
@@ -334,7 +334,7 @@ const AdminDashboard = () => {
             </Card>
 
             <Card className="shadow-lg border-0 bg-gray-100 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 pb-12 -top-6 relative">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 pb-8 -top-6 relative">
                 <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-blue-400/20"></div>
                 <CardTitle className="text-white flex items-center">
                   <User className="h-5 w-5 mr-2" />
@@ -370,7 +370,7 @@ const AdminDashboard = () => {
             </Card>
 
             <Card className="shadow-lg border-0 bg-gray-100 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 pb-12 -top-6 relative">
+              <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 pb-8 -top-6 relative">
                 <div className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full bg-emerald-400/20"></div>
                 <CardTitle className="text-white flex items-center">
                   <TrendingUp className="h-5 w-5 mr-2" />

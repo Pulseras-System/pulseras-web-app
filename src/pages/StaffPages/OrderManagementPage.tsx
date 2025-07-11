@@ -487,9 +487,9 @@ const OrderManagement = () => {
                   </TableCell>
                   <TableCell>
                     <div className="font-medium text-black">{order.customerName}</div>
-                    <div className="text-xs text-black mt-0.5 line-clamp-1">
+                    {/* <div className="text-xs text-black mt-0.5 line-clamp-1">
                       {order.orderInfor || "Không có ghi chú"}
-                    </div>
+                    </div> */}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-black">{formatDate(order.orderDate)}</TableCell>
                   <TableCell>
@@ -746,30 +746,31 @@ const OrderManagement = () => {
         setOrderDetails([]);
         setProducts([]);
       }}>
-        <DialogContent className="sm:max-w-4xl bg-white text-black rounded-2xl shadow-xl border border-pink-100 p-0 overflow-hidden">
-          <DialogHeader className="bg-pink-100 px-6 py-4">
-            <DialogTitle className="text-black text-xl">Chi tiết đơn hàng #{viewOrder?.id}</DialogTitle>
+        <DialogContent className="sm:max-w-5xl max-h-[90vh] bg-white text-black rounded-2xl shadow-xl border border-pink-100 p-0 overflow-hidden">
+          <DialogHeader className="bg-pink-100 px-4 py-3">
+            <DialogTitle className="text-black text-lg">Chi tiết đơn hàng #{viewOrder?.id}</DialogTitle>
           </DialogHeader>
           
           {viewOrder && (
-            <div className="p-6">
-              {/* Thông tin đơn hàng và khách hàng trong layout ngang */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
-                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
-                    <Package className="h-4 w-4" />
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+              {/* Layout 2x2 cho thông tin đơn hàng - Compact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                {/* Hàng 1 */}
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Package className="h-3 w-3" />
                     Thông tin đơn hàng
                   </h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
                     <span className="text-black">Số đơn:</span>
-                    <span className="font-medium text-black truncate" title={`#${viewOrder.id}`}>#{String(viewOrder.id).length > 10 ? String(viewOrder.id).substring(0, 10) + '...' : viewOrder.id}</span>
+                    <span className="font-medium text-black truncate" title={`#${viewOrder.id}`}>#{String(viewOrder.id).length > 8 ? String(viewOrder.id).substring(0, 8) + '...' : viewOrder.id}</span>
                     
                     <span className="text-black">Ngày đặt:</span>
                     <span className="font-medium text-black">{formatDate(viewOrder.orderDate)}</span>
                     
                     <span className="text-black">Trạng thái:</span>
                     <span 
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         viewOrder.status === "Đã hủy" 
                           ? "bg-red-100 text-red-800 border border-red-200" 
                           : viewOrder.status === "Đã hoàn thành" 
@@ -784,31 +785,44 @@ const OrderManagement = () => {
                   </div>
                 </div>
                 
-                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
-                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <User className="h-3 w-3" />
                     Thông tin khách hàng
                   </h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
                     <span className="text-black">Tên khách hàng:</span>
                     <span className="font-medium text-black">{viewOrder.customerName}</span>
                     
                     <span className="text-black">Phương thức:</span>
                     <span className="font-medium text-black">COD</span>
                     
-                    <span className="text-black">Ghi chú:</span>
-                    <span className="font-medium text-black line-clamp-1" title={viewOrder.orderInfor || "Không có ghi chú"}>
-                      {viewOrder.orderInfor || "Không có ghi chú"}
-                    </span>
+                    <span className="text-black">Mã khách hàng:</span>
+                    <span className="font-medium text-black">KH-{viewOrder.raw?.accountId || "---"}</span>
                   </div>
                 </div>
                 
-                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-4 h-full shadow-sm">
-                  <h3 className="text-sm font-semibold text-black mb-3 flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
+                {/* Hàng 2 */}
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Package className="h-3 w-3" />
+                    Ghi chú đơn hàng
+                  </h3>
+                  <div className="text-xs">
+                    <div className="bg-white rounded-md border border-pink-100 p-2 min-h-[60px]">
+                      <span className="text-black">
+                        {viewOrder.orderInfor || "Không có ghi chú"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <CreditCard className="h-3 w-3" />
                     Thông tin thanh toán
                   </h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
                     <span className="text-black">Tổng sản phẩm:</span>
                     <span className="font-medium text-black">{viewOrder.amount} sản phẩm</span>
                     
@@ -824,34 +838,34 @@ const OrderManagement = () => {
               </div>
               
               {/* Sản phẩm đã mua */}
-              <div className="mb-3 pb-3 border-b border-pink-100 flex items-center justify-between">
-                <h3 className="font-semibold text-black flex items-center gap-2">
+              <div className="mb-2 pb-2 border-b border-pink-100 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-black flex items-center gap-2">
                   <ShoppingBag className="h-4 w-4 text-black" />
                   Sản phẩm đã mua
                 </h3>
-                <span className="text-sm text-black font-medium">{orderDetails.length} sản phẩm</span>
+                <span className="text-xs text-black font-medium">{orderDetails.length} sản phẩm</span>
               </div>
               
               {loadingOrderDetails ? (
-                <div className="flex justify-center items-center py-8 bg-white rounded-lg border border-pink-100 shadow-sm">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-200 mr-3"></div>
-                  <span className="text-black font-medium">Đang tải thông tin sản phẩm...</span>
+                <div className="flex justify-center items-center py-4 bg-white rounded-lg border border-pink-100 shadow-sm">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-200 mr-2"></div>
+                  <span className="text-black text-sm">Đang tải thông tin sản phẩm...</span>
                 </div>
               ) : orderDetails.length === 0 ? (
-                <div className="bg-white rounded-lg p-8 text-center border border-pink-100 shadow-sm">
-                  <Package className="h-12 w-12 text-pink-300 mx-auto mb-3" />
-                  <p className="text-black">Không có thông tin sản phẩm</p>
+                <div className="bg-white rounded-lg p-4 text-center border border-pink-100 shadow-sm">
+                  <Package className="h-8 w-8 text-pink-300 mx-auto mb-2" />
+                  <p className="text-black text-sm">Không có thông tin sản phẩm</p>
                 </div>
               ) : (
                 <div className="bg-white rounded-lg border border-pink-100 overflow-hidden shadow-sm">
                   <Table className="min-w-[600px]">
                     <TableHeader className="bg-pink-100">
                       <TableRow className="border-b border-pink-100">
-                        <TableHead className="text-black font-medium py-3">STT</TableHead>
-                        <TableHead className="text-black font-medium">Sản phẩm</TableHead>
-                        <TableHead className="text-black font-medium">Giá</TableHead>
-                        <TableHead className="text-black font-medium">SL</TableHead>
-                        <TableHead className="text-black font-medium text-right">Thành tiền</TableHead>
+                        <TableHead className="text-black font-medium py-2 text-xs">STT</TableHead>
+                        <TableHead className="text-black font-medium text-xs">Sản phẩm</TableHead>
+                        <TableHead className="text-black font-medium text-xs">Giá</TableHead>
+                        <TableHead className="text-black font-medium text-xs">SL</TableHead>
+                        <TableHead className="text-black font-medium text-xs text-right">Thành tiền</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -859,32 +873,32 @@ const OrderManagement = () => {
                         const product = products.find(p => p.productId === detail.productId);
                         return (
                           <TableRow key={detail.id} className="hover:bg-pink-100 border-b border-pink-100 transition-colors">
-                            <TableCell className="font-medium text-black">{idx + 1}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
+                            <TableCell className="font-medium text-black text-xs py-2">{idx + 1}</TableCell>
+                            <TableCell className="py-2">
+                              <div className="flex items-center gap-2">
                                 {product && product.productImage && (
-                                  <img src={product.productImage} alt={product.productName} className="h-16 w-16 object-cover rounded-md border border-pink-100 shadow-sm" />
+                                  <img src={product.productImage} alt={product.productName} className="h-12 w-12 object-cover rounded-md border border-pink-100 shadow-sm" />
                                 )}
                                 <div>
-                                  <div className="font-medium text-black">
+                                  <div className="font-medium text-black text-xs">
                                     {product ? product.productName : "Sản phẩm không xác định"}
                                   </div>
                                   {product && (
-                                    <div className="text-xs text-black mt-1 flex gap-2">
-                                      <span className="px-2 py-0.5 bg-pink-50 rounded-full border border-pink-100">{product.type}</span>
-                                      <span className="px-2 py-0.5 bg-pink-50 rounded-full border border-pink-100">{product.productMaterial || "-"}</span>
+                                    <div className="text-xs text-black mt-1 flex gap-1">
+                                      <span className="px-1.5 py-0.5 bg-pink-50 rounded-full border border-pink-100 text-xs">{product.type}</span>
+                                      <span className="px-1.5 py-0.5 bg-pink-50 rounded-full border border-pink-100 text-xs">{product.productMaterial || "-"}</span>
                                     </div>
                                   )}
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-black">{detail.price.toLocaleString()}₫</TableCell>
-                            <TableCell className="text-black">
-                              <span className="px-2 py-0.5 bg-pink-50 rounded border border-pink-100 inline-block min-w-[30px] text-center">
+                            <TableCell className="text-black text-xs">{detail.price.toLocaleString()}₫</TableCell>
+                            <TableCell className="text-black text-xs">
+                              <span className="px-1.5 py-0.5 bg-pink-50 rounded border border-pink-100 inline-block min-w-[25px] text-center">
                                 {detail.quantity}
                               </span>
                             </TableCell>
-                            <TableCell className="font-medium text-black text-right">
+                            <TableCell className="font-medium text-black text-xs text-right">
                               {(detail.price * detail.quantity).toLocaleString()}₫
                             </TableCell>
                           </TableRow>

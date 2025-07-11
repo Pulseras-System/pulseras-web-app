@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import OrderService from '@/services/OrderService';
+import { useCartStore } from '@/utils/cartStore';
 
 interface AddToCartProps {
   product: {
@@ -21,6 +22,7 @@ interface AddToCartProps {
 export const AddToCartButton = ({ product, className = '', variant = 'default' }: AddToCartProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const { setQuantity } = useCartStore();
 
   // Lấy accountId từ localStorage mỗi lần click để đảm bảo luôn lấy giá trị mới nhất
   const handleAddToCart = async () => {
@@ -36,6 +38,7 @@ export const AddToCartButton = ({ product, className = '', variant = 'default' }
 
       const itemCount = order.orderDetails.filter(detail => detail.status !== 0).length;
       localStorage.setItem('amount', itemCount.toString());
+      setQuantity(itemCount);
       setShowNotification(true);
     }
     catch (error) {

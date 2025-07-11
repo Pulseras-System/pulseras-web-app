@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 // import { 
 //   NavigationMenu, 
 //   NavigationMenuContent, 
@@ -36,6 +36,19 @@ const navItems = [
 
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+
+    document.cookie.split(";").forEach(cookie => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+
+    navigate("/");
+  };
 
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
@@ -81,7 +94,7 @@ const AdminLayout = () => {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            <span>Đăng xuất</span>
+            <span onClick={handleLogout}>Đăng xuất</span>
           </div>
         </div>
       </aside>
@@ -138,7 +151,7 @@ const AdminLayout = () => {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    <span>Đăng xuất</span>
+                    <span onClick={handleLogout}>Đăng xuất</span>
                   </div>
                 </div>
               </div>
@@ -165,10 +178,14 @@ const AdminLayout = () => {
             <DropdownMenuContent className="w-64 p-2 rounded-xl shadow-lg border-0 bg-white/95" align="end" >
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/profile" className="flex items-center">
+                  Hồ sơ
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -202,10 +219,14 @@ const AdminLayout = () => {
               <DropdownMenuContent className="bg-white/95" align="end">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/profile" className="flex items-center">
+                    Hồ sơ
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
