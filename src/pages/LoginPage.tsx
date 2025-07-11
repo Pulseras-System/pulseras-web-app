@@ -38,8 +38,10 @@ const LoginPage = () => {
           localStorage.setItem('amount', amount.toString());
         }
       }
+
       const path = await getLandingPathByRole();
       navigate(path, { replace: true });
+      window.location.reload(); // Reload to ensure state is updated
     } catch (error) {
       console.error("Google Login Error:", error);
     }
@@ -80,6 +82,7 @@ const LoginPage = () => {
 
       const path = await getLandingPathByRole();
       navigate(path, { replace: true });
+      window.location.reload(); // Reload to ensure state is updated
 
     } catch (err: any) {
       setError(

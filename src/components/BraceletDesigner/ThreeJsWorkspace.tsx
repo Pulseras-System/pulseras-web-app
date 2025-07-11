@@ -198,7 +198,7 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         if (!sceneRef.current) return;
 
         // Create cylinder geometry for the bracelet string
-        const geometry = new THREE.CylinderGeometry(0.1, 0.1, 6, 16); // radius top, radius bottom, height, segments
+        const geometry = new THREE.CylinderGeometry(0.1, 0.1, 10, 16); // radius top, radius bottom, height, segments
         const material = new THREE.MeshPhongMaterial({
             color: 0xD4AF37, // Gold color for premium look
             shininess: 30,
@@ -230,8 +230,8 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
     };    // Helper function to create snap points along the bracelet string
     const createSnapPoints = useCallback(() => {
         const snapPoints: THREE.Vector3[] = [];
-        const numPoints = 120; // Tăng lên 120 điểm để có mật độ snap cực dày
-        const stringLength = 5.5; // Chiều dài dây
+        const numPoints = 200; // Tăng lên 200 điểm để có mật độ snap cực dày cho dây dài hơn
+        const stringLength = 9.5; // Chiều dài dây tăng lên để phù hợp với dây dài hơn
 
         for (let i = 0; i < numPoints; i++) {
             const x = (i - (numPoints - 1) / 2) * (stringLength / (numPoints - 1));

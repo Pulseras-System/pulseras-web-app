@@ -28,18 +28,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import AccountService, { Account } from "@/services/AccountService";
 
+// Define unique roles from the account data
+interface Role {
+  id: string;
+  name: string;
+}
+
 // Define empty account template
-const emptyAccount: Account = {
+const getEmptyAccount = (): Account => ({
   id: "",
   fullName: "",
   username: "",
   email: "",
   phone: "",
-  roleId: 2, // Default to regular user role
+  roleId: "68454a416b4be139d6441986", // Default Customer roleId
+  roleName: "Customer",
   createDate: new Date().toISOString(),
   lastEdited: new Date().toISOString(),
   status: 1 // Active by default
-};
+});
 
 const itemsPerPage = 5;
 
@@ -54,22 +61,47 @@ const UserManagementPage = () => {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Get unique roles from accounts data and sort them
+  const getUniqueRoles = (accounts: Account[]): Role[] => {
+    const roleMap = new Map<string, Role>();
+    accounts.forEach(account => {
+      if (account.roleId && account.roleName) {
+        roleMap.set(account.roleId, {
+          id: account.roleId,
+          name: account.roleName
+        });
+      }
+    });
+    const roles = Array.from(roleMap.values());
+    
+    // Sort roles with Admin and Staff first
+    return roles.sort((a, b) => {
+      const order = { "Admin": 1, "Staff": 2, "Customer": 3 };
+      const aOrder = order[a.name as keyof typeof order] || 999;
+      const bOrder = order[b.name as keyof typeof order] || 999;
+      return aOrder - bOrder;
+    });
+  };
+
   // Fetch accounts on component mount
   useEffect(() => {
-    const fetchAccounts = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const data = await AccountService.get();
-        setAccounts(data);
+        const accountsData = await AccountService.get();
+        setAccounts(accountsData);
       } catch (error) {
         console.error("Failed to fetch accounts:", error);
+        alert("Không thể tải dữ liệu tài khoản. Vui lòng thử lại sau.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAccounts();
+    fetchData();
   }, []);
+
+  const uniqueRoles = getUniqueRoles(accounts);
 
   const filteredAccounts = accounts.filter(account => {
     const matchesSearch = 
@@ -85,16 +117,29 @@ const UserManagementPage = () => {
     
     const matchesRole =
       roleFilter === "all" ||
-      (roleFilter === "admin" && account.roleId === 1) ||
-      (roleFilter === "user" && account.roleId === 2);
+      uniqueRoles.some(role => role.id === roleFilter && account.roleId === role.id);
     
     return matchesSearch && matchesStatus && matchesRole;
   });
 
-  const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
+  // Sort filtered accounts with Admin and Staff first
+  const sortedAccounts = filteredAccounts.sort((a, b) => {
+    const roleOrder = { "Admin": 1, "Staff": 2, "Customer": 3 };
+    const aOrder = roleOrder[a.roleName as keyof typeof roleOrder] || 999;
+    const bOrder = roleOrder[b.roleName as keyof typeof roleOrder] || 999;
+    
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    
+    // If same role, sort by name
+    return a.fullName.localeCompare(b.fullName);
+  });
+
+  const totalPages = Math.ceil(sortedAccounts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentAccounts = filteredAccounts.slice(startIndex, endIndex);
+  const currentAccounts = sortedAccounts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -108,7 +153,7 @@ const UserManagementPage = () => {
   };
 
   const handleAddAccount = () => {
-    setSelectedAccount(emptyAccount);
+    setSelectedAccount(getEmptyAccount());
     setModalOpen(true);
   };
 
@@ -126,12 +171,17 @@ const UserManagementPage = () => {
           username: account.username,
           email: account.email,
           phone: account.phone,
-          // password: "defaultPassword123", // A default password, in real app should prompt for this
           roleId: account.roleId,
           status: account.status
         });
-        setAccounts([...accounts, newAccount]);
+        // Add roleName to the new account
+        const newAccountWithRole = {
+          ...newAccount,
+          roleName: account.roleName
+        };
+        setAccounts([...accounts, newAccountWithRole]);
         console.log("Tạo người dùng mới thành công");
+        alert("Tạo người dùng mới thành công!");
       } else {
         // Update existing account
         const updatedAccount = await AccountService.update(account.id, {
@@ -142,13 +192,20 @@ const UserManagementPage = () => {
           roleId: account.roleId,
           status: account.status
         });
-        setAccounts(accounts.map(a => (a.id === account.id ? updatedAccount : a)));
+        // Add roleName to the updated account
+        const updatedAccountWithRole = {
+          ...updatedAccount,
+          roleName: account.roleName
+        };
+        setAccounts(accounts.map(a => (a.id === account.id ? updatedAccountWithRole : a)));
         console.log("Cập nhật người dùng thành công");
+        alert("Cập nhật người dùng thành công!");
       }
       setModalOpen(false);
       setSelectedAccount(null);
     } catch (error) {
       console.error("Failed to save account:", error);
+      alert("Có lỗi xảy ra khi lưu thông tin tài khoản. Vui lòng thử lại.");
     }
   };
 
@@ -156,14 +213,25 @@ const UserManagementPage = () => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  const getRoleName = (roleId: number) => {
-    switch (roleId) {
-      case 1:
-        return "Admin";
-      case 2:
-        return "Người dùng";
-      default:
-        return "Không xác định";
+  const getRoleName = (account: Account) => {
+    const roleTranslations: { [key: string]: string } = {
+      "Admin": "Quản trị viên",
+      "Staff": "Nhân viên",
+      "Customer": "Khách hàng"
+    };
+    return roleTranslations[account.roleName || ""] || account.roleName || "Không xác định";
+  };
+
+  const handleDeleteAccount = async (accountId: string) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa tài khoản này không?")) {
+      try {
+        await AccountService.delete(accountId);
+        setAccounts(accounts.filter(account => account.id !== accountId));
+        console.log("Xóa tài khoản thành công");
+      } catch (error) {
+        console.error("Failed to delete account:", error);
+        alert("Không thể xóa tài khoản. Vui lòng thử lại.");
+      }
     }
   };
 
@@ -176,7 +244,7 @@ const UserManagementPage = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-800" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
               placeholder="Tìm kiếm người dùng..."
               className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
@@ -234,8 +302,19 @@ const UserManagementPage = () => {
                 }}
               >
                 <option value="all">Tất cả vai trò</option>
-                <option value="admin">Admin</option>
-                <option value="user">Người dùng</option>
+                {uniqueRoles.map(role => {
+                  const roleTranslations: { [key: string]: string } = {
+                    "Admin": "Quản trị viên",
+                    "Staff": "Nhân viên", 
+                    "Customer": "Khách hàng"
+                  };
+                  const displayName = roleTranslations[role.name] || role.name;
+                  return (
+                    <option key={role.id} value={role.id}>
+                      {displayName}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
@@ -288,12 +367,14 @@ const UserManagementPage = () => {
                 </TableCell>
                 <TableCell>
                   <Badge className={`${
-                    account.roleId === 1 
+                    account.roleName === "Admin" 
                       ? "bg-purple-100 text-purple-800" 
+                      : account.roleName === "Staff"
+                      ? "bg-orange-100 text-orange-800"
                       : "bg-blue-100 text-blue-800"
                   }`}>
                     <ShieldCheck className="h-3 w-3 mr-1" />
-                    {getRoleName(account.roleId)}
+                    {getRoleName(account)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -325,6 +406,7 @@ const UserManagementPage = () => {
                     variant="outline" 
                     size="sm"
                     className="text-red-700 border-red-200 hover:bg-red-50"
+                    onClick={() => handleDeleteAccount(account.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -335,7 +417,7 @@ const UserManagementPage = () => {
         </Table>
       </div>
 
-      {!isLoading && filteredAccounts.length === 0 && (
+      {!isLoading && sortedAccounts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center border border-pink-100 rounded-lg bg-pink-100">
           <User className="h-12 w-12 text-blue-100 mb-4" />
           <h3 className="text-lg font-medium text-black">Không tìm thấy người dùng</h3>
@@ -345,10 +427,10 @@ const UserManagementPage = () => {
         </div>
       )}
 
-      {filteredAccounts.length > 0 && (
+      {sortedAccounts.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-sm text-black">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredAccounts.length)} của {filteredAccounts.length} người dùng
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, sortedAccounts.length)} của {sortedAccounts.length} người dùng
           </div>
           <Pagination
             currentPage={currentPage}
@@ -417,10 +499,29 @@ const UserManagementPage = () => {
                   <select
                     className="w-full p-2 border border-pink-100 rounded-md bg-white text-black"
                     value={selectedAccount.roleId}
-                    onChange={(e) => setSelectedAccount({ ...selectedAccount, roleId: parseInt(e.target.value) })}
+                    onChange={(e) => {
+                      const selectedRoleId = e.target.value;
+                      const selectedRole = uniqueRoles.find(r => r.id === selectedRoleId);
+                      setSelectedAccount({ 
+                        ...selectedAccount, 
+                        roleId: selectedRoleId,
+                        roleName: selectedRole?.name || "Customer"
+                      });
+                    }}
                   >
-                    <option value={1}>Admin</option>
-                    <option value={2}>Người dùng</option>
+                    {uniqueRoles.map(role => {
+                      const roleTranslations: { [key: string]: string } = {
+                        "Admin": "Quản trị viên",
+                        "Staff": "Nhân viên",
+                        "Customer": "Khách hàng"
+                      };
+                      const displayName = roleTranslations[role.name] || role.name;
+                      return (
+                        <option key={role.id} value={role.id}>
+                          {displayName}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div>
