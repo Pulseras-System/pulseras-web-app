@@ -18,6 +18,11 @@ export interface Product {
   status: number;
 }
 
+export interface TopBuyProduct {
+  product: Product; // Sửa từ [Product] thành Product
+  soldQuantity: number;
+}
+
 export interface TypeDistributionItem {
   label: string;
   value: number;
@@ -102,9 +107,39 @@ const ProductService = {
     return response.data;
   },
 
-  getTopBuyProducts: async (): Promise<Product[]> => {
-    const response = await api.get<Product[]>("/products/top-buy-products");
-    return response.data;
+  getTopBuyProducts: async (): Promise<TopBuyProduct[]> => {
+    try {
+      const response = await api.get("/products/top-buy-products");
+      
+      if (Array.isArray(response.data)) {
+        const validatedData = response.data.map((item: any) => {
+          // Nếu item đã có cấu trúc {product, soldQuantity}
+          if (item.product && typeof item.soldQuantity === 'number') {
+            return {
+              product: item.product,
+              soldQuantity: item.soldQuantity
+            } as TopBuyProduct;
+          }
+          
+          // Nếu item là Product trực tiếp, wrap nó trong TopBuyProduct format
+          if (item.productId) {
+            return {
+              product: item,
+              soldQuantity: item.soldQuantity || 0
+            } as TopBuyProduct;
+          }
+          
+          return null;
+        }).filter((item): item is TopBuyProduct => item !== null);
+        
+        return validatedData;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error("Error fetching top products:", error);
+      return [];
+    }
   },
 
   getLatestProducts: async (): Promise<Product[]> => {
