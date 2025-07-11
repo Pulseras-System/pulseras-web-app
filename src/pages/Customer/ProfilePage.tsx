@@ -20,32 +20,32 @@ function ProfilePage() {
         setLoading(true);
         // Get the account from localStorage
         const storedAccount = localStorage.getItem('account');
-        
+
         if (!storedAccount) {
           throw new Error('Bạn chưa đăng nhập');
         }
-        
+
         const parsedAccount = JSON.parse(storedAccount);
         console.log('Stored account:', parsedAccount); // Debug stored account data
-        
+
         // Make sure we have a valid ID
         if (!parsedAccount.id) {
           throw new Error('Không tìm thấy ID tài khoản');
         }
-        
+
         console.log('Fetching account with ID:', parsedAccount.id); // Debug ID
-        
+
         // Fetch account details using the ID
         const accountData = await AccountService.getById(parsedAccount.id);
         setAccount(accountData);
-        
+
         // Nếu có roleId hoặc role_id, fetch thông tin về role từ API
         if (accountData.roleId) {
           fetchRoleName(accountData.roleId);
         } else if (accountData.roleId) {
           fetchRoleName(accountData.roleId);
         }
-        
+
         setLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể tải hồ sơ');
@@ -83,7 +83,7 @@ function ProfilePage() {
           setRoleName(roleData.roleName);
         } catch (innerErr) {
           console.error("Lỗi khi gọi API với roleId số:", innerErr);
-          
+
           // Map các roleId số sang tên vai trò làm giá trị backup
           if (typeof roleId === 'number') {
             switch (roleId) {
@@ -141,38 +141,38 @@ function ProfilePage() {
   // Handle profile update
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!account) return;
-    
+
     try {
       setUpdateLoading(true);
       setUpdateError(null);
-      
+
       // Check if any fields have actually changed (for efficiency)
       const hasChanges = Object.entries(editFormData).some(
         ([key, value]) => account[key as keyof Account] !== value && value !== undefined
       );
-      
+
       // Only update if there are changes
       if (!hasChanges) {
         setUpdateLoading(false);
         setIsEditing(false);
         return;
       }
-      
+
       // Send ALL account data (existing + modified) instead of just changed fields
       const updatedData = {
         ...account,            // Include all existing account data
         ...editFormData        // Overwrite with any edited fields
       };
-      
+
       // Remove any undefined values before sending
       const cleanedData = Object.fromEntries(
         Object.entries(updatedData).filter(([_, value]) => value !== undefined)
       ) as Record<string, any>;
-      
+
       const response = await AccountService.update(account.id, cleanedData);
-      
+
       // If some fields in the response are null, use the values from our updated data
       const finalAccountData = { ...response } as Record<string, any>;
       Object.keys(finalAccountData).forEach(key => {
@@ -180,23 +180,23 @@ function ProfilePage() {
           finalAccountData[key] = cleanedData[key];
         }
       });
-      
+
       // Also update local storage with all the account data
       const storedAccount = localStorage.getItem('account');
       if (storedAccount) {
         const parsedAccount = JSON.parse(storedAccount) as Record<string, any>;
-        const updatedStoredAccount = { 
+        const updatedStoredAccount = {
           ...parsedAccount,
           ...cleanedData
         };
-        
+
         localStorage.setItem('account', JSON.stringify(updatedStoredAccount));
         window.location.reload(); // Reload to reflect changes in local storage
       }
-      
+
       // Update the state with complete account data
       setAccount(finalAccountData as Account);
-      
+
       setUpdateLoading(false);
       setUpdateSuccess(true);
       setIsEditing(false);
@@ -208,7 +208,8 @@ function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
+      <div className=" py-6 px-4 sm:px-6 lg:px-8">
+
         <div className="max-w-4xl mx-auto">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {/* Skeleton header */}
@@ -242,7 +243,8 @@ function ProfilePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen  py-12 px-4 sm:px-6 lg:px-8">
+      <div className=" py-6 px-4 sm:px-6 lg:px-8">
+
         <div className="max-w-4xl mx-auto">
           <div className="bg-white p-6 shadow rounded-lg border-l-4 border-red-500">
             <div className="flex items-center">
@@ -274,7 +276,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className=" py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {updateSuccess && (
           <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-4 rounded">
@@ -334,7 +336,7 @@ function ProfilePage() {
               </button>
             </div>
           </div>
-          
+
           {account && (
             <div className="px-6 py-8">
               {/* User header with avatar */}
@@ -345,21 +347,20 @@ function ProfilePage() {
                 <div className="md:ml-8 text-center md:text-left">
                   <h2 className="text-3xl font-bold text-gray-800">{account.fullName || "Người dùng"}</h2>
                   <div className="mt-2 flex items-center justify-center md:justify-start">
-                    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium ${
-                      account.status === 1 
-                        ? "bg-green-100 text-green-800" 
+                    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium ${account.status === 1
+                        ? "bg-green-100 text-green-800"
                         : "bg-red-100 text-red-800"
-                    }`}>
+                      }`}>
                       {account.status === 1 ? "Tài Khoản Hoạt Động" : "Tài Khoản Không Hoạt Động"}
                     </span>
                   </div>
                   <p className="mt-1 text-gray-500">{account.email}</p>
                 </div>
               </div>
-              
+
               <div className="border-t border-gray-200 pt-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Thông Tin Tài Khoản</h3>
-                
+
                 {isEditing ? (
                   <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -377,7 +378,7 @@ function ProfilePage() {
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2 border"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                           Tên Đăng Nhập
@@ -392,7 +393,7 @@ function ProfilePage() {
                         />
                         <p className="text-xs text-gray-500">Tên đăng nhập không thể thay đổi</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                           Địa Chỉ Email
@@ -407,7 +408,7 @@ function ProfilePage() {
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2 border"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                           Số Điện Thoại
@@ -423,7 +424,7 @@ function ProfilePage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end space-x-3">
                       <button
                         type="button"
@@ -451,35 +452,35 @@ function ProfilePage() {
                   </form>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-                    <ProfileField 
-                      icon="user" 
-                      label="Tên Đăng Nhập" 
-                      value={account.username || 'Chưa thiết lập'} 
+                    <ProfileField
+                      icon="user"
+                      label="Tên Đăng Nhập"
+                      value={account.username || 'Chưa thiết lập'}
                     />
-                    <ProfileField 
-                      icon="mail" 
-                      label="Email" 
-                      value={account.email || 'Chưa thiết lập'} 
+                    <ProfileField
+                      icon="mail"
+                      label="Email"
+                      value={account.email || 'Chưa thiết lập'}
                     />
-                    <ProfileField 
-                      icon="phone" 
-                      label="Số Điện Thoại" 
-                      value={account.phone || 'Chưa thiết lập'} 
+                    <ProfileField
+                      icon="phone"
+                      label="Số Điện Thoại"
+                      value={account.phone || 'Chưa thiết lập'}
                     />
-                    <ProfileField 
-                      icon="calendar" 
-                      label="Ngày Tạo Tài Khoản" 
-                      value={formatDate(account.createDate)} 
+                    <ProfileField
+                      icon="calendar"
+                      label="Ngày Tạo Tài Khoản"
+                      value={formatDate(account.createDate)}
                     />
-                    <ProfileField 
-                      icon="clock" 
-                      label="Cập Nhật Lần Cuối" 
-                      value={formatDate(account.lastEdited)} 
+                    <ProfileField
+                      icon="clock"
+                      label="Cập Nhật Lần Cuối"
+                      value={formatDate(account.lastEdited)}
                     />
-                    <ProfileField 
-                      icon="badge" 
-                      label="Vai Trò" 
-                      value={roleName} 
+                    <ProfileField
+                      icon="badge"
+                      label="Vai Trò"
+                      value={roleName}
                     />
                   </div>
                 )}
@@ -493,14 +494,14 @@ function ProfilePage() {
 }
 
 // Helper component for profile fields with icons
-function ProfileField({ 
-  icon, 
-  label, 
-  value 
-}: { 
-  icon: "user" | "mail" | "phone" | "calendar" | "clock" | "badge"; 
-  label: string; 
-  value: string; 
+function ProfileField({
+  icon,
+  label,
+  value
+}: {
+  icon: "user" | "mail" | "phone" | "calendar" | "clock" | "badge";
+  label: string;
+  value: string;
 }) {
   return (
     <div className="flex">
@@ -550,7 +551,7 @@ function ProfileField({
 // Helper function to format dates safely
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return 'Không có sẵn';
-  
+
   try {
     return new Date(dateString).toLocaleDateString("vi-VN");
   } catch (error) {

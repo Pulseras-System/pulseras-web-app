@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 // import { 
 //   NavigationMenu, 
 //   NavigationMenuContent, 
@@ -34,6 +34,24 @@ const navItems = [
 
 const StaffLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+
+  const handleLogout = () => {
+    localStorage.clear();
+
+    document.cookie.split(";").forEach(cookie => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+
+    navigate("/");
+  };
+
+  const handleSettings = () => {
+    navigate("/staff/settings");
+  };
 
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
@@ -168,9 +186,9 @@ const StaffLayout = () => {
                   Hồ sơ
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -209,9 +227,9 @@ const StaffLayout = () => {
                     Hồ sơ
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -8,6 +8,7 @@ import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
 import BankTransferQR from "@/components/BankTransferQR";
+import { useCartStore } from "@/utils/cartStore";
 
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <motion.div
@@ -277,6 +278,7 @@ const CheckoutPage = () => {
   });
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const { setQuantity } = useCartStore();
 
 
   useEffect(() => {
@@ -377,6 +379,7 @@ const CheckoutPage = () => {
 
     // navigate('/');
     localStorage.setItem('amount', '0');
+    setQuantity(0);
   };
 
   return (
