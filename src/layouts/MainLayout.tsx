@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
   Home, ShoppingBag, Sparkles, Info, Phone,
-  ShoppingCart, User, Menu, Search, LogOut, Settings, Heart, Package,
+  ShoppingCart, User, Menu, LogOut, Settings, Heart, Package,
 } from "lucide-react";
 import { useCartStore } from "@/utils/cartStore";
 
@@ -31,8 +31,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const MainLayout = () => {
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  // const [showSearch, setShowSearch] = useState(false);
+  // const [searchValue, setSearchValue] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [account, setAccount] = useState<any>(null);
   const navigate = useNavigate();
@@ -73,15 +73,15 @@ const MainLayout = () => {
     navigate("/");
   };
 
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      navigate(`/search?query=${searchValue}`);
-      setShowSearch(false);
-      setSearchValue("");
-      setIsMobileMenuOpen(false);
-    }
-  };
+  // const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (searchValue.trim()) {
+  //     navigate(`/search?query=${searchValue}`);
+  //     setShowSearch(false);
+  //     setSearchValue("");
+  //     setIsMobileMenuOpen(false);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-100 to-pink-100 font-sans text-gray-800 antialiased">
@@ -118,39 +118,7 @@ const MainLayout = () => {
             <ThemeToggle />
 
             {/* Search Icon */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-600 hover:bg-gray-100 rounded-full transition-all hover:scale-110"
-              onClick={() => setShowSearch(!showSearch)}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-
-            {/* Search Box */}
-            {showSearch && (
-              <form
-                onSubmit={handleSearchSubmit}
-                className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-xl p-2 w-64 z-50 animate-fade-in"
-              >
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm sản phẩm..."
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
-                  >
-                    <Search className="h-4 w-4" />
-                  </button>
-                </div>
-              </form>
-            )}
-
+            
             {/* Cart Icon */}
             <Button
               variant="ghost"
@@ -199,7 +167,7 @@ const MainLayout = () => {
                     <Heart className="h-4 w-4 text-blue-500" />
                     <span>Danh sách yêu thích</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
                     <Settings className="h-4 w-4 text-blue-500" />
                     <span>Cài đặt tài khoản</span>
                   </DropdownMenuItem>

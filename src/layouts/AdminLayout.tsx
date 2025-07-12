@@ -54,7 +54,7 @@ const AdminLayout = () => {
     <div className="flex min-h-screen bg-[#fff8f0]">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 bg-gradient-to-b from-blue-100 to-pink-100 font-sans  antialiased  flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
-        <Link to="/staff" className="flex items-center gap-3 mb-10 group">
+        <Link to="/admin" className="flex items-center gap-3 mb-10 group">
           <img 
             src={Logo} 
             alt="Workshop logo" 
