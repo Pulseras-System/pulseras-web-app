@@ -35,6 +35,7 @@ export interface PayOSPaymentStatus {
     id: string;
     orderCode: number;
     amount: number;
+    description: string;
     status: string;
     checkoutUrl: string;
     qrCode: string;

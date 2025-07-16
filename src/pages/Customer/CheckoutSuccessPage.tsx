@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Home, Package } from "lucide-react";
 import PaymentService from "@/services/PaymentService";
+import OrderService from "@/services/OrderService";
+import { useCartStore } from "@/utils/cartStore";
 
 const CheckoutSuccessPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState<any>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [orderUpdateStatus, setOrderUpdateStatus] = useState<'pending' | 'success' | 'error'>('pending');
+  const { setQuantity } = useCartStore();
 
   const code = searchParams.get('code');
   const status = searchParams.get('status');
@@ -19,13 +22,79 @@ const CheckoutSuccessPage = () => {
   const verifyPayment = async () => {
     if (orderCode) {
       try {
-        setRefreshing(true);
+        console.log('Verifying payment for orderCode:', orderCode);
+        
         const paymentStatus = await PaymentService.getPaymentByOrderCode(Number(orderCode));
+        console.log('Payment status response:', paymentStatus);
         setPaymentData(paymentStatus.data);
+
+        // Check if payment was successful
+        const isSuccessful = paymentStatus.data.status === "PAID" || 
+                           paymentStatus.data.status === "00" || 
+                           paymentStatus.data.status === "SUCCESS" ||
+                           paymentStatus.data.status === "COMPLETED" ||
+                           paymentStatus.data.status === "successful" ||
+                           paymentStatus.data.status === "paid" ||
+                           paymentStatus.data.status === "completed" ||
+                           code === '00' || 
+                           status === 'PAID';
+
+        console.log('Payment is successful:', isSuccessful);
+
+        if (isSuccessful) {
+          console.log('Payment successful, attempting to update order status');
+          
+          // Try to get orderId from multiple sources:
+          // 1. URL parameters (if manually passed)
+          // 2. PayOS payment description field (where your orderId is stored)
+          // 3. URL id parameter (fallback)
+          let orderId = searchParams.get('orderId') || 
+                       paymentStatus.data.description || 
+                       searchParams.get('id');
+
+          console.log('Available order sources:', {
+            urlOrderId: searchParams.get('orderId'),
+            paymentDescription: paymentStatus.data.description,
+            urlId: searchParams.get('id'),
+            selectedOrderId: orderId
+          });
+
+          if (orderId) {
+            try {
+              console.log('Updating order status for orderId:', orderId);
+              
+              // Get current order info
+              const currentOrder = await OrderService.getById(orderId);
+              console.log('Current order:', currentOrder);
+              
+              // Update order status to 3 (paid)
+              const updateResult = await OrderService.update(String(orderId), {
+                ...currentOrder,
+                status: 3,
+                lastEdited: new Date().toISOString(),
+              });
+              
+              console.log('Order update result:', updateResult);
+              console.log('Successfully updated order status to 3 (paid)');
+              setOrderUpdateStatus('success');
+              
+              // Clear cart
+              localStorage.setItem('amount', '0');
+              setQuantity(0);
+              
+            } catch (error) {
+              console.error('Error updating order status:', error);
+              setOrderUpdateStatus('error');
+            }
+          } else {
+            console.warn('No orderId found in URL parameters or payment description');
+            setOrderUpdateStatus('error');
+          }
+        }
+
       } catch (error) {
         console.error('Error verifying payment:', error);
-      } finally {
-        setRefreshing(false);
+        setOrderUpdateStatus('error');
       }
     }
     setLoading(false);
@@ -46,7 +115,12 @@ const CheckoutSuccessPage = () => {
       };
     }
 
-    if (code === '00' || status === 'PAID') {
+    // Check if payment was successful based on URL parameters OR if order was successfully updated
+    const isPaymentSuccessful = code === '00' || 
+                               status === 'PAID' || 
+                               orderUpdateStatus === 'success';
+
+    if (isPaymentSuccessful) {
       return {
         icon: <CheckCircle className="h-16 w-16 text-green-500" />,
         title: "Thanh toán thành công!",
@@ -99,9 +173,15 @@ const CheckoutSuccessPage = () => {
               <h3 className="font-medium text-gray-700 mb-3">Thông tin giao dịch</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Mã đơn hàng:</span>
+                  <span className="text-gray-500">Mã đơn hàng PayOS:</span>
                   <span className="font-medium">{paymentData.orderCode}</span>
                 </div>
+                {paymentData.description && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Mã đơn hàng hệ thống:</span>
+                    <span className="font-medium">{paymentData.description}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-500">Số tiền:</span>
                   <span className="font-medium">{paymentData.amount?.toLocaleString('vi-VN')}₫</span>
@@ -109,11 +189,12 @@ const CheckoutSuccessPage = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-500">Trạng thái:</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    orderUpdateStatus === 'success' ? 'bg-green-100 text-green-800' :
                     paymentData.status === 'PAID' ? 'bg-green-100 text-green-800' : 
                     paymentData.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {paymentData.status}
+                    {orderUpdateStatus === 'success' ? 'Đã thanh toán' : paymentData.status}
                   </span>
                 </div>
               </div>
@@ -121,23 +202,6 @@ const CheckoutSuccessPage = () => {
           )}
 
           <div className="space-y-3">
-            {orderCode && (
-              <Button
-                variant="outline"
-                className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
-                onClick={verifyPayment}
-                disabled={refreshing}
-              >
-                {refreshing ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    Đang kiểm tra...
-                  </div>
-                ) : (
-                  "Kiểm tra lại trạng thái thanh toán"
-                )}
-              </Button>
-            )}
             <Button
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => navigate('/orders')}

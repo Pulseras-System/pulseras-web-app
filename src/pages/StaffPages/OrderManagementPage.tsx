@@ -536,7 +536,7 @@ const OrderManagement = () => {
                       className="text-red-500 border-pink-100 hover:bg-pink-100 hover:text-red-600"
                       onClick={() => handleDeleteClick(order)}
                       title="Xóa đơn hàng"
-                      disabled={order.status === "Trong giỏ hàng"}
+                      disabled={isDisabled}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
