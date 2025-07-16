@@ -253,7 +253,8 @@ const HomePage = () => {
               size="lg"
               className="text-blue-600 border-blue-600 hover:bg-blue-100 shadow-lg"
             >
-              Thiết kế của riêng bạn
+              <Link to="/design">Thiết kế của riêng bạn</Link>
+              
             </Button>
           </div>
         </div>
