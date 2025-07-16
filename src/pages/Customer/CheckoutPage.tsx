@@ -418,6 +418,8 @@ const CheckoutPage = () => {
       
       // Start polling for payment status
       pollPaymentStatus(paymentResponse.data.orderCode);
+
+      setQuantity(0);
       
     } catch (error: any) {
       console.error('PayOS payment error:', error);
