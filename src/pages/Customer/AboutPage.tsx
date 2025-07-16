@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FaHandsHelping, FaPaintBrush, FaRecycle, FaUsers } from 'react-icons/fa';
 
