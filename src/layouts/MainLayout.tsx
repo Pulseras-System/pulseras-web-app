@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
   Home, ShoppingBag, Sparkles, Info, Phone,
-  ShoppingCart, User, Menu, LogOut, Settings, Heart, Package,
+  ShoppingCart, User, Menu, LogOut, Settings, Package,
 } from "lucide-react";
 import { useCartStore } from "@/utils/cartStore";
 
@@ -163,10 +163,10 @@ const MainLayout = () => {
                     <Package className="h-4 w-4 text-blue-500" />
                     <span>Đơn hàng của tôi</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                  {/* <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
                     <Heart className="h-4 w-4 text-blue-500" />
                     <span>Danh sách yêu thích</span>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem onClick={() => navigate("/profile")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
                     <Settings className="h-4 w-4 text-blue-500" />
                     <span>Cài đặt tài khoản</span>
