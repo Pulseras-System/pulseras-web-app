@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Star, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight} from "lucide-react";
 import ProductService, { Product } from "@/services/ProductService";
 import { AddToCartButton } from "@/components/AddToCartButton";
 
@@ -101,9 +101,9 @@ const ProductDetailPage = () => {
               />
             </div>
             <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md">
-              <button className="p-2 text-pink-500 hover:text-pink-400 transition-colors">
+              {/* <button className="p-2 text-pink-500 hover:text-pink-400 transition-colors">
                 <Heart className="w-5 h-5" />
-              </button>
+              </button> */}
             </div>
             <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-blue-100/50 to-transparent"></div>
           </div>

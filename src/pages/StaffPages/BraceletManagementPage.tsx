@@ -65,8 +65,9 @@ const BraceletManagement = () => {
   // mapping category id -> categoryName
   const [categoriesMap, setCategoriesMap] = useState<Record<string, string>>({});
   const [newProductCategoryInput, setNewProductCategoryInput] = useState("");
-  const [editingProductCategoryInput, ] = useState("");
   const [categorySuggestions, setCategorySuggestions] = useState<string[]>([]);
+  const [editingProductCategoryInput, setEditingProductCategoryInput] = useState("");
+
 
 
   // Load products từ API, không lọc trên client nữa
@@ -123,6 +124,20 @@ const BraceletManagement = () => {
 
 
   const uniqueMaterials = Array.from(new Set(products.map((p) => p.productMaterial)));
+
+  useEffect(() => {
+    if (isEditOpen && editingProduct) {
+      const names = editingProduct.categoryIds
+        ?.map((id) => categoriesMap[id])
+        .filter((n) => !!n)
+        .join(", ") || "";
+      setEditingProductCategoryInput(names);
+    }
+  }, [isEditOpen, editingProduct, categoriesMap]);
+
+
+
+
 
   const handleEditSave = async () => {
     if (!editingProduct) return;
@@ -255,7 +270,7 @@ const BraceletManagement = () => {
           <p className="text-sm text-black">Danh sách sản phẩm trong workshop</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2"> 
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
@@ -272,7 +287,7 @@ const BraceletManagement = () => {
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
-          </Button> 
+          </Button>
           <Button
             className="bg-blue-200 hover:bg-blue-300 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
@@ -445,7 +460,7 @@ const BraceletManagement = () => {
           <DialogHeader className="bg-pink-100 px-4 py-3">
             <DialogTitle className="text-black text-lg">Chi tiết vòng tay</DialogTitle>
           </DialogHeader>
-          
+
           {viewingProduct && (
             <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
               {/* Layout 2x2 cho thông tin sản phẩm - Compact */}
@@ -477,7 +492,7 @@ const BraceletManagement = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
                   <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
                     <DollarSign className="h-3 w-3" />
@@ -490,16 +505,15 @@ const BraceletManagement = () => {
                     </div>
                     <div>
                       <span className="text-gray-500">Tồn kho:</span>
-                      <span className={`font-medium ml-1 ${
-                        viewingProduct.quantity > 10 ? 'text-green-600' : 
+                      <span className={`font-medium ml-1 ${viewingProduct.quantity > 10 ? 'text-green-600' :
                         viewingProduct.quantity > 5 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
+                        }`}>
                         {viewingProduct.quantity} cái
                       </span>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Hàng 2 */}
                 <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
                   <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
@@ -510,7 +524,7 @@ const BraceletManagement = () => {
                     <div>
                       <span className="text-gray-500">Ngày tạo:</span>
                       <span className="font-medium text-black ml-1">
-                        {viewingProduct.createDate 
+                        {viewingProduct.createDate
                           ? new Date(viewingProduct.createDate).toLocaleDateString('vi-VN')
                           : "Không có"}
                       </span>
@@ -518,14 +532,14 @@ const BraceletManagement = () => {
                     <div>
                       <span className="text-gray-500">Sửa cuối:</span>
                       <span className="font-medium text-black ml-1">
-                        {viewingProduct.lastEdited 
+                        {viewingProduct.lastEdited
                           ? new Date(viewingProduct.lastEdited).toLocaleDateString('vi-VN')
                           : "Chưa sửa"}
                       </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
                   <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
                     <Tag className="h-3 w-3" />
@@ -549,7 +563,7 @@ const BraceletManagement = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Hình ảnh và mô tả */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
@@ -565,7 +579,7 @@ const BraceletManagement = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
                   <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
                     <User className="h-3 w-3" />
@@ -580,7 +594,7 @@ const BraceletManagement = () => {
               </div>
             </div>
           )}
-          
+
           <DialogFooter className="bg-pink-50 px-4 py-3">
             <Button
               variant="outline"
@@ -657,33 +671,27 @@ const BraceletManagement = () => {
               <div>
                 <Label className="text-black">Danh mục (Tên danh mục)</Label>
                 <Input
-                  list="categoriesList"
                   placeholder="Nhập tên danh mục, cách nhau dấu phẩy"
-                  value={
-                    editingProduct.categoryIds
-                      .map((id) => getCategoryName(id))
-                      .join(", ")
-                  }
-                  onChange={(e) => {
-                    const names = e.target.value
-                      .split(",")
-                      .map((name) => name.trim())
-                      .filter((name) => name !== "");
-                    const ids = names.map((name) => {
-                      const found = Object.entries(categoriesMap).find(
-                        ([, catName]) =>
-                          catName.toLowerCase() === name.toLowerCase()
-                      );
-                      return found ? found[0] : name;
-                    });
-                    setEditingProduct({ ...editingProduct, categoryIds: ids });
-                  }}
+                  value={editingProductCategoryInput}
+                  onChange={(e) => handleCategoryInputChange(e.target.value)}
                 />
-                <datalist id="categoriesList">
-                  {Object.values(categoriesMap).map((name, index) => (
-                    <option key={index} value={name} />
-                  ))}
-                </datalist>
+
+                {categorySuggestions.length > 0 && (
+                  <ul className="mt-2 border border-gray-300 rounded bg-white shadow text-sm z-10">
+                    {categorySuggestions.map((sug, idx) => (
+                      <li
+                        key={idx}
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                        onClick={() => selectCategorySuggestion(sug)}
+                      >
+                        {sug}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+
+
               </div>
               <div>
                 <Label className="text-black">Hình ảnh</Label>
@@ -697,11 +705,12 @@ const BraceletManagement = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          setNewProductImageFile(file);
-                          setNewProduct({ ...newProduct, productImage: URL.createObjectURL(file) });
+                          setEditingImageFile(file); // NEW: giống bên add
+                          setEditingProduct({ ...editingProduct, productImage: URL.createObjectURL(file) });
                         }
                       }}
                     />
+
                   </label>
                   {editingProduct?.productImage && (
                     <img
