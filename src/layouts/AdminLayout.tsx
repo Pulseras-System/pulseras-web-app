@@ -54,7 +54,7 @@ const AdminLayout = () => {
     <div className="flex min-h-screen bg-[#fff8f0]">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 bg-gradient-to-b from-blue-100 to-pink-100 font-sans  antialiased  flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
-        <Link to="/staff" className="flex items-center gap-3 mb-10 group">
+        <Link to="/admin" className="flex items-center gap-3 mb-10 group">
           <img 
             src={Logo} 
             alt="Workshop logo" 
@@ -179,13 +179,12 @@ const AdminLayout = () => {
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/admin/profile" className="flex items-center">
+                <Link to="/admin/profile" className="flex items-center hover:bg-blue-50 transition-colors duration-200">
                   Hồ sơ
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="hover:bg-red-50 hover:text-red-600 transition-colors duration-200">Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -199,7 +198,7 @@ const AdminLayout = () => {
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 bg-indigo-100 rounded-full px-3 py-1 border border-indigo-200 shadow-inner cursor-pointer">
+                <div className="flex items-center gap-2 bg-indigo-100 rounded-full px-3 py-1 border border-indigo-200 shadow-inner cursor-pointer hover:bg-indigo-200 hover:shadow-md transition-all duration-200">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
                     <AvatarFallback>NV</AvatarFallback>
@@ -220,13 +219,12 @@ const AdminLayout = () => {
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/admin/profile" className="flex items-center">
+                  <Link to="/admin/profile" className="flex items-center hover:bg-blue-50 transition-colors duration-200">
                     Hồ sơ
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="hover:bg-red-50 hover:text-red-600 transition-colors duration-200">Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

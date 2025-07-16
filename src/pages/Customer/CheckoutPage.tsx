@@ -97,6 +97,9 @@ const OrderSummary = ({
   setPaymentMethod,
   shippingInfo,
   setShippingInfo,
+  phoneError,
+  setPhoneError,
+  validatePhone,
   payosLoading,
 }: {
   subtotal: number;
@@ -107,6 +110,9 @@ const OrderSummary = ({
   setPaymentMethod: (v: string) => void;
   shippingInfo: any;
   setShippingInfo: (info: any) => void;
+  phoneError: string;
+  setPhoneError: (error: string) => void;
+  validatePhone: (phone: string) => string;
   payosLoading?: boolean;
 }) => (
   <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm sticky top-24">
@@ -142,12 +148,28 @@ const OrderSummary = ({
             </label>
             <Input
               required
+              type="tel"
               value={shippingInfo.phone}
-              onChange={(e) =>
-                setShippingInfo({ ...shippingInfo, phone: e.target.value })
-              }
-              className="focus:ring-blue-500 focus:border-blue-500"
+              onChange={(e) => {
+                const value = e.target.value;
+                setShippingInfo({ ...shippingInfo, phone: value });
+                if (value) {
+                  setPhoneError(validatePhone(value));
+                } else {
+                  setPhoneError("");
+                }
+              }}
+              onBlur={() => {
+                if (shippingInfo.phone) {
+                  setPhoneError(validatePhone(shippingInfo.phone));
+                }
+              }}
+              className={`focus:ring-blue-500 focus:border-blue-500 ${phoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="Ví dụ: 0912345678"
             />
+            {phoneError && (
+              <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+            )}
           </div>
         </div>
         <div>
@@ -292,11 +314,31 @@ const CheckoutPage = () => {
   });
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
   const [payosPayment, setPayosPayment] = useState<PayOSPaymentResponse | null>(null);
   const [payosLoading, setPayosLoading] = useState(false);
   const [pollIntervalId, setPollIntervalId] = useState<NodeJS.Timeout | null>(null);
   const { setQuantity } = useCartStore();
 
+  // Phone validation function
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9]{10,11}$/;
+    const vietnamPhoneRegex = /^(0[3-9])[0-9]{8}$/;
+
+    if (!phone) {
+      return "Số điện thoại không được để trống";
+    }
+
+    if (!phoneRegex.test(phone)) {
+      return "Số điện thoại phải có 10-11 chữ số";
+    }
+
+    if (!vietnamPhoneRegex.test(phone)) {
+      return "Số điện thoại không hợp lệ (định dạng: 0xxxxxxxxx)";
+    }
+
+    return "";
+  };
 
   useEffect(() => {
     if (!orderId) return;
@@ -373,6 +415,13 @@ const CheckoutPage = () => {
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number
+    const phoneValidationError = validatePhone(shippingInfo.phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      return;
+    }
     
     if (paymentMethod === "QR") {
       setShowQRPopup(true);
@@ -514,8 +563,8 @@ const CheckoutPage = () => {
       totalPrice: total,
       status: 2,
       lastEdited: new Date().toISOString(),
+      paymentMethod: paymentMethod, // Thêm trường paymentMethod riêng
     });
-
 
     // navigate('/');
     localStorage.setItem('amount', '0');
@@ -600,6 +649,9 @@ const CheckoutPage = () => {
                     setPaymentMethod={setPaymentMethod}
                     shippingInfo={shippingInfo}
                     setShippingInfo={setShippingInfo}
+                    phoneError={phoneError}
+                    setPhoneError={setPhoneError}
+                    validatePhone={validatePhone}
                     payosLoading={payosLoading}
                   />
                 </AnimatedSection>

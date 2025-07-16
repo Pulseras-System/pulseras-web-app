@@ -794,9 +794,6 @@ const OrderManagement = () => {
                     <span className="text-black">Tên khách hàng:</span>
                     <span className="font-medium text-black">{viewOrder.customerName}</span>
                     
-                    <span className="text-black">Phương thức:</span>
-                    <span className="font-medium text-black">COD</span>
-                    
                     <span className="text-black">Mã khách hàng:</span>
                     <span className="font-medium text-black">KH-{viewOrder.raw?.accountId || "---"}</span>
                   </div>
