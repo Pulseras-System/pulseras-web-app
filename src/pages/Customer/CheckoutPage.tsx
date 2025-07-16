@@ -424,8 +424,8 @@ const CheckoutPage = () => {
       totalPrice: total,
       status: 2,
       lastEdited: new Date().toISOString(),
+      paymentMethod: paymentMethod, // Thêm trường paymentMethod riêng
     });
-
 
     // navigate('/');
     localStorage.setItem('amount', '0');
