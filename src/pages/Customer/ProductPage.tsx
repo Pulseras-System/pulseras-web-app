@@ -21,7 +21,8 @@ const BraceletCard = ({ product }: { product: Product }) => (
           alt={`Vòng tay ${product.productName}`}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 p-4">
+        {/* Overlay buttons for desktop hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-pink-500/80 via-pink-400/50 to-blue-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 p-4 hidden md:flex">
           <Button
             variant="default"
             size="lg"
@@ -58,7 +59,7 @@ const BraceletCard = ({ product }: { product: Product }) => (
         </div>
       </div>
       <div className="p-4 flex flex-col justify-between flex-grow">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">{product.productName}</h3>
             <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.productMaterial}</p>
@@ -68,6 +69,43 @@ const BraceletCard = ({ product }: { product: Product }) => (
             <span className="text-md font-bold text-blue-600">
               {product.price.toLocaleString("vi-VN")}₫
             </span>
+          </div>
+        </div>
+        
+        {/* Mobile buttons - always visible on mobile */}
+        <div className="flex flex-col gap-2 md:hidden">
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-pink-600 hover:bg-pink-700 text-white w-full shadow-md"
+            onClick={() => window.location.href = `/shop/${product.productId}`}
+          >
+            Xem chi tiết
+          </Button>
+          <div className="flex gap-2">
+            <AddToCartButton
+              product={{
+                id: product.productId,
+                name: product.productName,
+                image: product.productImage,
+                price: product.price,
+                type: product.type,
+                material: product.productMaterial
+              }}
+              variant="outline"
+              className="text-sm border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700 flex-1 shadow-md"
+            />
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex-1 shadow-md"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = `/shop/${product.productId}`;
+              }}
+            >
+              Mua ngay
+            </Button>
           </div>
         </div>
       </div>
