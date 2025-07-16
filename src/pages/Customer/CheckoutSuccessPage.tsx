@@ -11,7 +11,6 @@ const CheckoutSuccessPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [paymentData, setPaymentData] = useState<any>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [orderUpdateStatus, setOrderUpdateStatus] = useState<'pending' | 'success' | 'error'>('pending');
   const { setQuantity } = useCartStore();
 
@@ -23,7 +22,6 @@ const CheckoutSuccessPage = () => {
   const verifyPayment = async () => {
     if (orderCode) {
       try {
-        setRefreshing(true);
         console.log('Verifying payment for orderCode:', orderCode);
         
         const paymentStatus = await PaymentService.getPaymentByOrderCode(Number(orderCode));
@@ -97,8 +95,6 @@ const CheckoutSuccessPage = () => {
       } catch (error) {
         console.error('Error verifying payment:', error);
         setOrderUpdateStatus('error');
-      } finally {
-        setRefreshing(false);
       }
     }
     setLoading(false);
@@ -206,23 +202,6 @@ const CheckoutSuccessPage = () => {
           )}
 
           <div className="space-y-3">
-            {orderCode && (
-              <Button
-                variant="outline"
-                className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
-                onClick={verifyPayment}
-                disabled={refreshing}
-              >
-                {refreshing ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    Đang kiểm tra...
-                  </div>
-                ) : (
-                  "Kiểm tra lại trạng thái thanh toán"
-                )}
-              </Button>
-            )}
             <Button
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => navigate('/orders')}
