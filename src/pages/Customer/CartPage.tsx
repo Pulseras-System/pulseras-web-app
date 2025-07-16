@@ -7,6 +7,8 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
+import { useCartStore } from '@/utils/cartStore';
+
 
 // AnimatedSection component remains the same
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => {
@@ -160,6 +162,8 @@ const CartPage = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
   const [cartOrderId, setCartOrderId] = useState<string | null>(null);
+  const { setQuantity } = useCartStore();
+
 
   useEffect(() => {
     // Lấy accountId từ account.id trong localStorage (key mới: 'account')
@@ -318,6 +322,7 @@ const CartPage = () => {
         count += i.quantity;
       });
       localStorage.setItem('amount', (Number(localStorage.getItem('amount')) - 1).toString());
+      setQuantity(Number(localStorage.getItem('amount')));
       setSubtotal(sub);
       setItemCount(count);
     } catch (e) {
