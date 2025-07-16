@@ -461,6 +461,7 @@ const CheckoutPage = () => {
       setPayosPayment(paymentResponse);
       
       // Open PayOS checkout URL in new tab
+      // Note: PayOS will redirect to your configured return/cancel URLs with payment status
       if (paymentResponse.data.checkoutUrl) {
         window.open(paymentResponse.data.checkoutUrl, '_blank');
       }
@@ -504,23 +505,54 @@ const CheckoutPage = () => {
     const interval = setInterval(async () => {
       try {
         const paymentStatus = await PaymentService.getPaymentByOrderCode(orderCode);
+        console.log('Payment status response:', paymentStatus);
+        console.log('Payment status value:', paymentStatus.data.status);
         
-        // Check for successful payment status
+        // Check for successful payment status - expanded to cover more possible success values
         const isSuccessful = paymentStatus.data.status === "PAID" || 
                            paymentStatus.data.status === "00" || 
-                           paymentStatus.data.status === "SUCCESS";
+                           paymentStatus.data.status === "SUCCESS" ||
+                           paymentStatus.data.status === "COMPLETED" ||
+                           paymentStatus.data.status === "successful" ||
+                           paymentStatus.data.status === "paid" ||
+                           paymentStatus.data.status === "completed";
         
         const isCancelled = paymentStatus.data.status === "CANCELLED" || 
                           paymentStatus.data.status === "FAILED";
         
+        console.log('Is successful:', isSuccessful);
+        console.log('Is cancelled:', isCancelled);
+        
         if (isSuccessful) {
+          console.log('Payment successful, updating order status to 3');
           clearInterval(interval);
           setPollIntervalId(null);
           setPayosPayment(null);
+          
+          // Update order status to 3 (paid/successful)
+          try {
+            console.log('Calling OrderService.update with orderId:', orderId);
+            const updateResult = await OrderService.update(String(orderId), {
+              orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
+              amount: itemCount,
+              accountId: order.accountId,
+              voucherId: order.voucherId,
+              totalPrice: total,
+              status: 3,
+              lastEdited: new Date().toISOString(),
+            });
+            console.log('Order update result:', updateResult);
+            console.log('Successfully updated order status to 3');
+          } catch (error) {
+            console.error('Error updating order status:', error);
+            alert('Thanh toán thành công nhưng có lỗi khi cập nhật trạng thái đơn hàng. Vui lòng liên hệ hỗ trợ.');
+          }
+          
           localStorage.setItem('amount', '0');
           setQuantity(0);
           setShowConfirmPopup(true);
         } else if (isCancelled) {
+          console.log('Payment cancelled or failed');
           clearInterval(interval);
           setPollIntervalId(null);
           setPayosPayment(null);
@@ -903,6 +935,56 @@ const CheckoutPage = () => {
                     💡 <strong>Mẹo:</strong> Nếu không được chuyển hướng tự động, 
                     hãy quay lại trang này để kiểm tra trạng thái đơn hàng
                   </p>
+                </div>
+                
+                {/* Debug tools for testing */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-xs text-yellow-700 font-medium mb-2">🔧 Debug Tools:</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={async () => {
+                        try {
+                          console.log('Manual status update triggered');
+                          const updateResult = await OrderService.update(String(orderId), {
+                            orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
+                            amount: itemCount,
+                            accountId: order.accountId,
+                            voucherId: order.voucherId,
+                            totalPrice: total,
+                            status: 3,
+                            lastEdited: new Date().toISOString(),
+                          });
+                          console.log('Manual update result:', updateResult);
+                          alert('Order status manually updated to 3');
+                        } catch (error) {
+                          console.error('Manual update error:', error);
+                          alert('Error updating order status manually');
+                        }
+                      }}
+                    >
+                      Update Status to 3
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={async () => {
+                        try {
+                          const paymentStatus = await PaymentService.getPaymentByOrderCode(payosPayment.data.orderCode);
+                          console.log('Manual payment status check:', paymentStatus);
+                          alert(`Payment Status: ${paymentStatus.data.status}`);
+                        } catch (error) {
+                          console.error('Manual payment check error:', error);
+                          alert('Error checking payment status manually');
+                        }
+                      }}
+                    >
+                      Check Status
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
