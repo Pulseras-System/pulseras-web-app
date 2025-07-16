@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { 
   Pen, 
   Trash2, 
-  Plus, 
   Search, 
   Filter, 
   User, 
@@ -33,20 +32,6 @@ interface Role {
   id: string;
   name: string;
 }
-
-// Define empty account template
-const getEmptyAccount = (): Account => ({
-  id: "",
-  fullName: "",
-  username: "",
-  email: "",
-  phone: "",
-  roleId: "68454a416b4be139d6441986", // Default Customer roleId
-  roleName: "Customer",
-  createDate: new Date().toISOString(),
-  lastEdited: new Date().toISOString(),
-  status: 1 // Active by default
-});
 
 const itemsPerPage = 5;
 
@@ -150,11 +135,6 @@ const UserManagementPage = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('vi-VN').format(date);
-  };
-
-  const handleAddAccount = () => {
-    setSelectedAccount(getEmptyAccount());
-    setModalOpen(true);
   };
 
   const handleEditAccount = (account: Account) => {
@@ -263,13 +243,6 @@ const UserManagementPage = () => {
             <Filter className="mr-2 h-4 w-4" />
             Lọc
           </Button>
-          <Button 
-            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
-            onClick={handleAddAccount}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm người dùng
-          </Button>
         </div>
       </div>
 
@@ -331,7 +304,7 @@ const UserManagementPage = () => {
               <TableHead className="text-black">Vai trò</TableHead>
               <TableHead className="text-black">Ngày tham gia</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -393,23 +366,25 @@ const UserManagementPage = () => {
                     {account.status === 1 ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditAccount(account)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-red-700 border-red-200 hover:bg-red-50"
-                    onClick={() => handleDeleteAccount(account.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="text-center">
+                  <div className="flex justify-center items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                      onClick={() => handleEditAccount(account)}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-red-700 border-red-200 hover:bg-red-50"
+                      onClick={() => handleDeleteAccount(account.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

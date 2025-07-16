@@ -274,7 +274,7 @@ const BraceletManagement = () => {
             Lọc
           </Button> 
           <Button
-            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-200 hover:bg-blue-300 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -332,7 +332,7 @@ const BraceletManagement = () => {
               <TableHead className="text-black">Chất liệu</TableHead>
               <TableHead className="text-black">Giá (VND)</TableHead>
               <TableHead className="text-black">Tồn kho</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -376,37 +376,39 @@ const BraceletManagement = () => {
                     {product.quantity} {product.quantity > 5 ? "cái" : "sắp hết"}
                   </span>
                 </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => {
-                      setViewingProduct(product);
-                      setIsViewOpen(true);
-                    }}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => {
-                      setEditingProduct(product);
-                      setIsEditOpen(true);
-                    }}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                    onClick={() => handleDeleteClick(product)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell>
+                  <div className="flex justify-center items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-pink-600 border-pink-200 hover:bg-pink-100 hover:text-pink-700 hover:border-pink-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => {
+                        setViewingProduct(product);
+                        setIsViewOpen(true);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-black border-gray-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => {
+                        setEditingProduct(product);
+                        setIsEditOpen(true);
+                      }}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => handleDeleteClick(product)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -588,7 +590,7 @@ const BraceletManagement = () => {
               Đóng
             </Button>
             <Button
-              className="bg-blue-100 hover:bg-blue-200 text-black"
+              className="bg-pink-200 hover:bg-pink-300 text-black"
               onClick={() => {
                 setIsViewOpen(false);
                 if (viewingProduct) {
@@ -741,7 +743,7 @@ const BraceletManagement = () => {
                   Hủy
                 </Button>
                 <Button
-                  className="bg-blue-100 hover:bg-blue-100 text-black"
+                  className="bg-pink-200 hover:bg-pink-300 text-black"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -881,7 +883,7 @@ const BraceletManagement = () => {
                 Hủy
               </Button>
               <Button
-                className="bg-blue-100 hover:bg-blue-100 text-black"
+                className="bg-blue-200 hover:bg-blue-300 text-black"
                 onClick={handleAddProduct}
               >
                 Thêm
@@ -913,7 +915,7 @@ const BraceletManagement = () => {
               Hủy
             </Button>
             <Button
-              className="bg-red-100 hover:bg-red-100 text-black"
+              className="bg-red-200 hover:bg-red-300 text-black"
               onClick={handleDeleteConfirm}
             >
               Xoá

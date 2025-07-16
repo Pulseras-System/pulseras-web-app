@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Pen, Trash2, Plus, Search, Filter, Package } from "lucide-react";
+import { Pen, Trash2, Plus, Search, Filter, Package, Eye, User, Calendar, Tag, DollarSign, Box } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,6 @@ import ProductService, {
 } from "@/services/ProductService";
 import CategoryService from "@/services/CategoryService";
 import Pagination from "@/components/pagination";
-
 
 
 const itemsPerPage = 7;
@@ -58,6 +57,9 @@ const BraceletManagement = () => {
   // state cho modal confirm delete
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  // state cho modal xem chi tiết
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   // state cho thông báo
   const [notification, setNotification] = useState<string | null>(null);
   // mapping category id -> categoryName
@@ -253,7 +255,7 @@ const BraceletManagement = () => {
           <p className="text-sm text-black">Danh sách sản phẩm trong workshop</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2"> 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
@@ -270,9 +272,9 @@ const BraceletManagement = () => {
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
-          </Button>
+          </Button> 
           <Button
-            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
+            className="bg-blue-200 hover:bg-blue-300 text-black shadow-sm hover:shadow-md transition-all"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -330,7 +332,7 @@ const BraceletManagement = () => {
               <TableHead className="text-black">Chất liệu</TableHead>
               <TableHead className="text-black">Giá (VND)</TableHead>
               <TableHead className="text-black">Tồn kho</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -374,26 +376,39 @@ const BraceletManagement = () => {
                     {product.quantity} {product.quantity > 5 ? "cái" : "sắp hết"}
                   </span>
                 </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => {
-                      setEditingProduct(product);
-                      setIsEditOpen(true);
-                    }}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                    onClick={() => handleDeleteClick(product)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell>
+                  <div className="flex justify-center items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-pink-600 border-pink-200 hover:bg-pink-100 hover:text-pink-700 hover:border-pink-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => {
+                        setViewingProduct(product);
+                        setIsViewOpen(true);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-black border-gray-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => {
+                        setEditingProduct(product);
+                        setIsEditOpen(true);
+                      }}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      onClick={() => handleDeleteClick(product)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -423,6 +438,173 @@ const BraceletManagement = () => {
           </p>
         </div>
       )}
+
+      {/* VIEW DETAIL MODAL */}
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] bg-white text-black rounded-2xl shadow-xl border border-pink-100 p-0 overflow-hidden">
+          <DialogHeader className="bg-pink-100 px-4 py-3">
+            <DialogTitle className="text-black text-lg">Chi tiết vòng tay</DialogTitle>
+          </DialogHeader>
+          
+          {viewingProduct && (
+            <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+              {/* Layout 2x2 cho thông tin sản phẩm - Compact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                {/* Hàng 1 */}
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Package className="h-3 w-3" />
+                    Thông tin cơ bản
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                    <div>
+                      <span className="text-gray-500">Tên:</span>
+                      <span className="font-medium text-black ml-1">{viewingProduct.productName}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Loại:</span>
+                      <span className="font-medium text-black ml-1">{viewingProduct.type}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Chất liệu:</span>
+                      <span className="font-medium text-black ml-1">{viewingProduct.productMaterial}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Trạng thái:</span>
+                      <span className={`font-medium ml-1 ${viewingProduct.status === 1 ? 'text-green-600' : 'text-red-600'}`}>
+                        {viewingProduct.status === 1 ? "Hoạt động" : "Không hoạt động"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    Thông tin giá & kho
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                    <div>
+                      <span className="text-gray-500">Giá:</span>
+                      <span className="font-bold text-blue-600 ml-1">{viewingProduct.price?.toLocaleString() || "0"}₫</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Tồn kho:</span>
+                      <span className={`font-medium ml-1 ${
+                        viewingProduct.quantity > 10 ? 'text-green-600' : 
+                        viewingProduct.quantity > 5 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {viewingProduct.quantity} cái
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Hàng 2 */}
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Thông tin thời gian
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                    <div>
+                      <span className="text-gray-500">Ngày tạo:</span>
+                      <span className="font-medium text-black ml-1">
+                        {viewingProduct.createDate 
+                          ? new Date(viewingProduct.createDate).toLocaleDateString('vi-VN')
+                          : "Không có"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Sửa cuối:</span>
+                      <span className="font-medium text-black ml-1">
+                        {viewingProduct.lastEdited 
+                          ? new Date(viewingProduct.lastEdited).toLocaleDateString('vi-VN')
+                          : "Chưa sửa"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    Danh mục
+                  </h3>
+                  <div className="flex flex-wrap gap-1">
+                    {viewingProduct.categoryIds.length > 0 ? (
+                      viewingProduct.categoryIds.map((categoryId) => (
+                        <span
+                          key={categoryId}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
+                        >
+                          {getCategoryName(categoryId)}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                        Chưa có danh mục
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Hình ảnh và mô tả */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <Box className="h-3 w-3" />
+                    Hình ảnh sản phẩm
+                  </h3>
+                  <div className="flex justify-center">
+                    <img
+                      src={viewingProduct.productImage}
+                      alt={viewingProduct.productName}
+                      className="w-48 h-48 object-cover rounded-lg border border-pink-100 shadow-sm"
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-pink-50 to-white rounded-lg border border-pink-100 p-3 shadow-sm">
+                  <h3 className="text-xs font-semibold text-black mb-2 flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    Mô tả sản phẩm
+                  </h3>
+                  <div className="text-xs">
+                    <p className="text-gray-700 bg-white p-2 rounded border border-pink-100 min-h-[100px]">
+                      {viewingProduct.productDescription || "Chưa có mô tả sản phẩm"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="bg-pink-50 px-4 py-3">
+            <Button
+              variant="outline"
+              className="text-black border-pink-200 hover:bg-pink-100"
+              onClick={() => setIsViewOpen(false)}
+            >
+              Đóng
+            </Button>
+            <Button
+              className="bg-pink-200 hover:bg-pink-300 text-black"
+              onClick={() => {
+                setIsViewOpen(false);
+                if (viewingProduct) {
+                  setEditingProduct(viewingProduct);
+                  setIsEditOpen(true);
+                }
+              }}
+            >
+              <Pen className="h-4 w-4 mr-1" />
+              Chỉnh sửa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* EDIT MODAL */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
@@ -561,7 +743,7 @@ const BraceletManagement = () => {
                   Hủy
                 </Button>
                 <Button
-                  className="bg-blue-100 hover:bg-blue-100 text-black"
+                  className="bg-pink-200 hover:bg-pink-300 text-black"
                   onClick={handleEditSave}
                 >
                   Lưu
@@ -701,7 +883,7 @@ const BraceletManagement = () => {
                 Hủy
               </Button>
               <Button
-                className="bg-blue-100 hover:bg-blue-100 text-black"
+                className="bg-blue-200 hover:bg-blue-300 text-black"
                 onClick={handleAddProduct}
               >
                 Thêm
@@ -733,7 +915,7 @@ const BraceletManagement = () => {
               Hủy
             </Button>
             <Button
-              className="bg-red-100 hover:bg-red-100 text-black"
+              className="bg-red-200 hover:bg-red-300 text-black"
               onClick={handleDeleteConfirm}
             >
               Xoá

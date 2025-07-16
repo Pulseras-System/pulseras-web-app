@@ -247,7 +247,7 @@ const CustomerManagementPage = () => {
               <TableHead className="text-black">Tổng chi tiêu</TableHead>
               <TableHead className="text-black">Ngày tham gia</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -303,23 +303,25 @@ const CustomerManagementPage = () => {
                     {customer.status === 1 ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditCustomer(customer)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-red-700 border-red-200 hover:bg-red-50"
-                    onClick={() => handleDeleteCustomer(customer)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="text-center">
+                  <div className="flex justify-center items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                      onClick={() => handleEditCustomer(customer)}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-red-700 border-red-200 hover:bg-red-50"
+                      onClick={() => handleDeleteCustomer(customer)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
