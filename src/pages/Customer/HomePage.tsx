@@ -43,7 +43,7 @@ const BraceletCard = ({
   material,
   productRaw,
 }: BraceletCardProps) => (
-  <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
+  <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
     <div className="relative w-full h-64">
       <img
         loading="lazy"
@@ -52,36 +52,39 @@ const BraceletCard = ({
         className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
       />
       {/* Subtle overlay/hover effect without a heavy gradient */}
-      <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
+      <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-10 transition-colors duration-300"></div>
     </div>
     
     <div className="p-4 flex flex-col justify-between flex-grow">
-      <h3 className="text-lg font-semibold text-gray-800 truncate" title={name}>{name}</h3>
-      <p className="text-sm text-gray-600 mt-1 flex-grow truncate" title={description}>{description}</p>
-      <div className="flex justify-between items-center mt-4">
-        <span className="text-md font-bold text-blue-600">{price}</span>
-        <div className="flex space-x-2">
-          <AddToCartButton
-            product={{
-              id: id ?? productRaw?.productId ?? "",
-              name,
-              image: imageSrc,
-              price: productRaw?.price ?? price,
-              type: type ?? productRaw?.type,
-              material: material ?? productRaw?.productMaterial,
-            }}
-            variant="outline"
-            className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600"
-            // disabled={productRaw?.quantity <= 0}
-          />
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 line-clamp-1 mb-2" title={name}>{name}</h3>
+        <p className="text-sm text-gray-600 line-clamp-2 mb-3" title={description}>{description}</p>
+        <span className="text-lg font-bold text-blue-600">{price}</span>
+      </div>
+      
+      {/* Responsive buttons */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
+        <AddToCartButton
+          product={{
+            id: id ?? productRaw?.productId ?? "",
+            name,
+            image: imageSrc,
+            price: productRaw?.price ?? price,
+            type: type ?? productRaw?.type,
+            material: material ?? productRaw?.productMaterial,
+          }}
+          variant="outline"
+          className="border-blue-400 text-blue-500 hover:bg-blue-50 hover:text-blue-600 w-full sm:w-auto"
+        />
+        <Link to={`/shop/${id ?? productRaw?.productId ?? ""}`}>
           <Button
             variant="default"
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md w-full sm:w-auto"
           >
             Mua ngay
           </Button>
-        </div>
+        </Link>
       </div>
     </div>
   </div>

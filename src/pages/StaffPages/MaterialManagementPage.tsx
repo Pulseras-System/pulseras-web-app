@@ -215,7 +215,7 @@ const MaterialManagementPage = () => {
               <TableHead className="text-black">Loại</TableHead>
               <TableHead className="text-black">Số lượng</TableHead>
               <TableHead className="text-black">Đơn vị</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center w-32">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -243,26 +243,28 @@ const MaterialManagementPage = () => {
                         ? "bg-pink-100 text-pink-800" 
                         : "bg-red-100 text-red-800"
                   }`}>
-                    {material.quantity} {material.unit}
+                    {material.quantity}
                   </span>
                 </TableCell>
                 <TableCell className="text-black">{material.unit}</TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditClick(material)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="w-32">
+                  <div className="flex justify-center items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-black border-gray-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md p-1"
+                      onClick={() => handleEditClick(material)}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md p-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

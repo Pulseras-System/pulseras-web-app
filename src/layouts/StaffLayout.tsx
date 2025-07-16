@@ -49,9 +49,7 @@ const StaffLayout = () => {
     navigate("/");
   };
 
-  const handleSettings = () => {
-    navigate("/staff/settings");
-  };
+
 
   return (
     <div className="flex min-h-screen bg-[#fff8f0]">
@@ -182,13 +180,12 @@ const StaffLayout = () => {
               <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/staff/profile" className="flex items-center">
+                <Link to="/staff/profile" className="flex items-center hover:bg-blue-50 transition-colors duration-200">
                   Hồ sơ
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="hover:bg-red-50 hover:text-red-600 transition-colors duration-200">Đăng xuất</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -202,7 +199,7 @@ const StaffLayout = () => {
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1 border border-slate-200 shadow-inner cursor-pointer">
+                <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1 border border-slate-200 shadow-inner cursor-pointer hover:bg-slate-200 hover:shadow-md transition-all duration-200">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src="https://i.pravatar.cc/40?img=12" alt="Staff avatar" />
                     <AvatarFallback>NV</AvatarFallback>
@@ -223,13 +220,12 @@ const StaffLayout = () => {
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/staff/profile" className="flex items-center">
+                  <Link to="/staff/profile" className="flex items-center hover:bg-blue-50 transition-colors duration-200">
                     Hồ sơ
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSettings}>Cài đặt</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="hover:bg-red-50 hover:text-red-600 transition-colors duration-200">Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

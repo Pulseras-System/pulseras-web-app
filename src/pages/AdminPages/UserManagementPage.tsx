@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { 
   Pen, 
   Trash2, 
-  Plus, 
   Search, 
   Filter, 
   User, 
@@ -34,20 +33,6 @@ interface Role {
   name: string;
 }
 
-// Define empty account template
-const getEmptyAccount = (): Account => ({
-  id: "",
-  fullName: "",
-  username: "",
-  email: "",
-  phone: "",
-  roleId: "68454a416b4be139d6441986", // Default Customer roleId
-  roleName: "Customer",
-  createDate: new Date().toISOString(),
-  lastEdited: new Date().toISOString(),
-  status: 1 // Active by default
-});
-
 const itemsPerPage = 5;
 
 const UserManagementPage = () => {
@@ -60,6 +45,37 @@ const UserManagementPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Debounced search to improve performance
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'k') {
+        event.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="Tìm kiếm"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+      if (event.key === 'Escape') {
+        setSearchTerm("");
+        setCurrentPage(1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Get unique roles from accounts data and sort them
   const getUniqueRoles = (accounts: Account[]): Role[] => {
@@ -104,11 +120,11 @@ const UserManagementPage = () => {
   const uniqueRoles = getUniqueRoles(accounts);
 
   const filteredAccounts = accounts.filter(account => {
-    const matchesSearch = 
-      account.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.phone.includes(searchTerm);
+    const searchLower = debouncedSearchTerm.toLowerCase().trim();
+    
+    // Simple search by name only
+    const matchesSearch = searchLower === '' || 
+      account.fullName.toLowerCase().includes(searchLower);
     
     const matchesStatus = 
       statusFilter === "all" || 
@@ -150,11 +166,6 @@ const UserManagementPage = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('vi-VN').format(date);
-  };
-
-  const handleAddAccount = () => {
-    setSelectedAccount(getEmptyAccount());
-    setModalOpen(true);
   };
 
   const handleEditAccount = (account: Account) => {
@@ -246,14 +257,27 @@ const UserManagementPage = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/1 h-4 w-4 text-blue-800" />
             <Input
-              placeholder="Tìm kiếm người dùng..."
-              className="pl-9 w-full sm:w-64 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
+              placeholder="Tìm kiếm theo tên người dùng... (Ctrl+K)"
+              className="pl-9 pr-8 w-full sm:w-80 bg-pink-100 border-pink-100 focus-visible:ring-pink-100 text-black placeholder-black"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
             />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-pink-200"
+                onClick={() => {
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+              >
+                ×
+              </Button>
+            )}
           </div>
           <Button 
             variant="outline" 
@@ -262,13 +286,6 @@ const UserManagementPage = () => {
           >
             <Filter className="mr-2 h-4 w-4" />
             Lọc
-          </Button>
-          <Button 
-            className="bg-blue-100 hover:bg-blue-100 text-black shadow-sm hover:shadow-md transition-all"
-            onClick={handleAddAccount}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm người dùng
           </Button>
         </div>
       </div>
@@ -331,7 +348,7 @@ const UserManagementPage = () => {
               <TableHead className="text-black">Vai trò</TableHead>
               <TableHead className="text-black">Ngày tham gia</TableHead>
               <TableHead className="text-black">Trạng thái</TableHead>
-              <TableHead className="text-black text-right">Thao tác</TableHead>
+              <TableHead className="text-black text-center">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -352,8 +369,12 @@ const UserManagementPage = () => {
                   </div>
                 </TableCell>
                 <TableCell className="font-medium text-black whitespace-nowrap">
-                  <div className="font-semibold">{account.fullName}</div>
-                  <div className="text-xs text-black">@{account.username}</div>
+                  <div className="font-semibold">
+                    {account.fullName}
+                  </div>
+                  <div className="text-xs text-black">
+                    @{account.username}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center text-sm mb-1">
@@ -393,23 +414,25 @@ const UserManagementPage = () => {
                     {account.status === 1 ? "Đang hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
-                <TableCell className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
-                    onClick={() => handleEditAccount(account)}
-                  >
-                    <Pen className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-red-700 border-red-200 hover:bg-red-50"
-                    onClick={() => handleDeleteAccount(account.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="text-center">
+                  <div className="flex justify-center items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-black border-pink-100 hover:bg-pink-100 hover:text-black"
+                      onClick={() => handleEditAccount(account)}
+                    >
+                      <Pen className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-red-700 border-red-200 hover:bg-red-50"
+                      onClick={() => handleDeleteAccount(account.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
