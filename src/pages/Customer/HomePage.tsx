@@ -44,7 +44,7 @@ const BraceletCard = ({
   productRaw,
 }: BraceletCardProps) => (
   <div className="group relative flex flex-col w-full overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm transition-all duration-300 hover:shadow-lg h-full">
-    <div className="relative w-full h-64">
+    <div onClick={() => window.location.href = `/shop/${id}`} className="relative w-full h-64">
       <img
         loading="lazy"
         src={imageSrc}
@@ -56,7 +56,7 @@ const BraceletCard = ({
     </div>
     
     <div className="p-4 flex flex-col justify-between flex-grow">
-      <div className="mb-4">
+      <div onClick={() => window.location.href = `/shop/${id}`} className="mb-4">
         <h3 className="text-lg font-semibold text-gray-800 line-clamp-1 mb-2" title={name}>{name}</h3>
         <p className="text-sm text-gray-600 line-clamp-2 mb-3" title={description}>{description}</p>
         <span className="text-lg font-bold text-blue-600">{price}</span>

@@ -59,7 +59,7 @@ const BraceletCard = ({ product }: { product: Product }) => (
         </div>
       </div>
       <div className="p-4 flex flex-col justify-between flex-grow">
-        <div className="flex justify-between items-start mb-4">
+        <div onClick={() => window.location.href = `/shop/${product.productId}`} className="flex justify-between items-start mb-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">{product.productName}</h3>
             <p className="text-sm text-gray-600 mt-1 line-clamp-1">{product.productMaterial}</p>
