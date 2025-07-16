@@ -435,7 +435,7 @@ const MainLayout = () => {
                   </svg>
                 </div>
                 <p className="text-sm text-gray-600">
-                  info@pulsera.vn
+                  pulserasvietnamm@gmail.com
                 </p>
               </div>
             </div>

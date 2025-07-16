@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaFacebook, FaInstagram, FaTwitter, FaClock } from 'react-icons/fa';
+import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaFacebook, FaInstagram, FaClock } from 'react-icons/fa';
 
 const Contact: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -38,8 +38,8 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-700">Email</h3>
-                  <a href="mailto:support@pulseras.com" className="text-blue-600 hover:text-blue-700 transition">
-                    support@pulseras.com
+                  <a href="mailto:pulserasvietnamm@gmail.com" className="text-blue-600 hover:text-blue-700 transition">
+                    pulserasvietnamm@gmail.com
                   </a>
                 </div>
               </div>
@@ -89,14 +89,19 @@ const Contact: React.FC = () => {
               Kết nối với chúng tôi trên mạng xã hội để cập nhật những sản phẩm mới nhất và ưu đãi đặc biệt:
             </p>
             <div className="flex justify-center space-x-6">
-              <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
+              <a
+                href="https://www.facebook.com/profile.php?id=61577138272493"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1"
+              >
                 <FaFacebook className="text-2xl text-blue-600" />
               </a>
-              <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
+              <a href="https://www.instagram.com/pulserasvnn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
                 <FaInstagram className="text-2xl text-violet-600" />
-              </a>
-              <a href="#" className="bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
-                <FaTwitter className="text-2xl text-violet-500" />
               </a>
             </div>
           </Card>

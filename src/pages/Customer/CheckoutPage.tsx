@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ShoppingBag, CreditCard, DollarSign, QrCode } from "lucide-react";
+import { ChevronRight, ShoppingBag, CreditCard, DollarSign, QrCode, ExternalLink } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
+import PaymentService, { PayOSPaymentResponse } from "@/services/PaymentService";
 import BankTransferQR from "@/components/BankTransferQR";
 import { useCartStore } from "@/utils/cartStore";
 
@@ -99,6 +100,7 @@ const OrderSummary = ({
   phoneError,
   setPhoneError,
   validatePhone,
+  payosLoading,
 }: {
   subtotal: number;
   shipping: number;
@@ -111,6 +113,7 @@ const OrderSummary = ({
   phoneError: string;
   setPhoneError: (error: string) => void;
   validatePhone: (phone: string) => string;
+  payosLoading?: boolean;
 }) => (
   <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm sticky top-24">
     {/* Shipping Information */}
@@ -230,7 +233,7 @@ const OrderSummary = ({
 
     {/* Payment Methods */}
     <div className="mb-6">
-      <label className="block font-medium mb-3 text-gray-900 flex items-center gap-2">
+      <label className="font-medium mb-3 text-gray-900 flex items-center gap-2">
         <span className="bg-blue-100 text-blue-800 p-2 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
@@ -262,13 +265,24 @@ const OrderSummary = ({
           icon={<CreditCard className="h-5 w-5 text-purple-600" />}
           selected={paymentMethod === "PayOS"}
           onChange={setPaymentMethod}
-          description="Thanh toán qua thẻ ngân hàng"
+          description="Thanh toán qua PayOS - Hỗ trợ nhiều ngân hàng"
         />
       </div>
     </div>
 
-    <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white mb-3 py-6 text-base font-medium shadow-md hover:shadow-lg transition-all">
-      Đặt hàng
+    <Button 
+      type="submit" 
+      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white mb-3 py-6 text-base font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={payosLoading}
+    >
+      {payosLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          Đang tạo liên kết thanh toán...
+        </div>
+      ) : (
+        "Đặt hàng"
+      )}
     </Button>
     <div className="text-center">
       <a
@@ -301,6 +315,9 @@ const CheckoutPage = () => {
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [payosPayment, setPayosPayment] = useState<PayOSPaymentResponse | null>(null);
+  const [payosLoading, setPayosLoading] = useState(false);
+  const [pollIntervalId, setPollIntervalId] = useState<NodeJS.Timeout | null>(null);
   const { setQuantity } = useCartStore();
 
   // Phone validation function
@@ -396,7 +413,7 @@ const CheckoutPage = () => {
   const shipping = subtotal > 0 ? 30000 : 0;
   const total = subtotal + shipping;
 
-  const handleOrder = (e: React.FormEvent) => {
+  const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate phone number
@@ -408,12 +425,134 @@ const CheckoutPage = () => {
     
     if (paymentMethod === "QR") {
       setShowQRPopup(true);
+    } else if (paymentMethod === "PayOS") {
+      await handlePayOSPayment();
     } else {
       submitOrder();
       setShowConfirmPopup(true);
     }
-
   };
+
+  const handlePayOSPayment = async () => {
+    if (!orderId) return;
+    
+    // Validate required shipping information
+    if (!shippingInfo.fullName.trim() || !shippingInfo.phone.trim() || !shippingInfo.address.trim()) {
+      alert('Vui lòng điền đầy đủ thông tin nhận hàng (Họ tên, Số điện thoại, Địa chỉ).');
+      return;
+    }
+    
+    try {
+      setPayosLoading(true);
+      
+      // First update the order with shipping info
+      await OrderService.update(String(orderId), {
+        orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
+        amount: itemCount,
+        accountId: order.accountId,
+        voucherId: order.voucherId,
+        totalPrice: total,
+        status: 2,
+        lastEdited: new Date().toISOString(),
+      });
+      
+      // Create PayOS payment
+      const paymentResponse = await PaymentService.createPayOSPayment(String(orderId));
+      setPayosPayment(paymentResponse);
+      
+      // Open PayOS checkout URL in new tab
+      if (paymentResponse.data.checkoutUrl) {
+        window.open(paymentResponse.data.checkoutUrl, '_blank');
+      }
+      
+      // Start polling for payment status
+      pollPaymentStatus(paymentResponse.data.orderCode);
+
+      setQuantity(0);
+      
+    } catch (error: any) {
+      console.error('PayOS payment error:', error);
+      
+      let errorMessage = 'Có lỗi xảy ra khi tạo thanh toán PayOS. Vui lòng thử lại.';
+      
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 404) {
+          errorMessage = 'Dịch vụ thanh toán PayOS hiện không khả dụng. Vui lòng chọn phương thức thanh toán khác.';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau ít phút.';
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setPayosLoading(false);
+    }
+  };
+
+  const pollPaymentStatus = async (orderCode: number) => {
+    // Clear any existing interval
+    if (pollIntervalId) {
+      clearInterval(pollIntervalId);
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const paymentStatus = await PaymentService.getPaymentByOrderCode(orderCode);
+        
+        // Check for successful payment status
+        const isSuccessful = paymentStatus.data.status === "PAID" || 
+                           paymentStatus.data.status === "00" || 
+                           paymentStatus.data.status === "SUCCESS";
+        
+        const isCancelled = paymentStatus.data.status === "CANCELLED" || 
+                          paymentStatus.data.status === "FAILED";
+        
+        if (isSuccessful) {
+          clearInterval(interval);
+          setPollIntervalId(null);
+          setPayosPayment(null);
+          localStorage.setItem('amount', '0');
+          setQuantity(0);
+          setShowConfirmPopup(true);
+        } else if (isCancelled) {
+          clearInterval(interval);
+          setPollIntervalId(null);
+          setPayosPayment(null);
+          alert('Thanh toán đã bị hủy hoặc thất bại.');
+        }
+      } catch (error) {
+        console.error('Error polling payment status:', error);
+        // Continue polling even if there's an error
+      }
+    }, 5000); // Poll every 5 seconds (increased from 3 seconds)
+
+    setPollIntervalId(interval);
+
+    // Stop polling after 15 minutes (increased from 10 minutes)
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval);
+        setPollIntervalId(null);
+        // Show a message to user that they can manually check their order status
+        alert('Thời gian chờ thanh toán đã hết. Vui lòng kiểm tra trạng thái đơn hàng trong "Đơn hàng của tôi".');
+      }
+    }, 900000);
+  };
+
+  // Cleanup interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalId) {
+        clearInterval(pollIntervalId);
+      }
+    };
+  }, [pollIntervalId]);
 
   const submitOrder = () => {
     OrderService.update(String(orderId), {
@@ -513,6 +652,7 @@ const CheckoutPage = () => {
                     phoneError={phoneError}
                     setPhoneError={setPhoneError}
                     validatePhone={validatePhone}
+                    payosLoading={payosLoading}
                   />
                 </AnimatedSection>
               </div>
@@ -645,7 +785,8 @@ const CheckoutPage = () => {
                     <span className="w-24 text-gray-500">PTTT:</span>
                     <span className="font-medium">
                       {paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' :
-                        paymentMethod === 'QR' ? 'Chuyển khoản QR' : 'Thẻ ngân hàng'}
+                        paymentMethod === 'QR' ? 'Chuyển khoản QR' : 
+                        paymentMethod === 'PayOS' ? 'PayOS' : 'Thẻ ngân hàng'}
                     </span>
                   </div>
                   {shippingInfo.note && (
@@ -681,6 +822,88 @@ const CheckoutPage = () => {
                 >
                   Về trang chủ
                 </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PayOS Status Modal */}
+        {payosPayment && (
+          <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full relative animate-in fade-in zoom-in-95">
+              <button
+                onClick={() => setPayosPayment(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              <div className="text-center mb-6">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 mb-3">
+                  <CreditCard className="h-6 w-6 text-purple-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Thanh toán PayOS</h2>
+                <p className="text-gray-600">Đang chờ thanh toán từ PayOS...</p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Mã đơn hàng:</span>
+                    <span className="font-medium">{payosPayment.data.orderCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Số tiền:</span>
+                    <span className="font-bold text-purple-600">{payosPayment.data.amount.toLocaleString('vi-VN')}₫</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Trạng thái:</span>
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                      {payosPayment.data.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  className="w-full bg-purple-600 text-white hover:bg-purple-700 shadow-md"
+                  onClick={() => {
+                    if (payosPayment.data.checkoutUrl) {
+                      window.open(payosPayment.data.checkoutUrl, '_blank');
+                    }
+                  }}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Mở trang thanh toán PayOS
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
+                  onClick={() => {
+                    if (payosPayment) {
+                      pollPaymentStatus(payosPayment.data.orderCode);
+                    }
+                  }}
+                >
+                  🔄 Kiểm tra lại trạng thái thanh toán
+                </Button>
+                
+                <p className="text-sm text-gray-500 text-center">
+                  <strong>Lưu ý:</strong> Sau khi thanh toán thành công trên PayOS, 
+                  bạn sẽ được chuyển hướng về trang xác nhận hoặc có thể đóng cửa sổ 
+                  thanh toán và quay lại trang này. Hệ thống sẽ tự động cập nhật trạng thái.
+                </p>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-700 text-center">
+                    💡 <strong>Mẹo:</strong> Nếu không được chuyển hướng tự động, 
+                    hãy quay lại trang này để kiểm tra trạng thái đơn hàng
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FaHandsHelping, FaPaintBrush, FaRecycle, FaUsers } from 'react-icons/fa';
 
@@ -105,12 +104,14 @@ const AboutUs: React.FC = () => {
 
       {/* CTA Button */}
       <div className="text-center">
-        <Button 
-          onClick={() => alert('Learn more clicked')} 
+        <a
+          href="https://www.facebook.com/profile.php?id=61577138272493"
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-6 mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
         >
           Tìm Hiểu Thêm
-        </Button>
+        </a>
       </div>
     </div>
   );
