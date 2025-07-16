@@ -23,6 +23,7 @@ import CartPage from '@/pages/Customer/CartPage';
 import ProfilePage from '@/pages/Customer/ProfilePage';
 import MyOrderPage from '@/pages/Customer/MyOrderPage';
 import CheckoutPage from '@/pages/Customer/CheckoutPage';
+import CheckoutSuccessPage from '@/pages/Customer/CheckoutSuccessPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import ResetPasswordConfirmPage from '@/pages/ResetPasswordConfirmPage';
 
@@ -97,6 +98,10 @@ const routes = [
       {
         path: '/checkout/:id',
         element: <CheckoutPage />,
+      },
+      {
+        path: '/checkout/success',
+        element: <CheckoutSuccessPage />,
       },
       {
         path: '/profile',
