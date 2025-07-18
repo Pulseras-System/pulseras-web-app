@@ -22,6 +22,7 @@ import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
 import CartPage from '@/pages/Customer/CartPage';
 import ProfilePage from '@/pages/Customer/ProfilePage';
 import MyOrderPage from '@/pages/Customer/MyOrderPage';
+import WishlistPage from '@/pages/Customer/WishlistPage';
 import CheckoutPage from '@/pages/Customer/CheckoutPage';
 import CheckoutSuccessPage from '@/pages/Customer/CheckoutSuccessPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
@@ -110,6 +111,10 @@ const routes = [
       {
         path: '/orders',
         element: <MyOrderPage />,
+      },
+      {
+        path: '/wishlist',
+        element: <WishlistPage />,
       },
       {
         path: '*',
