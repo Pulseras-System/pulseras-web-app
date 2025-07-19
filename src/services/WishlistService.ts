@@ -2,6 +2,7 @@ import api from './apiService';
 
 export interface WishlistItem {
   id: string;
+  wishlistId?: string;
   accountId: string;
   productId: string;
   status: number;
@@ -23,6 +24,7 @@ const WishlistService = {
     page?: number; 
     size?: number;
     sort?: string;
+    accountId?: string;
     }): Promise<{ items: WishlistItem[]; totalPages: number; totalItems: number }> => {
     const response = await api.get(WISHLIST_URL, { params });
     return {

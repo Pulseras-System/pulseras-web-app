@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Heart, Eye } from 'lucide-react';
+import { Heart, Eye } from 'lucide-react';
 import WishlistService, { WishlistItem } from '@/services/WishlistService';
 import ProductService, { Product } from '@/services/ProductService';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,7 +59,7 @@ const WishlistPage: React.FC = () => {
         sort: 'createdAt'
       });
       
-      setWishlistItems(response.items);
+      setWishlistItems(response.items.map(item => ({ ...item, id: item.wishlistId || item.id })));
       setTotalPages(response.totalPages);
 
       // Fetch product details for each wishlist item
@@ -82,13 +82,10 @@ const WishlistPage: React.FC = () => {
     try {
       await WishlistService.delete(wishlistItemId);
       setWishlistItems(prev => prev.filter(item => item.id !== wishlistItemId));
-      setProducts(prev => {
-        const removedItem = wishlistItems.find(item => item.id === wishlistItemId);
-        if (removedItem) {
-          return prev.filter(product => product.productId !== removedItem.productId);
-        }
-        return prev;
-      });
+      setProducts(prev => prev.filter(product => {
+        // Tìm xem product này có còn trong wishlistItems sau khi xóa không
+        return wishlistItems.some(item => item.id !== wishlistItemId && item.productId === product.productId);
+      }));
       showToast('Đã xóa khỏi danh sách yêu thích', 'success');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
@@ -180,10 +177,11 @@ const WishlistPage: React.FC = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product, index) => {
-              const wishlistItem = wishlistItems[index];
+            {wishlistItems.map((wishlistItem) => {
+              const product = products.find(p => p.productId === wishlistItem.productId);
+              if (!product) return null;
               return (
-                <Card key={product.productId} className="group hover:shadow-lg transition-shadow">
+                <Card key={wishlistItem.id} className="group hover:shadow-lg transition-shadow">
                   <CardHeader className="p-0">
                     <div className="relative">
                       <img
@@ -194,14 +192,15 @@ const WishlistPage: React.FC = () => {
                           e.currentTarget.src = '/placeholder-image.png';
                         }}
                       />
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-2 right-2 opacity-100 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="icon"
                           className="bg-white/80 hover:bg-white"
                           onClick={() => handleRemoveFromWishlist(wishlistItem.id)}
+                          aria-label="Bỏ khỏi wishlist"
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Heart className="h-5 w-5 text-red-500 fill-current" />
                         </Button>
                       </div>
                     </div>
