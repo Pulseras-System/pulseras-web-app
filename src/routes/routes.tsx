@@ -46,6 +46,7 @@ import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
 import CategoryManagementPageAdmin from '@/pages/AdminPages/CategoryManagementPage';
 import AdminProfilePage from '@/pages/AdminPages/AdminProfilePage';
+import BlogsManagementPage from '@/pages/AdminPages/BlogsManagementPage';
 // Define routes
 const routes = [
   {
@@ -217,6 +218,10 @@ const routes = [
       {
         path: 'profile',
         element: <AdminProfilePage />,
+      },
+      {
+        path: 'blogs',
+        element: <BlogsManagementPage />,
       }
     ],
   },
