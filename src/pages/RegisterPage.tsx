@@ -39,15 +39,7 @@ const RegisterPage = () => {
   };
 
   const handleFacebookRegister = async () => {
-    try {
-      const provider = new FacebookAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-      console.log("Facebook Register Success:", result.user);
-      console.log("JWT Token:", token);
-    } catch (error) {
-      console.error("Facebook Register Error:", error);
-    }
+    window.alert("Chức năng đăng ký bằng Facebook đang được phát triển.");
   };
 
   // Hàm xử lý đăng ký

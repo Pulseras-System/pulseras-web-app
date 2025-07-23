@@ -49,16 +49,7 @@ const LoginPage = () => {
 
   // Đăng nhập với Facebook
   const handleFacebookLogin = async () => {
-    try {
-      const provider = new FacebookAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const token = await user.getIdToken();
-      console.log("Facebook Login Success:", user);
-      console.log("JWT Token:", token); // Log JWT token
-    } catch (error) {
-      console.error("Facebook Login Error:", error);
-    }
+    window.alert("Chức năng đăng nhập Facebook đang được phát triển.");
   };
 
   // Đăng nhập với tài khoản hệ thống

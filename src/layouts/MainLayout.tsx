@@ -29,7 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { set } from "lodash";
 
 const MainLayout = () => {
   // const [showSearch, setShowSearch] = useState(false);
