@@ -22,6 +22,7 @@ import DesignBraceletPage from '@/pages/Customer/DesignBraceletPage';
 import CartPage from '@/pages/Customer/CartPage';
 import ProfilePage from '@/pages/Customer/ProfilePage';
 import MyOrderPage from '@/pages/Customer/MyOrderPage';
+import WishlistPage from '@/pages/Customer/WishlistPage';
 import CheckoutPage from '@/pages/Customer/CheckoutPage';
 import CheckoutSuccessPage from '@/pages/Customer/CheckoutSuccessPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage';
@@ -45,6 +46,7 @@ import UserManagementAdmin from '@/pages/AdminPages/UserManagementPage';
 import VoucherManagementAdmin from '@/pages/AdminPages/VoucherManagementPage';
 import CategoryManagementPageAdmin from '@/pages/AdminPages/CategoryManagementPage';
 import AdminProfilePage from '@/pages/AdminPages/AdminProfilePage';
+import BlogsManagementPage from '@/pages/AdminPages/BlogsManagementPage';
 // Define routes
 const routes = [
   {
@@ -110,6 +112,10 @@ const routes = [
       {
         path: '/orders',
         element: <MyOrderPage />,
+      },
+      {
+        path: '/wishlist',
+        element: <WishlistPage />,
       },
       {
         path: '*',
@@ -212,6 +218,10 @@ const routes = [
       {
         path: 'profile',
         element: <AdminProfilePage />,
+      },
+      {
+        path: 'blogs',
+        element: <BlogsManagementPage />,
       }
     ],
   },

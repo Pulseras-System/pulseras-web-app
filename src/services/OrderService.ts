@@ -12,7 +12,8 @@ export interface Order {
   status: number;
   createDate: string;
   lastEdited: string;
-  paymentMethod?: string; // Thêm trường paymentMethod
+  paymentMethod?: string;
+  fullName?: string; // Thêm trường paymentMethod
 }
 
 export interface RevenueResponse {

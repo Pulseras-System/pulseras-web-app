@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import Logo from "../assets/images/logo.png";
 import {
   Home, ShoppingBag, Sparkles, Info, Phone,
-  ShoppingCart, User, Menu, LogOut, Settings, Package,
+  ShoppingCart, User, Menu, LogOut, Settings, Package, Heart,
 } from "lucide-react";
 import { useCartStore } from "@/utils/cartStore";
 
@@ -163,10 +163,10 @@ const MainLayout = () => {
                     <Package className="h-4 w-4 text-blue-500" />
                     <span>Đơn hàng của tôi</span>
                   </DropdownMenuItem>
-                  {/* <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
+                  <DropdownMenuItem onClick={() => navigate("/wishlist")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50 mb-1">
                     <Heart className="h-4 w-4 text-blue-500" />
                     <span>Danh sách yêu thích</span>
-                  </DropdownMenuItem> */}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/profile")} className="py-2 px-3 cursor-pointer flex gap-2 rounded-md hover:bg-blue-50 focus:bg-blue-50">
                     <Settings className="h-4 w-4 text-blue-500" />
                     <span>Cài đặt tài khoản</span>
@@ -280,6 +280,30 @@ const MainLayout = () => {
                         >
                           <LogOut className="h-4 w-4" />
                           <span className="font-medium">Đăng xuất</span>
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <Button
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-green-100 hover:border-green-200 shadow-sm py-2"
+                          onClick={() => {
+                            navigate("/orders");
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <Package className="h-4 w-4 text-green-600" />
+                          <span className="font-medium">Đơn hàng</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:bg-pink-100 hover:border-pink-200 shadow-sm py-2"
+                          onClick={() => {
+                            navigate("/wishlist");
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <Heart className="h-4 w-4 text-pink-600" />
+                          <span className="font-medium">Yêu thích</span>
                         </Button>
                       </div>
                     </div>
