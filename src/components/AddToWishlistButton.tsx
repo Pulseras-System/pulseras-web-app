@@ -9,6 +9,7 @@ interface AddToWishlistButtonProps {
   className?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
+  showToast?: (message: string, type: 'success' | 'error') => void;
 }
 
 // Simple toast notification component
@@ -33,17 +34,22 @@ export const AddToWishlistButton: React.FC<AddToWishlistButtonProps> = ({
   productId,
   className = "",
   variant = "outline",
-  size = "default"
+  size = "default",
+  showToast: showToastProp
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
-  const [wishlistItemId, setWishlistItemId] = useState<string | null>(null);
+  const [, setWishlistItemId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { roleName } = useAuth();
 
   const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    if (showToastProp) {
+      showToastProp(message, type);
+    } else {
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   // Check if product is already in wishlist when component mounts
@@ -89,25 +95,37 @@ export const AddToWishlistButton: React.FC<AddToWishlistButtonProps> = ({
       return;
     }
 
+    // Nếu đã có trong wishlist thì không thêm nữa, chỉ thông báo
+    if (isInWishlist) {
+      showToast('Sản phẩm đã có trong danh sách yêu thích', 'error');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      if (isInWishlist && wishlistItemId) {
-        // Nếu đã thích, nhấn lại sẽ xóa khỏi wishlist
-        await WishlistService.delete(wishlistItemId);
-        setIsInWishlist(false);
-        setWishlistItemId(null);
-        showToast('Đã bỏ khỏi Wishlist', 'success');
-      } else if (!isInWishlist) {
-        // Nếu chưa thích, nhấn sẽ thêm vào wishlist
-        const newItem = await WishlistService.create({ 
-          accountId,
-          productId,
-          status: 1 // 1 = active wishlist item
-        });
+      // Kiểm tra lại trạng thái wishlist trước khi thêm
+      const check = await WishlistService.getAll({
+        keyword: productId,
+        accountId: accountId,
+        page: 0,
+        size: 10
+      });
+      const foundItem = check.items.find(item => item.productId === productId && item.accountId === accountId);
+      if (foundItem) {
         setIsInWishlist(true);
-        setWishlistItemId(newItem.id);
-        showToast('Đã thêm vào Wishlist', 'success');
+        setWishlistItemId(foundItem.id);
+        showToast('Sản phẩm đã có trong danh sách yêu thích', 'error');
+        return;
       }
+      // Nếu chưa thích, nhấn sẽ thêm vào wishlist
+      const newItem = await WishlistService.create({ 
+        accountId,
+        productId,
+        status: 1 // 1 = active wishlist item
+      });
+      setIsInWishlist(true);
+      setWishlistItemId(newItem.id);
+      showToast('Đã thêm vào Wishlist', 'success');
     } catch (error) {
       console.error('Error updating wishlist:', error);
       showToast('Có lỗi xảy ra, vui lòng thử lại', 'error');
@@ -134,8 +152,8 @@ export const AddToWishlistButton: React.FC<AddToWishlistButtonProps> = ({
         )}
       </Button>
 
-      {/* Toast notification */}
-      {toast && (
+      {/* Toast notification: chỉ hiển thị nếu không có showToast prop */}
+      {!showToastProp && toast && (
         <Toast
           message={toast.message}
           type={toast.type}

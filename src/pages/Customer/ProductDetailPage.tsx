@@ -6,12 +6,34 @@ import ProductService, { Product } from "@/services/ProductService";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AddToWishlistButton } from "@/components/AddToWishlistButton";
 
+// Toast notification component
+const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+  return (
+    <div className={`fixed top-4 right-4 p-4 rounded-md z-50 ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+      {message}
+    </div>
+  );
+};
+
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Show toast function
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // 1. Lấy chi tiết sản phẩm
   useEffect(() => {
@@ -50,6 +72,14 @@ const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Toast notification: luôn hiển thị ở trên cùng góc phải trang */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-32 bg-blue-100/50 -z-10" />
       <div className="absolute top-10 left-10 w-16 h-16 rounded-full bg-pink-100/30 blur-md" />
@@ -107,6 +137,7 @@ const ProductDetailPage = () => {
                 variant="ghost"
                 size="icon"
                 className="text-pink-500 hover:text-pink-400 hover:bg-white/90"
+                showToast={showToast}
               />
             </div>
             <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-blue-100/50 to-transparent"></div>

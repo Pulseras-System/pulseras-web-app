@@ -33,6 +33,10 @@ const WishlistService = {
       totalItems: response.data.totalItems || 0,
     };
   },
+  getByAccountId: async (accountId: string): Promise<WishlistItem[]> => {
+    const response = await api.get<WishlistItem[]>(`${WISHLIST_URL}/account/${accountId}`);
+    return response.data;
+  },
   getById: async (id: string): Promise<WishlistItem> => {
     const response = await api.get<WishlistItem>(`${WISHLIST_URL}/${id}`);
     return response.data;

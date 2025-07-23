@@ -31,8 +31,7 @@ const WishlistPage: React.FC = () => {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  // Không cần phân trang khi chỉ lấy wishlist theo account
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const { roleName } = useAuth();
   const { addToCart } = useCart();
@@ -44,31 +43,35 @@ const WishlistPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (roleName) {
-      fetchWishlistItems();
+    // Lấy accountId từ localStorage key 'account' (object, trường id)
+    let accountId = '';
+    try {
+      const accStr = localStorage.getItem('account');
+      if (accStr) {
+        const accObj = JSON.parse(accStr);
+        accountId = accObj.id;
+      }
+    } catch {}
+    if (roleName && accountId) {
+      fetchWishlistItemsByAccount(accountId);
     }
-  }, [roleName, currentPage]);
+  }, [roleName]);
 
-  const fetchWishlistItems = async () => {
+  const fetchWishlistItemsByAccount = async (accountId: string) => {
     try {
       setLoading(true);
-      const response = await WishlistService.getAll({
-        keyword: '',
-        page: currentPage - 1, // API sử dụng zero-based indexing
-        size: 12,
-        sort: 'createdAt'
-      });
-      
-      setWishlistItems(response.items.map(item => ({ ...item, id: item.wishlistId || item.id })));
-      setTotalPages(response.totalPages);
+      const items = await WishlistService.getByAccountId(accountId);
+      setWishlistItems(items.map(item => ({ ...item, id: item.wishlistId || item.id })));
 
       // Fetch product details for each wishlist item
-      if (response.items.length > 0) {
-        const productPromises = response.items.map(item => 
+      if (items.length > 0) {
+        const productPromises = items.map(item => 
           ProductService.getById(item.productId)
         );
         const productData = await Promise.all(productPromises);
         setProducts(productData);
+      } else {
+        setProducts([]);
       }
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -156,6 +159,14 @@ const WishlistPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Toast notification: luôn hiển thị ở trên cùng trang */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Danh sách yêu thích</h1>
         <p className="text-gray-600">
@@ -175,120 +186,76 @@ const WishlistPage: React.FC = () => {
           </Link>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlistItems.map((wishlistItem) => {
-              const product = products.find(p => p.productId === wishlistItem.productId);
-              if (!product) return null;
-              return (
-                <Card key={wishlistItem.id} className="group hover:shadow-lg transition-shadow">
-                  <CardHeader className="p-0">
-                    <div className="relative">
-                      <img
-                        src={product.productImage || '/placeholder-image.png'}
-                        alt={product.productName}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-image.png';
-                        }}
-                      />
-                      <div className="absolute top-2 right-2 opacity-100 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="bg-white/80 hover:bg-white"
-                          onClick={() => handleRemoveFromWishlist(wishlistItem.id)}
-                          aria-label="Bỏ khỏi wishlist"
-                        >
-                          <Heart className="h-5 w-5 text-red-500 fill-current" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        {product.type}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg mb-2 line-clamp-2">
-                      {product.productName}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {product.productDescription}
-                    </p>
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-lg font-bold text-primary">
-                        {formatPrice(product.price)}
-                      </span>
-                      {getStatusBadge(product.status)}
-                    </div>
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/products/${product.productId}`}
-                        className="flex-1"
-                      >
-                        <Button variant="outline" className="w-full">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Xem chi tiết
-                        </Button>
-                      </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {wishlistItems.map((wishlistItem) => {
+            const product = products.find(p => p.productId === wishlistItem.productId);
+            if (!product) return null;
+            return (
+              <Card key={wishlistItem.id} className="group hover:shadow-lg transition-shadow">
+                <CardHeader className="p-0">
+                  <div className="relative">
+                    <img
+                      src={product.productImage || '/placeholder-image.png'}
+                      alt={product.productName}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder-image.png';
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 opacity-100 group-hover:opacity-100 transition-opacity">
                       <Button
-                        onClick={() => handleAddToCart(product)}
-                        className="flex-1"
-                        disabled={product.status === 0}
+                        variant="ghost"
+                        size="icon"
+                        className="bg-white/80 hover:bg-white"
+                        onClick={() => handleRemoveFromWishlist(wishlistItem.id)}
+                        aria-label="Bỏ khỏi wishlist"
                       >
-                        Thêm vào giỏ
+                        <Heart className="h-5 w-5 text-red-500 fill-current" />
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-8">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                >
-                  Trước
-                </Button>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                
-                <Button
-                  variant="outline"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                >
-                  Sau
-                </Button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="mb-2">
+                    <Badge variant="outline" className="text-xs">
+                      {product.type}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg mb-2 line-clamp-2">
+                    {product.productName}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {product.productDescription}
+                  </p>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-lg font-bold text-primary">
+                      {formatPrice(product.price)}
+                    </span>
+                    {getStatusBadge(product.status)}
+                  </div>
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/products/${product.productId}`}
+                      className="flex-1"
+                    >
+                      <Button variant="outline" className="w-full">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Xem chi tiết
+                      </Button>
+                    </Link>
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      className="flex-1"
+                      disabled={product.status === 0}
+                    >
+                      Thêm vào giỏ
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
