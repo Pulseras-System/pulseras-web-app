@@ -226,7 +226,6 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         braceletStringRef.current = braceletString;        // Create snap points after adding the string to scene
         createSnapPoints();
 
-        console.log('Bracelet string created and added to scene');
     };    // Helper function to create snap points along the bracelet string
     const createSnapPoints = useCallback(() => {
         const snapPoints: THREE.Vector3[] = [];
@@ -239,7 +238,6 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
         }
 
         snapPointsRef.current = snapPoints;
-        console.log(`Created ${numPoints} snap points on bracelet string with spacing ~${(stringLength / (numPoints - 1)).toFixed(3)} units`);
     }, []);    // Helper function to find the nearest snap point
     const findNearestSnapPoint = useCallback((position: THREE.Vector3): THREE.Vector3 | null => {
         if (snapPointsRef.current.length === 0) return null;
@@ -289,11 +287,9 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
                 // Adjust the position so the visual center aligns with the bracelet string
                 nearestSnapPoint.y = -center.y; // Offset by the model's center offset
                 
-                console.log('Star charm snapped with center adjustment:', nearestSnapPoint, 'Model center offset:', center.y);
             }
             
             object.position.copy(nearestSnapPoint);
-            console.log('Object snapped to bracelet string at position:', nearestSnapPoint);
             return true;
         }
         return false;
@@ -760,7 +756,6 @@ const ThreeJsWorkspace: React.FC<ThreeJsWorkspaceProps> = ({
 
         // Remove all objects that were marked for removal
         if (objectsToRemove.length > 0) {
-            console.log(`Removing ${objectsToRemove.length} objects from scene`);
 
             objectsToRemove.forEach((object) => {
                 // Dispose of geometries and materials to prevent memory leaks

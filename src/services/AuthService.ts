@@ -63,8 +63,6 @@ const AuthService = {
   },
 
   resetPassword: async (token: string, password: string) => {
-    console.log("Request URL:", `${AUTH_URL}/reset-password`);
-    console.log("Request Payload:", { token, password });
     if (!password) {
       throw new Error("Password is empty or undefined");
     }

@@ -127,8 +127,6 @@ const HomePage = () => {
     setLoadingTop(true);
     ProductService.getTopBuyProducts()
       .then((topBuyProducts) => {
-        console.log("Top buy products received:", topBuyProducts);
-        // Extract products from TopBuyProduct[] structure
         const products = topBuyProducts.map(item => item.product);
         setTopProducts(products);
       })
@@ -146,7 +144,6 @@ const HomePage = () => {
     // getLatestProducts: async (): Promise<Product[]> => { ... }
     ProductService.getLatestProducts?.()
       .then((products) => {
-        console.log("Latest products received:", products);
         setLatestProducts(products);
       })
       .catch((error) => {

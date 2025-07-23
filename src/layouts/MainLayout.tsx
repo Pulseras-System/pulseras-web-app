@@ -37,6 +37,7 @@ const MainLayout = () => {
   const [account, setAccount] = useState<any>(null);
   const navigate = useNavigate();
   const quantity = useCartStore((state) => state.quantity);
+  const { setQuantity } = useCartStore();
 
   const navLinks = {
     "/": { label: "Trang chủ", icon: Home },
@@ -68,7 +69,7 @@ const MainLayout = () => {
 
     // Update state
     setAccount(null);
-
+    setQuantity(0);
     // Navigate to home page
     navigate("/");
   };
@@ -118,7 +119,7 @@ const MainLayout = () => {
             <ThemeToggle />
 
             {/* Search Icon */}
-            
+
             {/* Cart Icon */}
             <Button
               variant="ghost"
