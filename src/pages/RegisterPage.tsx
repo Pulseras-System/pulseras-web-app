@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
-import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
+import { auth, GoogleAuthProvider,  signInWithPopup } from "../configs/firebaseConfig";
 import AuthService from "@/services/AuthService";
 
 const RegisterPage = () => {
