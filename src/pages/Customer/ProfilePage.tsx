@@ -26,20 +26,15 @@ function ProfilePage() {
         }
 
         const parsedAccount = JSON.parse(storedAccount);
-        console.log('Stored account:', parsedAccount); // Debug stored account data
 
         // Make sure we have a valid ID
         if (!parsedAccount.id) {
           throw new Error('Không tìm thấy ID tài khoản');
         }
 
-        console.log('Fetching account with ID:', parsedAccount.id); // Debug ID
-
-        // Fetch account details using the ID
         const accountData = await AccountService.getById(parsedAccount.id);
         setAccount(accountData);
 
-        // Nếu có roleId hoặc role_id, fetch thông tin về role từ API
         if (accountData.roleId) {
           fetchRoleName(accountData.roleId);
         } else if (accountData.roleId) {

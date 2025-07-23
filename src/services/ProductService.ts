@@ -83,22 +83,34 @@ const ProductService = {
 
     return data;
   },
-  update: async (id: string, data: Partial<Product>): Promise<Product> => {
-    const payload = {
-      categoryIds: data.categoryIds || [],
-      productName: data.productName || "",
-      productDescription: data.productDescription || "",
-      productMaterial: data.productMaterial || "",
-      productImage: data.productImage || "",
-      quantity: data.quantity || 0,
-      type: data.type || "",
-      price: data.price || 0,
-      status: data.status || 0,
-    };
+  update: async (id: string, data: Partial<Product> & { image?: File }): Promise<Product> => {
+  const form = new FormData();
 
-    const response = await api.put<Product>(`${PRODUCT_URL}/${id}`, payload);
-    return response.data;
-  },
+  // Optional image
+  if (data.image) {
+    form.append("image", data.image);
+  }
+
+  // Required fields
+  if (data.categoryIds) {
+    data.categoryIds.forEach((id) => form.append("categoryIds", id));
+  }
+
+  form.append("productName", data.productName ?? "");
+  form.append("productDescription", data.productDescription ?? "");
+  form.append("productMaterial", data.productMaterial ?? "");
+  form.append("quantity", String(data.quantity ?? 0));
+  form.append("type", data.type ?? "");
+  form.append("price", String(data.price ?? 0));
+  form.append("status", String(data.status ?? 0));
+
+  const response = await api.put<Product>(`${PRODUCT_URL}/${id}`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data;
+},
+
   delete: async (id: string): Promise<void> => {
     await api.delete(`${PRODUCT_URL}/${id}`);
   },

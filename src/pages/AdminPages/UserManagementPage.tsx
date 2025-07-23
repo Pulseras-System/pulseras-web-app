@@ -191,7 +191,6 @@ const UserManagementPage = () => {
           roleName: account.roleName
         };
         setAccounts([...accounts, newAccountWithRole]);
-        console.log("Tạo người dùng mới thành công");
         alert("Tạo người dùng mới thành công!");
       } else {
         // Update existing account
@@ -209,7 +208,6 @@ const UserManagementPage = () => {
           roleName: account.roleName
         };
         setAccounts(accounts.map(a => (a.id === account.id ? updatedAccountWithRole : a)));
-        console.log("Cập nhật người dùng thành công");
         alert("Cập nhật người dùng thành công!");
       }
       setModalOpen(false);
@@ -238,7 +236,6 @@ const UserManagementPage = () => {
       try {
         await AccountService.delete(accountId);
         setAccounts(accounts.filter(account => account.id !== accountId));
-        console.log("Xóa tài khoản thành công");
       } catch (error) {
         console.error("Failed to delete account:", error);
         alert("Không thể xóa tài khoản. Vui lòng thử lại.");

@@ -20,7 +20,6 @@ import {
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
 import OrderService, { Order as ApiOrder } from "@/services/OrderService";
-import AccountService from "@/services/AccountService";
 import OrderDetailService, { OrderDetail } from "@/services/OrderDetailService";
 import ProductService, { Product } from "@/services/ProductService";
 
@@ -99,28 +98,17 @@ const OrderManagement = () => {
       setLoading(true);
       try {
         const orderList = await OrderService.get();
-        // Lấy tên khách hàng cho từng order bằng getById
-        const ordersWithCustomer = await Promise.all(
-          orderList.map(async (order) => {
-            let customerName = "Unknown";
-            try {
-              const account = await AccountService.getById(order.accountId);
-              customerName = account.fullName;
-            } catch {
-              // Nếu lỗi thì giữ là Unknown
-            }
-            return {
-              id: order.id,
-              customerName,
-              orderDate: order.createDate,
-              status: statusMap[order.status] || "Đang xử lý",
-              totalAmount: order.totalPrice,
-              orderInfor: order.orderInfor,
-              amount: order.amount,
-              raw: order,
-            } as OrderRow;
-          })
-        );
+        // Sử dụng fullName trực tiếp từ API trả về
+        const ordersWithCustomer = orderList.map((order) => ({
+          id: order.id,
+          customerName: order.fullName || "Unknown",
+          orderDate: order.createDate,
+          status: statusMap[order.status] || "Đang xử lý",
+          totalAmount: order.totalPrice,
+          orderInfor: order.orderInfor,
+          amount: order.amount,
+          raw: order,
+        }) as OrderRow);
         setOrders(ordersWithCustomer);
       } catch (e) {
         setOrders([]);

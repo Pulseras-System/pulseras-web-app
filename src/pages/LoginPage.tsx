@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
-import { auth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
+import { auth, GoogleAuthProvider, signInWithPopup } from "../configs/firebaseConfig";
 import AuthService from "@/services/AuthService";
 import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
@@ -49,16 +49,7 @@ const LoginPage = () => {
 
   // Đăng nhập với Facebook
   const handleFacebookLogin = async () => {
-    try {
-      const provider = new FacebookAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const token = await user.getIdToken();
-      console.log("Facebook Login Success:", user);
-      console.log("JWT Token:", token); // Log JWT token
-    } catch (error) {
-      console.error("Facebook Login Error:", error);
-    }
+    window.alert("Chức năng đăng nhập Facebook đang được phát triển.");
   };
 
   // Đăng nhập với tài khoản hệ thống

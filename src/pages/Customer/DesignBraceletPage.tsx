@@ -52,15 +52,21 @@ const DesignBraceletPage: React.FC = () => {
             category: 'charms'
         },
         {
-            id: 'block-gem',
-            name: 'Gem Block',
-            modelPath: '/scene.glb',
+            id: 'heart-gem',
+            name: 'Heart Block',
+            modelPath: '/heart.glb',
             category: 'gems'
         },
         {
             id: 'star-gem',
             name: 'Star Block',
             modelPath: '/star4.glb',
+            category: 'gems'
+        },
+        {
+            id: 'moon-gem',
+            name: 'Moon Block',
+            modelPath: '/moon.glb',
             category: 'gems'
         }
     ]);

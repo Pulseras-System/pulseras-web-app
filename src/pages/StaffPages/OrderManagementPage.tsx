@@ -20,7 +20,6 @@ import {
 import { Label } from "@/components/ui/label";
 import Pagination from "@/components/pagination";
 import OrderService, { Order as ApiOrder } from "@/services/OrderService";
-import AccountService from "@/services/AccountService";
 import OrderDetailService, { OrderDetail } from "@/services/OrderDetailService";
 import ProductService, { Product } from "@/services/ProductService";
 
@@ -99,28 +98,17 @@ const OrderManagement = () => {
       setLoading(true);
       try {
         const orderList = await OrderService.get();
-        // Lấy tên khách hàng cho từng order bằng getById
-        const ordersWithCustomer = await Promise.all(
-          orderList.map(async (order) => {
-            let customerName = "Unknown";
-            try {
-              const account = await AccountService.getById(order.accountId);
-              customerName = account.fullName;
-            } catch {
-              // Nếu lỗi thì giữ là Unknown
-            }
-            return {
-              id: order.id,
-              customerName,
-              orderDate: order.createDate,
-              status: statusMap[order.status] || "Đang xử lý",
-              totalAmount: order.totalPrice,
-              orderInfor: order.orderInfor,
-              amount: order.amount,
-              raw: order,
-            } as OrderRow;
-          })
-        );
+        // Sử dụng fullName trực tiếp từ API trả về
+        const ordersWithCustomer = orderList.map((order) => ({
+          id: order.id,
+          customerName: order.fullName || "Unknown",
+          orderDate: order.createDate,
+          status: statusMap[order.status] || "Đang xử lý",
+          totalAmount: order.totalPrice,
+          orderInfor: order.orderInfor,
+          amount: order.amount,
+          raw: order,
+        }) as OrderRow);
         setOrders(ordersWithCustomer);
       } catch (e) {
         setOrders([]);
@@ -536,7 +524,7 @@ const OrderManagement = () => {
                       className="text-red-500 border-pink-100 hover:bg-pink-100 hover:text-red-600"
                       onClick={() => handleDeleteClick(order)}
                       title="Xóa đơn hàng"
-                      disabled={isDisabled}
+                      disabled={order.status === "Trong giỏ hàng"}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -793,9 +781,6 @@ const OrderManagement = () => {
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
                     <span className="text-black">Tên khách hàng:</span>
                     <span className="font-medium text-black">{viewOrder.customerName}</span>
-                    
-                    <span className="text-black">Phương thức:</span>
-                    <span className="font-medium text-black">COD</span>
                     
                     <span className="text-black">Mã khách hàng:</span>
                     <span className="font-medium text-black">KH-{viewOrder.raw?.accountId || "---"}</span>

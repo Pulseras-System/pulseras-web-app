@@ -9,19 +9,20 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu, Layers} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, Layers } from "lucide-react";
 import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { useCartStore } from "@/utils/cartStore";
 
 const navItems = [
   { label: "Vòng tay", path: "/staff/bracelets", icon: Gem },
@@ -35,6 +36,8 @@ const navItems = [
 const StaffLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { setQuantity } = useCartStore();
+
 
 
   const handleLogout = () => {
@@ -46,6 +49,8 @@ const StaffLayout = () => {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     });
 
+    setQuantity(0); // Reset cart quantity in store
+
     navigate("/");
   };
 
@@ -56,10 +61,10 @@ const StaffLayout = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 bg-gradient-to-b from-blue-100 to-pink-100 font-sans  antialiased  flex flex-col p-6 space-y-6 fixed h-full border-r border-slate-900/10 shadow-xl">
         <Link to="/staff" className="flex items-center gap-3 mb-10 group">
-          <img 
-            src={Logo} 
-            alt="Workshop logo" 
-            className="h-12 w-auto group-hover:rotate-6 transition-transform" 
+          <img
+            src={Logo}
+            alt="Workshop logo"
+            className="h-12 w-auto group-hover:rotate-6 transition-transform"
           />
         </Link>
 
@@ -86,11 +91,11 @@ const StaffLayout = () => {
 
         <div className="mt-auto pt-4 border-t border-slate-700/50">
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-600/40 cursor-pointer transition">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -112,10 +117,10 @@ const StaffLayout = () => {
             <SheetContent side="left" className="w-[300px] bg-gradient-to-b from-blue-100 to-pink-100">
               <div className="flex flex-col h-full">
                 <Link to="/staff" className="flex items-center gap-3 mb-6 group">
-                  <img 
-                    src={Logo} 
-                    alt="Workshop logo" 
-                    className="w-10 h-auto group-hover:rotate-4 transition-transform" 
+                  <img
+                    src={Logo}
+                    alt="Workshop logo"
+                    className="w-10 h-auto group-hover:rotate-4 transition-transform"
                   />
                 </Link>
 
@@ -143,11 +148,11 @@ const StaffLayout = () => {
 
                 <div className="pt-4 border-t border-slate-700/50">
                   <div className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-600/40 cursor-pointer transition">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -160,10 +165,10 @@ const StaffLayout = () => {
           </Sheet>
 
           <Link to="/staff" className="flex items-center gap-3 group">
-            <img 
-              src={Logo} 
-              alt="Workshop logo" 
-              className="w-20 h-auto group-hover:rotate-6 transition-transform" 
+            <img
+              src={Logo}
+              alt="Workshop logo"
+              className="w-20 h-auto group-hover:rotate-6 transition-transform"
             />
           </Link>
 
@@ -205,11 +210,11 @@ const StaffLayout = () => {
                     <AvatarFallback>NV</AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-slate-900 font-medium">Nhân viên</span>
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-4 w-4 text-slate-600" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-slate-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

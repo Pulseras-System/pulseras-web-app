@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, ChevronLeft, ChevronRight} from "lucide-react";
 import ProductService, { Product } from "@/services/ProductService";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { AddToWishlistButton } from "@/components/AddToWishlistButton";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -100,10 +101,13 @@ const ProductDetailPage = () => {
                 className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md">
-              {/* <button className="p-2 text-pink-500 hover:text-pink-400 transition-colors">
-                <Heart className="w-5 h-5" />
-              </button> */}
+            <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm rounded-full shadow-md">
+              <AddToWishlistButton
+                productId={product.productId}
+                variant="ghost"
+                size="icon"
+                className="text-pink-500 hover:text-pink-400 hover:bg-white/90"
+              />
             </div>
             <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-blue-100/50 to-transparent"></div>
           </div>
@@ -192,6 +196,11 @@ const ProductDetailPage = () => {
                   className="flex-1 h-12 bg-pink-400 hover:bg-pink-500 text-white shadow-md gap-2 transition-all duration-300"
                   // disabled={product.quantity <= 0}
                 />
+                {/* <AddToWishlistButton
+                  productId={product.productId}
+                  variant="outline"
+                  className="h-12 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 shadow-md transition-all duration-300"
+                /> */}
                 <Button
                   variant="outline"
                   className="flex-1 h-12 border-blue-300 text-blue-700 hover:bg-blue-50 gap-2"
