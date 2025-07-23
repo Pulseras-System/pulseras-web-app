@@ -5,11 +5,11 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 //   NavigationMenuItem, 
 //   NavigationMenuLink, 
 //   NavigationMenuList, 
-//   NavigationMenuTrigger,
+//   NavigationMenuTrigger, 
 //   navigationMenuTriggerStyle 
 // } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Package, Users, Ticket, Box, Gem, Menu, ChartArea, Layers, Newspaper} from "lucide-react";
+import { Package, Users, Ticket, Box, Gem, Menu, ChartArea, Layers } from "lucide-react";
 import Logo from "../assets/images/logo.png";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const navItems = [
   { label: "Đơn hàng", path: "/admin/orders", icon: Box },
   { label: "Người dùng", path: "/admin/users", icon: Users },
   { label: "Ưu đãi", path: "/admin/vouchers", icon: Ticket },
-  { label: "Bài viết", path: "/admin/blogs", icon: Newspaper }
+  // { label: "Bài viết", path: "/admin/blogs", icon: Newspaper }
 ];
 
 const AdminLayout = () => {
