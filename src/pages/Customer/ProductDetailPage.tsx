@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Star, ChevronLeft, ChevronRight} from "lucide-react";
 import ProductService, { Product } from "@/services/ProductService";
+import FeedbackService, { Feedback } from "@/services/FeedbackService";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AddToWishlistButton } from "@/components/AddToWishlistButton";
 
@@ -28,6 +29,11 @@ const ProductDetailPage = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Feedback state
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
   // Show toast function
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -57,6 +63,27 @@ const ProductDetailPage = () => {
           setRelatedProducts(related.slice(0, 4));
         })
         .catch((err) => console.error("Error fetching related products:", err));
+    }
+  }, [product]);
+
+  // Lấy feedback cho sản phẩm
+  useEffect(() => {
+    if (product && product.productId) {
+      const pid = String(product.productId);
+      FeedbackService.getByProductId(pid)
+        .then((data: any) => {
+          // Nếu API trả về { items: [...] }
+          if (data && Array.isArray(data.items)) {
+            setFeedbacks(data.items.filter((fb: any) => (fb.product_id === pid || fb.productId === pid)));
+          } else if (Array.isArray(data)) {
+            setFeedbacks(data.filter((fb: any) => (fb.product_id === pid || fb.productId === pid)));
+          } else {
+            setFeedbacks([]);
+          }
+        })
+        .catch(() => setFeedbacks([]));
+    } else {
+      setFeedbacks([]);
     }
   }, [product]);
 
@@ -248,6 +275,115 @@ const ProductDetailPage = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Feedback Section - Redesigned */}
+        <div className="mt-16 max-w-2xl mx-auto bg-gradient-to-br from-blue-50 via-white to-pink-50 rounded-2xl shadow-lg border border-blue-100 p-8">
+          <h2 className="text-2xl font-extrabold text-pink-500 mb-6 flex items-center gap-2">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path fill="#ec4899" d="M12 2c2.21 0 4 1.79 4 4 0 1.1-.45 2.09-1.17 2.81l-.01.01-2.82 2.82-2.82-2.82-.01-.01A3.978 3.978 0 0 1 8 6c0-2.21 1.79-4 4-4Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-7 8c0-2.21 1.79-4 4-4 .88 0 1.68.29 2.33.78l.01.01 2.82 2.82-2.82 2.82-.01.01A3.978 3.978 0 0 1 9 16c-2.21 0-4-1.79-4-4Zm2 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm10 0c0-2.21 1.79-4 4-4 .88 0 1.68.29 2.33.78l.01.01 2.82 2.82-2.82 2.82-.01.01A3.978 3.978 0 0 1 17 16c-2.21 0-4-1.79-4-4Zm2 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z"/></svg>
+            Đánh giá sản phẩm
+          </h2>
+          {/* Danh sách feedback */}
+          <div className="mb-8">
+            {Array.isArray(feedbacks) && feedbacks.length === 0 ? (
+              <div className="text-blue-400 text-center italic py-8">Chưa có đánh giá nào cho sản phẩm này.</div>
+            ) : Array.isArray(feedbacks) ? (
+              <ul className="space-y-6">
+                {feedbacks.map((fb: any) => (
+                  <li key={fb.feedback_id || fb.feedbackId} className="flex gap-4 items-start bg-white/80 rounded-xl shadow-sm border border-blue-100 p-4 hover:shadow-md transition-all">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={fb.avatarUrl || '/src/assets/icons/user.svg'}
+                        alt="avatar"
+                        className="w-10 h-10 rounded-full border border-pink-200 object-cover bg-blue-50"
+                        onError={(e: any) => { e.target.src = '/src/assets/icons/user.svg'; }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-semibold ${fb.fullName === 'Administrator' ? 'text-pink-500' : 'text-blue-800'}`}>
+                          {fb.fullName ? fb.fullName : `Người dùng #${fb.account_id || fb.accountId}`}
+                        </span>
+                        {fb.fullName === 'Administrator' && (
+                          <span className="ml-1 px-2 py-0.5 text-xs rounded bg-pink-100 text-pink-600 font-bold">Admin</span>
+                        )}
+                        <span className="text-xs text-blue-400 ml-auto">{new Date(fb.createDate).toLocaleString()}</span>
+                      </div>
+                      <div className="text-blue-700 text-base leading-relaxed">{fb.feedbackInfor}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          {/* Form gửi feedback */}
+          <form
+            className="bg-white/90 rounded-xl border border-blue-100 p-6 shadow flex flex-col gap-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!feedbackText.trim()) {
+                showToast("Vui lòng nhập nội dung đánh giá!", "error");
+                return;
+              }
+              setFeedbackLoading(true);
+              try {
+                // Lấy account_id từ localStorage key 'account'
+                const accountStr = localStorage.getItem('account');
+                let accountId = "";
+                if (accountStr) {
+                  try {
+                    const accountObj = JSON.parse(accountStr);
+                    if (accountObj && accountObj.id) {
+                      accountId = accountObj.id;
+                    }
+                  } catch {
+                    accountId = "";
+                  }
+                }
+                if (!accountId) {
+                  showToast("Không tìm thấy tài khoản. Vui lòng đăng nhập lại!", "error");
+                  setFeedbackLoading(false);
+                  return;
+                }
+              await FeedbackService.create({
+                accountId: accountId,
+                productId: String(product.productId),
+                feedbackInfor: feedbackText,
+                status: 0,
+              });
+                setFeedbackText("");
+                showToast("Gửi đánh giá thành công!", "success");
+                // Reload feedbacks
+                const pid = typeof product.productId === 'string' ? parseInt(product.productId, 10) : product.productId;
+                FeedbackService.getByProductId(pid)
+                  .then(setFeedbacks)
+                  .catch(() => setFeedbacks([]));
+              } catch (err) {
+                showToast("Gửi đánh giá thất bại!", "error");
+              } finally {
+                setFeedbackLoading(false);
+              }
+            }}
+          >
+            <textarea
+              className="w-full border border-pink-200 rounded-xl p-4 mb-2 focus:outline-none focus:ring-2 focus:ring-pink-300 min-h-[80px] text-blue-900 bg-pink-50/30 placeholder:text-blue-300 resize-none transition-all"
+              placeholder="Nhập đánh giá của bạn về sản phẩm..."
+              value={feedbackText}
+              onChange={e => setFeedbackText(e.target.value)}
+              disabled={feedbackLoading}
+              maxLength={500}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-blue-400">Tối đa 500 ký tự</span>
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white font-bold px-8 py-2 rounded-lg shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={feedbackLoading}
+              >
+                {feedbackLoading ? "Đang gửi..." : "Gửi đánh giá"}
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* Related Products */}
