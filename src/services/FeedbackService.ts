@@ -21,8 +21,19 @@ const FeedbackService = {
     const response = await api.get<Feedback>(`${FEEDBACK_URL}/${id}`);
     return response.data;
   },
-  create: async (data: Partial<Feedback>): Promise<Feedback> => {
+  create: async (data: {
+    accountId: string;
+    productId: string;
+    feedbackInfor: string;
+    status: number;
+  }): Promise<Feedback> => {
     const response = await api.post<Feedback>(`${FEEDBACK_URL}`, data);
+    return response.data;
+  },
+
+  // Lấy feedback theo productId
+  getByProductId: async (productId: number | string): Promise<Feedback[]> => {
+    const response = await api.get<Feedback[]>(`${FEEDBACK_URL}?productId=${productId}`);
     return response.data;
   },
   update: async (id: number | string, data: Partial<Feedback>): Promise<Feedback> => {
