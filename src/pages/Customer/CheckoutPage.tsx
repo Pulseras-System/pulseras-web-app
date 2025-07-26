@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ShoppingBag, CreditCard, DollarSign, QrCode, ExternalLink } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,7 +9,9 @@ import OrderService from "@/services/OrderService";
 import OrderDetailService from "@/services/OrderDetailService";
 import ProductService from "@/services/ProductService";
 import PaymentService, { PayOSPaymentResponse } from "@/services/PaymentService";
+import VoucherService, { AvailableVoucher, ValidateVoucherResponse } from "@/services/VoucherService";
 import BankTransferQR from "@/components/BankTransferQR";
+import VoucherSelector from "@/components/VoucherSelector";
 import { useCartStore } from "@/utils/cartStore";
 
 const AnimatedSection = ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -101,6 +104,12 @@ const OrderSummary = ({
   setPhoneError,
   validatePhone,
   payosLoading,
+  accountId,
+  selectedVoucher,
+  setSelectedVoucher,
+  setVoucherValidation,
+  voucherDiscount,
+  totalBeforeVoucher,
 }: {
   subtotal: number;
   shipping: number;
@@ -114,6 +123,12 @@ const OrderSummary = ({
   setPhoneError: (error: string) => void;
   validatePhone: (phone: string) => string;
   payosLoading?: boolean;
+  accountId: string;
+  selectedVoucher: AvailableVoucher | null;
+  setSelectedVoucher: (voucher: AvailableVoucher | null) => void;
+  setVoucherValidation: (validation: ValidateVoucherResponse | null) => void;
+  voucherDiscount: number;
+  totalBeforeVoucher: number;
 }) => (
   <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm sticky top-24">
     {/* Shipping Information */}
@@ -224,6 +239,27 @@ const OrderSummary = ({
           <span className="text-gray-600">Phí vận chuyển:</span>
           <span className="font-medium">{shipping.toLocaleString("vi-VN")}₫</span>
         </div>
+        {voucherDiscount > 0 ? (
+          <div className="flex justify-between text-green-600 bg-green-50 -mx-2 px-2 py-1 rounded">
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Giảm giá voucher:
+            </span>
+            <span className="font-bold">-{voucherDiscount.toLocaleString("vi-VN")}₫</span>
+          </div>
+        ) : (
+          <div className="flex justify-between text-orange-600 bg-orange-50 -mx-2 px-2 py-1 rounded">
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Bạn chưa áp dụng voucher
+            </span>
+            <span className="text-sm">💰</span>
+          </div>
+        )}
         <div className="border-t border-gray-200 pt-3 mt-3 flex justify-between font-bold text-lg">
           <span className="text-gray-900">Tổng thanh toán:</span>
           <span className="text-red-600">{total.toLocaleString("vi-VN")}₫</span>
@@ -231,7 +267,56 @@ const OrderSummary = ({
       </div>
     </div>
 
-    {/* Payment Methods */}
+    {/* Voucher Section - Enhanced */}
+    <div className="mb-6">
+      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <span className="bg-gradient-to-r from-pink-500 to-orange-500 text-white p-2 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
+            <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+          </svg>
+        </span>
+        Voucher giảm giá
+        {selectedVoucher && voucherDiscount > 0 && (
+          <Badge className="bg-green-100 text-green-800 border-green-200 ml-2">
+            Tiết kiệm {voucherDiscount.toLocaleString("vi-VN")}₫
+          </Badge>
+        )}
+        {/* Debug info - remove in production */}
+        <span className="text-xs text-gray-500 ml-2">
+          (accountId: {accountId || "not set"})
+        </span>
+      </h2>
+      
+      {accountId ? (
+        <VoucherSelector
+          accountId={accountId}
+          orderAmount={totalBeforeVoucher}
+          selectedVoucher={selectedVoucher}
+          onVoucherSelect={setSelectedVoucher}
+          onVoucherValidation={setVoucherValidation}
+        />
+      ) : (
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
+          <div className="flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Đăng nhập để sử dụng voucher</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Bạn cần đăng nhập để xem và áp dụng các voucher giảm giá có sẵn
+          </p>
+          <Button
+            variant="outline"
+            className="text-pink-600 border-pink-300 hover:bg-pink-50"
+            onClick={() => window.location.href = '/login'}
+          >
+            Đăng nhập ngay
+          </Button>
+        </div>
+      )}
+    </div>    {/* Payment Methods */}
     <div className="mb-6">
       <label className="font-medium mb-3 text-gray-900 flex items-center gap-2">
         <span className="bg-blue-100 text-blue-800 p-2 rounded-full">
@@ -318,6 +403,9 @@ const CheckoutPage = () => {
   const [payosPayment, setPayosPayment] = useState<PayOSPaymentResponse | null>(null);
   const [payosLoading, setPayosLoading] = useState(false);
   const [pollIntervalId, setPollIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [selectedVoucher, setSelectedVoucher] = useState<AvailableVoucher | null>(null);
+  const [voucherValidation, setVoucherValidation] = useState<ValidateVoucherResponse | null>(null);
+  const [accountId, setAccountId] = useState<string>("");
   const { setQuantity } = useCartStore();
 
   // Phone validation function
@@ -394,24 +482,49 @@ const CheckoutPage = () => {
   }, [orderId]);
 
   useEffect(() => {
-    const accountStr = localStorage.getItem("account");
-    if (accountStr) {
-      try {
-        const account = JSON.parse(accountStr);
-        setShippingInfo((prev) => ({
-          ...prev,
-          fullName: account.fullName || "",
-          phone: account.phone || "",
-          address: account.address || "",
-        }));
-      } catch (e) {
-
+    // Try multiple possible keys for account info
+    const possibleKeys = ["account", "user", "customer", "userInfo"];
+    let foundAccount = null;
+    
+    for (const key of possibleKeys) {
+      const accountStr = localStorage.getItem(key);
+      if (accountStr) {
+        try {
+          const account = JSON.parse(accountStr);
+          console.log(`Found account in localStorage key "${key}":`, account);
+          foundAccount = account;
+          break;
+        } catch (e) {
+          console.error(`Error parsing ${key}:`, e);
+        }
       }
+    }
+    
+    if (foundAccount) {
+      // Try different possible field names for account ID
+      const accountId = foundAccount.accountId || foundAccount.id || foundAccount.userId || foundAccount.customerId || "";
+      console.log("Setting accountId:", accountId);
+      setAccountId(accountId);
+      
+      setShippingInfo((prev) => ({
+        ...prev,
+        fullName: foundAccount.fullName || foundAccount.name || "",
+        phone: foundAccount.phone || foundAccount.phoneNumber || "",
+        address: foundAccount.address || "",
+      }));
+    } else {
+      console.log("No account found in localStorage with any of the keys:", possibleKeys);
+      // For testing purposes, you can temporarily set a test accountId:
+      // setAccountId("test-account-id");
     }
   }, []);
 
   const shipping = subtotal > 0 ? 30000 : 0;
-  const total = subtotal + shipping;
+  
+  // Calculate voucher discount
+  const voucherDiscount = voucherValidation?.valid ? voucherValidation.discountAmount : 0;
+  const totalBeforeVoucher = subtotal + shipping;
+  const total = Math.max(0, totalBeforeVoucher - voucherDiscount);
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -428,7 +541,7 @@ const CheckoutPage = () => {
     } else if (paymentMethod === "PayOS") {
       await handlePayOSPayment();
     } else {
-      submitOrder();
+      await submitOrder();
       setShowConfirmPopup(true);
     }
   };
@@ -445,12 +558,27 @@ const CheckoutPage = () => {
     try {
       setPayosLoading(true);
       
+      // Apply voucher if selected and valid
+      if (selectedVoucher && voucherValidation?.valid && accountId) {
+        try {
+          await VoucherService.applyVoucher({
+            voucherCode: selectedVoucher.voucherCode,
+            accountId: accountId,
+            orderAmount: totalBeforeVoucher,
+            orderId: String(orderId)
+          });
+        } catch (voucherError) {
+          console.error('Error applying voucher:', voucherError);
+          // Continue with order even if voucher application fails
+        }
+      }
+      
       // First update the order with shipping info
       await OrderService.update(String(orderId), {
-        orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
+        orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}${selectedVoucher ? ` | Voucher: ${selectedVoucher.voucherCode}` : ''}`,
         amount: itemCount,
         accountId: order.accountId,
-        voucherId: order.voucherId,
+        voucherId: selectedVoucher ? selectedVoucher.id : order.voucherId,
         totalPrice: total,
         status: 2,
         lastEdited: new Date().toISOString(),
@@ -586,21 +714,41 @@ const CheckoutPage = () => {
     };
   }, [pollIntervalId]);
 
-  const submitOrder = () => {
-    OrderService.update(String(orderId), {
-      orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
-      amount: itemCount,
-      accountId: order.accountId,
-      voucherId: order.voucherId,
-      totalPrice: total,
-      status: 2,
-      lastEdited: new Date().toISOString(),
-      paymentMethod: paymentMethod, // Thêm trường paymentMethod riêng
-    });
+  const submitOrder = async () => {
+    try {
+      // Apply voucher if selected and valid
+      if (selectedVoucher && voucherValidation?.valid && accountId) {
+        try {
+          await VoucherService.applyVoucher({
+            voucherCode: selectedVoucher.voucherCode,
+            accountId: accountId,
+            orderAmount: totalBeforeVoucher,
+            orderId: String(orderId)
+          });
+        } catch (voucherError) {
+          console.error('Error applying voucher:', voucherError);
+          // Continue with order even if voucher application fails
+        }
+      }
 
-    // navigate('/');
-    localStorage.setItem('amount', '0');
-    setQuantity(0);
+      await OrderService.update(String(orderId), {
+        orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}${selectedVoucher ? ` | Voucher: ${selectedVoucher.voucherCode}` : ''}`,
+        amount: itemCount,
+        accountId: order.accountId,
+        voucherId: selectedVoucher ? selectedVoucher.id : order.voucherId,
+        totalPrice: total,
+        status: 2,
+        lastEdited: new Date().toISOString(),
+        paymentMethod: paymentMethod, // Thêm trường paymentMethod riêng
+      });
+
+      // navigate('/');
+      localStorage.setItem('amount', '0');
+      setQuantity(0);
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+    }
   };
 
   return (
@@ -668,6 +816,32 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                 </AnimatedSection>
+
+                {/* Voucher Promotion Banner */}
+                {accountId && !selectedVoucher && (
+                  <AnimatedSection>
+                    <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-lg p-6 text-white shadow-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-white/20 p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
+                              <path d="M9 11H3v5a2 2 0 002 2h4v-7zM11 18h4a2 2 0 002-2v-5h-6v7z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold mb-1">🎉 Có voucher giảm giá!</h3>
+                            <p className="text-white/90">Tiết kiệm thêm cho đơn hàng của bạn</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-3xl font-bold">💰</div>
+                          <div className="text-sm text-white/80 mt-1">Lên đến 50%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </AnimatedSection>
+                )}
               </div>
 
               <div>
@@ -685,6 +859,12 @@ const CheckoutPage = () => {
                     setPhoneError={setPhoneError}
                     validatePhone={validatePhone}
                     payosLoading={payosLoading}
+                    accountId={accountId}
+                    selectedVoucher={selectedVoucher}
+                    setSelectedVoucher={setSelectedVoucher}
+                    setVoucherValidation={setVoucherValidation}
+                    voucherDiscount={voucherDiscount}
+                    totalBeforeVoucher={totalBeforeVoucher}
                   />
                 </AnimatedSection>
               </div>
@@ -738,9 +918,9 @@ const CheckoutPage = () => {
                 </Button>
                 <Button
                   className="bg-green-600 text-white hover:bg-green-700 shadow-md"
-                  onClick={() => {
+                  onClick={async () => {
                     setShowQRPopup(false);
-                    submitOrder();
+                    await submitOrder();
                     setShowConfirmPopup(true);
                   }}
                 >

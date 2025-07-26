@@ -37,6 +37,7 @@ import VoucherService from "@/services/VoucherService";
 // Voucher Management Types
 interface Voucher {
   id: number;
+  originalId: string; // Store the original string ID from API
   code: string;
   description: string;
   discountType: "percentage" | "fixed";
@@ -52,49 +53,104 @@ interface Voucher {
 
 // Adapters to convert between API types and UI types
 const mapApiToVoucher = (apiVoucher: any): Voucher => {
-  // Map API status (number) to our status values
-  let status: "active" | "expired" | "used" = "active";
-  if (apiVoucher.status === 0) {
-    status = "expired";
-  } else if (apiVoucher.status === 2) {
-    status = "used";
-  }
+  console.log('Mapping API voucher:', apiVoucher);
+  
+  // Check if this is new format (VoucherNew) or legacy format (Voucher)
+  const isNewFormat = apiVoucher.voucherCode && !apiVoucher.voucher_id;
+  
+  if (isNewFormat) {
+    // Handle new API format (VoucherNew)
+    let status: "active" | "expired" | "used" = "active";
+    if (!apiVoucher.isActive) {
+      status = "expired";
+    } else if (apiVoucher.usedQuantity >= apiVoucher.totalQuantity) {
+      status = "used";
+    }
 
-  return {
-    id: apiVoucher.voucher_id,
-    code: apiVoucher.voucherName,
-    description: apiVoucher.voucherName, // API doesn't have description, using name as fallback
-    discountType: "percentage", // Assuming API only has percentage discounts
-    discountValue: apiVoucher.discountPercentage,
-    minPurchase: apiVoucher.minPrice,
-    maxDiscount: apiVoucher.maxDiscount,
-    startDate: apiVoucher.startDay,
-    endDate: apiVoucher.expireDay,
-    usageLimit: apiVoucher.voucherQuantity || 0,
-    usageCount: 0, // API doesn't provide usage count, assuming 0
-    status: status
-  };
+    return {
+      id: parseInt(apiVoucher.id) || 0, // Convert string ID to number for UI consistency
+      originalId: apiVoucher.id, // Store original string ID
+      code: apiVoucher.voucherCode || '',
+      description: apiVoucher.description || apiVoucher.voucherName || '',
+      discountType: apiVoucher.discountType === "PERCENTAGE" ? "percentage" : "fixed",
+      discountValue: apiVoucher.discountValue || 0,
+      minPurchase: apiVoucher.minOrderAmount || 0,
+      maxDiscount: apiVoucher.maxDiscountAmount || 0,
+      startDate: apiVoucher.startDate || '',
+      endDate: apiVoucher.endDate || '',
+      usageLimit: apiVoucher.totalQuantity || 0,
+      usageCount: apiVoucher.usedQuantity || 0,
+      status: status
+    };
+  } else {
+    // Handle legacy API format (Voucher)
+    let status: "active" | "expired" | "used" = "active";
+    if (apiVoucher.status === 0) {
+      status = "expired";
+    } else if (apiVoucher.status === 2) {
+      status = "used";
+    }
+
+    // Validate voucher_id for legacy format
+    if (!apiVoucher.voucher_id && apiVoucher.voucher_id !== 0) {
+      console.error('API voucher missing voucher_id:', apiVoucher);
+    }
+
+    return {
+      id: apiVoucher.voucher_id || apiVoucher.id || 0, // Fallback to id or 0
+      originalId: (apiVoucher.voucher_id || apiVoucher.id || 0).toString(), // Convert to string for consistency
+      code: apiVoucher.voucherName || '',
+      description: apiVoucher.voucherName || '', // API doesn't have description, using name as fallback
+      discountType: "percentage", // Assuming API only has percentage discounts
+      discountValue: apiVoucher.discountPercentage || 0,
+      minPurchase: apiVoucher.minPrice || 0,
+      maxDiscount: apiVoucher.maxDiscount || 0,
+      startDate: apiVoucher.startDay || '',
+      endDate: apiVoucher.expireDay || '',
+      usageLimit: apiVoucher.voucherQuantity || 0,
+      usageCount: 0, // API doesn't provide usage count, assuming 0
+      status: status
+    };
+  }
 };
 
-const mapVoucherToApi = (voucher: Voucher): any => {
-  // Map our status values to API status (number)
-  let status = 1; // active
-  if (voucher.status === "expired") {
-    status = 0;
-  } else if (voucher.status === "used") {
-    status = 2;
-  }
+// New mapping function for VoucherNew API format
+const mapVoucherToNewApi = (voucher: Voucher, originalVoucher?: any): any => {
+  // Format dates to match backend's expected format (yyyy-MM-dd'T'HH:mm:ss)
+  const formatDateForAPI = (dateString: string) => {
+    if (!dateString) {
+      // Return current date in backend's expected format
+      return new Date().toISOString().slice(0, 19); // Remove milliseconds and Z
+    }
+    
+    // If it's just a date (YYYY-MM-DD), add time
+    if (dateString.length === 10) {
+      return dateString + 'T00:00:00';
+    }
+    
+    // If it's already in ISO format, convert to backend format
+    if (dateString.includes('T')) {
+      // Remove milliseconds and timezone info, keep only yyyy-MM-dd'T'HH:mm:ss
+      return dateString.slice(0, 19);
+    }
+    
+    return dateString;
+  };
 
+  // Only send the fields that the backend expects for update operations
   return {
     voucherName: voucher.code,
-    voucherQuantity: voucher.usageLimit,
-    minPrice: voucher.minPurchase,
-    maxDiscount: voucher.maxDiscount || 0,
-    discountPercentage: voucher.discountValue,
-    startDay: voucher.startDate,
-    expireDay: voucher.endDate,
-    status: status,
-    // voucher_id is not included in create requests
+    description: voucher.description || '',
+    totalQuantity: voucher.usageLimit,
+    discountType: voucher.discountType === "percentage" ? "PERCENTAGE" : "FIXED_AMOUNT",
+    discountValue: voucher.discountValue,
+    minOrderAmount: voucher.minPurchase,
+    maxDiscountAmount: voucher.maxDiscount || null,
+    startDate: formatDateForAPI(voucher.startDate),
+    endDate: formatDateForAPI(voucher.endDate),
+    maxUsagePerUser: originalVoucher?.maxUsagePerUser || 1,
+    isActive: voucher.status === "active",
+    banReason: voucher.status === "expired" ? "Expired and deactivated" : (voucher.status === "used" ? "Used up" : null)
   };
 };
 
@@ -141,9 +197,11 @@ const VoucherManagementPage = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
+  const [originalVoucherData, setOriginalVoucherData] = useState<any>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [newVoucher, setNewVoucher] = useState<Voucher>({
     id: 0,
+    originalId: '',
     code: "",
     description: "",
     discountType: "percentage",
@@ -169,8 +227,11 @@ const VoucherManagementPage = () => {
   const fetchVouchers = async () => {
     try {
       setLoading(true);
-      const data = await VoucherService.get();
+      // Use new API endpoint that returns VoucherNew format
+      const data = await VoucherService.getAllVouchersNew();
+      console.log('Raw API vouchers data:', data);
       const mappedVouchers = data.map(mapApiToVoucher);
+      console.log('Mapped vouchers:', mappedVouchers);
       setVouchers(mappedVouchers);
       setError(null);
     } catch (err) {
@@ -216,8 +277,10 @@ const VoucherManagementPage = () => {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('vi-VN').format(date);
   };
 
@@ -272,33 +335,105 @@ const VoucherManagementPage = () => {
     );
   };
 
-  const handleEditClick = (voucher: Voucher) => {
-    setEditingVoucher(voucher);
-    setIsEditOpen(true);
+  const handleEditClick = async (voucher: Voucher) => {
+    try {
+      console.log('Voucher object for edit:', voucher);
+      
+      // Validate voucher ID
+      if (!voucher.id && voucher.id !== 0) {
+        console.error('Voucher ID is missing:', voucher);
+        showToast("Voucher ID is missing", "error");
+        return;
+      }
+      
+      // Since we're using new API format, we can create mock original data from current voucher
+      // This preserves the fields that shouldn't change
+      const mockOriginalData = {
+        id: voucher.originalId, // Use original string ID
+        voucherCode: voucher.code, // Use actual voucher code
+        voucherName: voucher.code,
+        description: voucher.description,
+        totalQuantity: voucher.usageLimit,
+        usedQuantity: voucher.usageCount,
+        discountType: voucher.discountType === "percentage" ? "PERCENTAGE" : "FIXED_AMOUNT",
+        discountValue: voucher.discountValue,
+        minOrderAmount: voucher.minPurchase,
+        maxDiscountAmount: voucher.maxDiscount,
+        maxUsagePerUser: 1,
+        isActive: voucher.status === "active",
+        startDate: voucher.startDate,
+        endDate: voucher.endDate,
+        createDate: new Date().toISOString(),
+        lastEdited: new Date().toISOString(),
+        banReason: voucher.status === "expired" ? "Expired and deactivated" : null
+      };
+      
+      setOriginalVoucherData(mockOriginalData);
+      setEditingVoucher(voucher);
+      setIsEditOpen(true);
+    } catch (error) {
+      console.error('Failed to prepare voucher for edit:', error);
+      showToast("Failed to load voucher details", "error");
+    }
   };
 
   const handleEditSave = async () => {
-    if (editingVoucher) {
+    if (editingVoucher && originalVoucherData) {
       try {
-        const apiData = mapVoucherToApi(editingVoucher);
-        await VoucherService.update(editingVoucher.id, apiData);
+        const apiData = mapVoucherToNewApi(editingVoucher, originalVoucherData);
+        console.log('Update request data:', JSON.stringify(apiData, null, 2));
+        console.log('Voucher original ID for URL:', editingVoucher.originalId);
+        await VoucherService.updateVoucherNew(editingVoucher.originalId, apiData);
         
         // Update local state
         setVouchers((prev) => prev.map((v) => (v.id === editingVoucher.id ? editingVoucher : v)));
         setIsEditOpen(false);
+        setOriginalVoucherData(null);
         showToast("Voucher updated successfully", "success");
       } catch (err) {
         console.error('Failed to update voucher:', err);
         showToast("Failed to update voucher", "error");
       }
+    } else {
+      showToast("Missing voucher data for update", "error");
     }
   };
 
   const handleAddVoucher = async () => {
     try {
       if (newVoucher.code.trim() && newVoucher.discountValue > 0) {
-        const apiData = mapVoucherToApi(newVoucher);
-        const createdVoucher = await VoucherService.create(apiData);
+        // Format dates to match working example (ISO with milliseconds and Z)
+        const formatDateForCreate = (dateString: string) => {
+          if (!dateString) {
+            return new Date().toISOString();
+          }
+          
+          // If it's just a date (YYYY-MM-DD), convert to full ISO format
+          if (dateString.length === 10) {
+            return new Date(dateString + 'T00:00:00.000Z').toISOString();
+          }
+          
+          return new Date(dateString).toISOString();
+        };
+
+        // Map to new API format - exactly matching your working example
+        const apiData = {
+          voucherCode: newVoucher.code,
+          voucherName: newVoucher.code,
+          description: newVoucher.description || '',
+          totalQuantity: newVoucher.usageLimit,
+          discountType: (newVoucher.discountType === "percentage" ? "PERCENTAGE" : "FIXED_AMOUNT") as "PERCENTAGE" | "FIXED_AMOUNT",
+          discountValue: newVoucher.discountValue,
+          minOrderAmount: newVoucher.minPurchase,
+          maxDiscountAmount: newVoucher.maxDiscount || undefined,
+          startDate: formatDateForCreate(newVoucher.startDate),
+          endDate: formatDateForCreate(newVoucher.endDate),
+          maxUsagePerUser: 1, // This field is required for create
+        };
+        
+        console.log('Create request data:', JSON.stringify(apiData, null, 2));
+        
+        const createdVoucher = await VoucherService.createVoucherNew(apiData);
         
         // Map the response back to our format and add to state
         const uiVoucher = mapApiToVoucher(createdVoucher);
@@ -307,6 +442,7 @@ const VoucherManagementPage = () => {
         // Reset form
         setNewVoucher({
           id: 0,
+          originalId: '',
           code: "",
           description: "",
           discountType: "percentage",
@@ -328,15 +464,22 @@ const VoucherManagementPage = () => {
     }
   };
 
-  const handleDeleteClick = (id: number) => {
-    setDeleteId(id);
+  const handleDeleteClick = (voucher: Voucher) => {
+    setDeleteId(voucher.id);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (deleteId !== null) {
       try {
-        await VoucherService.delete(deleteId);
+        // Find the voucher to get its originalId
+        const voucherToDelete = vouchers.find(v => v.id === deleteId);
+        if (!voucherToDelete) {
+          showToast("Voucher not found", "error");
+          return;
+        }
+        
+        await VoucherService.deleteVoucherNew(voucherToDelete.originalId);
         
         // Update local state
         setVouchers((prev) => prev.filter((v) => v.id !== deleteId));
@@ -514,7 +657,7 @@ const VoucherManagementPage = () => {
                     <Button variant="outline" size="sm" className="text-black border-pink-100 hover:bg-pink-100" onClick={() => handleEditClick(voucher)}>
                       <Pen className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50" onClick={() => handleDeleteClick(voucher.id)}>
+                    <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50" onClick={() => handleDeleteClick(voucher)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
