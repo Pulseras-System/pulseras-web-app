@@ -353,10 +353,18 @@ const ProductDetailPage = () => {
               });
                 setFeedbackText("");
                 showToast("Gửi đánh giá thành công!", "success");
-                // Reload feedbacks
-                const pid = typeof product.productId === 'string' ? parseInt(product.productId, 10) : product.productId;
+                // Reload feedbacks and filter by productId to ensure UI updates immediately
+                const pid = String(product.productId);
                 FeedbackService.getByProductId(pid)
-                  .then(setFeedbacks)
+                  .then((data: any) => {
+                    if (data && Array.isArray(data.items)) {
+                      setFeedbacks(data.items.filter((fb: any) => (fb.product_id === pid || fb.productId === pid)));
+                    } else if (Array.isArray(data)) {
+                      setFeedbacks(data.filter((fb: any) => (fb.product_id === pid || fb.productId === pid)));
+                    } else {
+                      setFeedbacks([]);
+                    }
+                  })
                   .catch(() => setFeedbacks([]));
               } catch (err) {
                 showToast("Gửi đánh giá thất bại!", "error");
