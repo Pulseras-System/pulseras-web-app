@@ -449,7 +449,7 @@ const CheckoutPage = () => {
       await OrderService.update(String(orderId), {
         orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
         amount: itemCount,
-        accountId: order.accountId,
+        // accountId: order.accountId,
         voucherId: order.voucherId || "0",
         totalPrice: total,
         status: 2,
@@ -535,7 +535,7 @@ const CheckoutPage = () => {
             const updateResult = await OrderService.update(String(orderId), {
               orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
               amount: itemCount,
-              accountId: order.accountId,
+              // accountId: order.accountId,
               voucherId: order.voucherId || "0",
               totalPrice: total,
               status: 3,
@@ -590,7 +590,7 @@ const CheckoutPage = () => {
     OrderService.update(String(orderId), {
       orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
       amount: itemCount,
-      accountId: order.accountId,
+      // accountId: order.accountId,
       voucherId: order.voucherId || "0",
       totalPrice: total,
       status: 2,
@@ -951,7 +951,7 @@ const CheckoutPage = () => {
                           const updateResult = await OrderService.update(String(orderId), {
                             orderInfor: `Tên: ${shippingInfo.fullName} | SĐT: ${shippingInfo.phone} | Địa chỉ: ${shippingInfo.address} | PTTT: ${paymentMethod} | Ghi chú: ${shippingInfo.note}`,
                             amount: itemCount,
-                            accountId: order.accountId,
+                            // accountId: order.accountId,
                             voucherId: order.voucherId || "0",
                             totalPrice: total,
                             status: 3,
