@@ -40,6 +40,17 @@ const FeedbackService = {
     const response = await api.put<Feedback>(`${FEEDBACK_URL}/${id}`, data);
     return response.data;
   },
+
+  // Gửi feedback qua email
+  send: async (data: {
+    userEmail: string;
+    content: string;
+    subject: string;
+    userName: string;
+  }): Promise<any> => {
+    const response = await api.post(`${FEEDBACK_URL}/send`, data);
+    return response.data;
+  },
 };
 
 export default FeedbackService;
