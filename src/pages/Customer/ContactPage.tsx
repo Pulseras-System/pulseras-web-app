@@ -1,17 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaFacebook, FaInstagram, FaClock } from 'react-icons/fa';
+import FeedbackService from '@/services/FeedbackService';
 
 const Contact: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Lấy thông tin user từ localStorage khi component mount
+  useEffect(() => {
+    const accountData = localStorage.getItem('account');
+    if (accountData) {
+      try {
+        const account = JSON.parse(accountData);
+        if (account.fullName) {
+          setUserName(account.fullName);
+        }
+        if (account.email) {
+          setUserEmail(account.email);
+        }
+      } catch (error) {
+        console.error('Error parsing account data from localStorage:', error);
+      }
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Cảm ơn bạn đã gửi tin nhắn! Chúng tôi sẽ phản hồi sớm nhất có thể.');
-    setEmail('');
-    setMessage('');
+    
+    if (!userEmail || !userName || !subject || !content) {
+      alert('Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await FeedbackService.send({
+        userEmail,
+        userName,
+        subject,
+        content
+      });
+      
+      alert('Cảm ơn bạn đã gửi tin nhắn! Chúng tôi sẽ phản hồi sớm nhất có thể.');
+      
+      // Reset form
+      setUserEmail('');
+      setUserName('');
+      setSubject('');
+      setContent('');
+    } catch (error) {
+      console.error('Error sending feedback:', error);
+      alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại!');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -110,30 +158,68 @@ const Contact: React.FC = () => {
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-green-200">Gửi Tin Nhắn</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-1">
+                Họ và tên
+              </label>
+              <input
+                type="text"
+                id="userName"
+                placeholder="Nguyễn Văn A"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                required
+                disabled={!!userName && !!localStorage.getItem('account')}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              {!!userName && !!localStorage.getItem('account') && (
+                <p className="text-sm text-gray-500 mt-1">Thông tin từ tài khoản đã đăng nhập</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="userEmail" className="block text-sm font-medium text-gray-700 mb-1">
                 Email của bạn
               </label>
               <input
                 type="email"
-                id="email"
+                id="userEmail"
                 placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                required
+                disabled={!!userEmail && !!localStorage.getItem('account')}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              {!!userEmail && !!localStorage.getItem('account') && (
+                <p className="text-sm text-gray-500 mt-1">Thông tin từ tài khoản đã đăng nhập</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                Chủ đề
+              </label>
+              <input
+                type="text"
+                id="subject"
+                placeholder="Tôi muốn hỏi về sản phẩm..."
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
               />
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                Tin nhắn
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+                Nội dung tin nhắn
               </label>
               <textarea
-                id="message"
+                id="content"
                 rows={5}
                 placeholder="Xin chào Pulseras, tôi muốn..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
               />
@@ -141,9 +227,10 @@ const Contact: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02]"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Gửi Tin Nhắn
+              {isLoading ? 'Đang gửi...' : 'Gửi Tin Nhắn'}
             </Button>
           </form>
         </Card>
