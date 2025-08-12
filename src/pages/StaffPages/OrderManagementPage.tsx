@@ -34,6 +34,7 @@ interface OrderRow {
   totalAmount: number;
   orderInfor: string;
   amount: number;
+  paymentMethod?: string; // Thêm trường paymentMethod nếu cần
   raw: ApiOrder;
 }
 
@@ -107,6 +108,7 @@ const OrderManagement = () => {
           totalAmount: order.totalPrice,
           orderInfor: order.orderInfor,
           amount: order.amount,
+          paymentMethod: order.paymentMethod,
           raw: order,
         }) as OrderRow);
         setOrders(ordersWithCustomer);
@@ -201,9 +203,10 @@ const OrderManagement = () => {
         await OrderService.update(editingOrder.id, {
           orderInfor: newOrderInfor,
           amount: editingOrder.amount || 1,
-          accountId: editingOrder.raw.accountId,
+          // accountId: editingOrder.raw.accountId,
           voucherId: editingOrder.raw.voucherId || "0",
           totalPrice: editingOrder.totalAmount || 0,
+          paymentMethod: editingOrder.paymentMethod || "COD",
           status: statusTextToNumber(editingOrder.status),
           lastEdited: new Date().toISOString(),
         });
